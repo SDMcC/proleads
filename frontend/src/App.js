@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from './hooks/useAuth';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { createWeb3Modal } from '@web3modal/wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
