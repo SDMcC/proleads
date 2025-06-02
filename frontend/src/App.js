@@ -1,26 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { createWeb3Modal, defaultWagmiConfig } from '@web3modal/wagmi';
+import { createWeb3Modal } from '@web3modal/wagmi';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { WagmiProvider, createConfig, http } from 'wagmi';
+import { mainnet } from 'wagmi/chains';
 import './App.css';
 
-// Web3Modal configuration
+// Create wagmi config
 const projectId = process.env.REACT_APP_WC_PROJECT_ID || 'af44774b87514c0aab24072250c2baa8';
+
+const metadata = {
+  name: 'Web3 Membership Platform',
+  description: 'Multi-level membership platform on Web3',
+  url: 'https://web3membership.com',
+  icons: ['https://avatars.githubusercontent.com/u/37784886']
+};
+
+const config = createConfig({
+  chains: [mainnet],
+  transports: {
+    [mainnet.id]: http()
+  },
+  ssr: true
+});
 
 // Create Web3Modal
 createWeb3Modal({
-  wagmiConfig: defaultWagmiConfig({
-    projectId,
-    chains: [1], // Ethereum mainnet
-    metadata: {
-      name: 'Web3 Membership Platform',
-      description: 'Multi-level membership platform on Web3',
-    }
-  }),
+  wagmiConfig: config,
+  projectId,
+  enableAnalytics: false,
   themeMode: 'light',
   themeVariables: {
     '--w3m-accent': '#3b82f6',
   }
 });
+
+// Create React Query client
+const queryClient = new QueryClient();
 
 // Home Page Component
 const Home = () => {
@@ -394,20 +410,24 @@ const ProtectedRoute = ({ children }) => {
 // Main App Component
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/register" element={<Register />} />
-        <Route 
-          path="/dashboard" 
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          } 
-        />
-      </Routes>
-    </Router>
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        <Router>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/register" element={<Register />} />
+            <Route 
+              path="/dashboard" 
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } 
+            />
+          </Routes>
+        </Router>
+      </QueryClientProvider>
+    </WagmiProvider>
   );
 }
 
