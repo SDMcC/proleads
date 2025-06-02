@@ -502,4 +502,306 @@ function App() {
   );
 }
 
+// Payment Page Component
+function PaymentPage() {
+  const { user } = useAuth();
+  const [selectedTier, setSelectedTier] = useState('bronze');
+  const [selectedCurrency, setSelectedCurrency] = useState('BTC');
+  const [loading, setLoading] = useState(false);
+  const [paymentData, setPaymentData] = useState(null);
+  const [tiers, setTiers] = useState({});
+
+  useEffect(() => {
+    // Get tier from URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    const tier = urlParams.get('tier');
+    if (tier) {
+      setSelectedTier(tier);
+    }
+
+    // Fetch membership tiers
+    const fetchTiers = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/api/membership/tiers`);
+        setTiers(response.data.tiers || {});
+      } catch (error) {
+        console.error('Failed to fetch tiers:', error);
+      }
+    };
+    fetchTiers();
+  }, []);
+
+  const supportedCurrencies = ['BTC', 'ETH', 'USDC', 'USDT', 'LTC', 'XMR'];
+
+  const handleCreatePayment = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(`${API_URL}/api/payments/create`, {
+        tier: selectedTier,
+        currency: selectedCurrency
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.data.payment_required === false) {
+        // Free tier upgrade
+        alert('Membership upgraded to Affiliate!');
+        window.location.href = '/dashboard';
+      } else {
+        setPaymentData(response.data);
+      }
+    } catch (error) {
+      console.error('Payment creation failed:', error);
+      alert('Payment creation failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const currentTier = tiers[selectedTier];
+
+  return (
+    <div className="min-h-screen">
+      {/* Navigation */}
+      <nav className="bg-black bg-opacity-50 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-6">
+            <div className="flex items-center space-x-2">
+              <Network className="h-8 w-8 text-blue-400" />
+              <span className="text-2xl font-bold text-white">Web3 Membership</span>
+            </div>
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => window.location.href = '/dashboard'}
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-all duration-300"
+              >
+                Back to Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-white mb-4">Upgrade Your Membership</h1>
+          <p className="text-xl text-gray-300">Choose your tier and payment method</p>
+        </div>
+
+        {!paymentData ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Tier Selection */}
+            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+              <h3 className="text-2xl font-bold text-white mb-6">Select Membership Tier</h3>
+              <div className="space-y-4">
+                {Object.entries(tiers).map(([key, tierData]) => (
+                  <label key={key} className="block">
+                    <input
+                      type="radio"
+                      name="tier"
+                      value={key}
+                      checked={selectedTier === key}
+                      onChange={(e) => setSelectedTier(e.target.value)}
+                      className="sr-only"
+                    />
+                    <div className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-300 ${
+                      selectedTier === key
+                        ? 'border-blue-400 bg-blue-900 bg-opacity-50'
+                        : 'border-gray-600 bg-black bg-opacity-30 hover:border-blue-400'
+                    }`}>
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h4 className="text-lg font-bold text-white capitalize">{key}</h4>
+                          <p className="text-gray-300">{tierData.commissions?.length || 0} commission levels</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-2xl font-bold text-white">${tierData.price}</p>
+                          <p className="text-gray-300">{tierData.price === 0 ? 'Free' : '/month'}</p>
+                        </div>
+                      </div>
+                      {tierData.commissions && (
+                        <div className="mt-3 flex space-x-2">
+                          {tierData.commissions.map((rate, index) => (
+                            <span key={index} className="bg-blue-600 text-white px-2 py-1 rounded text-xs">
+                              L{index + 1}: {Math.round(rate * 100)}%
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Payment Method Selection */}
+            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+              <h3 className="text-2xl font-bold text-white mb-6">Payment Method</h3>
+              
+              {currentTier?.price === 0 ? (
+                <div className="text-center py-8">
+                  <Award className="h-16 w-16 text-green-400 mx-auto mb-4" />
+                  <h4 className="text-xl font-bold text-white mb-2">Free Tier</h4>
+                  <p className="text-gray-300 mb-6">No payment required for Affiliate membership</p>
+                  <button
+                    onClick={handleCreatePayment}
+                    disabled={loading}
+                    className="px-8 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white font-semibold rounded-lg transition-all duration-300"
+                  >
+                    {loading ? 'Upgrading...' : 'Activate Free Tier'}
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="mb-6">
+                    <label className="block text-gray-300 text-sm font-medium mb-3">
+                      Select Cryptocurrency
+                    </label>
+                    <div className="grid grid-cols-3 gap-3">
+                      {supportedCurrencies.map((currency) => (
+                        <label key={currency} className="block">
+                          <input
+                            type="radio"
+                            name="currency"
+                            value={currency}
+                            checked={selectedCurrency === currency}
+                            onChange={(e) => setSelectedCurrency(e.target.value)}
+                            className="sr-only"
+                          />
+                          <div className={`p-3 rounded-lg border-2 cursor-pointer transition-all duration-300 text-center ${
+                            selectedCurrency === currency
+                              ? 'border-blue-400 bg-blue-900 bg-opacity-50'
+                              : 'border-gray-600 bg-black bg-opacity-30 hover:border-blue-400'
+                          }`}>
+                            <span className="font-medium text-white">{currency}</span>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="bg-black bg-opacity-30 rounded-lg p-4 mb-6">
+                    <h4 className="text-lg font-bold text-white mb-2">Order Summary</h4>
+                    <div className="flex justify-between text-gray-300">
+                      <span>Membership Tier:</span>
+                      <span className="capitalize text-white">{selectedTier}</span>
+                    </div>
+                    <div className="flex justify-between text-gray-300">
+                      <span>Price:</span>
+                      <span className="text-white">${currentTier?.price}/month</span>
+                    </div>
+                    <div className="flex justify-between text-gray-300">
+                      <span>Payment Method:</span>
+                      <span className="text-white">{selectedCurrency}</span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleCreatePayment}
+                    disabled={loading}
+                    className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white font-semibold rounded-lg transition-all duration-300"
+                  >
+                    {loading ? 'Creating Payment...' : `Pay ${currentTier?.price ? '$' + currentTier.price : ''} with ${selectedCurrency}`}
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        ) : (
+          /* Payment Instructions */
+          <div className="max-w-2xl mx-auto">
+            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-8 text-center">
+              <div className="mb-6">
+                <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <DollarSign className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-2">Payment Created</h3>
+                <p className="text-gray-300">Complete your payment to upgrade your membership</p>
+              </div>
+
+              <div className="bg-black bg-opacity-30 rounded-lg p-6 mb-6">
+                <h4 className="text-lg font-bold text-white mb-4">Payment Details</h4>
+                <div className="space-y-3 text-left">
+                  <div className="flex justify-between">
+                    <span className="text-gray-300">Amount:</span>
+                    <span className="text-white font-mono">{paymentData.amount} {paymentData.currency}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-300">Address:</span>
+                    <span className="text-white font-mono text-sm break-all">{paymentData.address}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-300">Payment ID:</span>
+                    <span className="text-white font-mono text-sm">{paymentData.payment_id}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                <button
+                  onClick={() => navigator.clipboard.writeText(paymentData.address)}
+                  className="flex-1 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg flex items-center justify-center space-x-2 transition-all duration-300"
+                >
+                  <Copy className="h-4 w-4" />
+                  <span>Copy Address</span>
+                </button>
+                <a
+                  href={paymentData.payment_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center justify-center space-x-2 transition-all duration-300"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  <span>Open Payment Page</span>
+                </a>
+              </div>
+
+              <p className="text-gray-400 text-sm mt-6">
+                Your membership will be automatically upgraded once payment is confirmed.
+                This usually takes 1-3 confirmations on the blockchain.
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Payment Success Component
+function PaymentSuccess() {
+  return (
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="max-w-md w-full text-center">
+        <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-8">
+          <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Award className="h-8 w-8 text-white" />
+          </div>
+          
+          <h1 className="text-3xl font-bold text-white mb-4">Payment Successful!</h1>
+          <p className="text-gray-300 mb-6">
+            Your membership has been upgraded successfully. You can now start earning commissions!
+          </p>
+          
+          <div className="flex flex-col space-y-4">
+            <button
+              onClick={() => window.location.href = '/dashboard'}
+              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all duration-300"
+            >
+              Go to Dashboard
+            </button>
+            <button
+              onClick={() => window.location.href = '/'}
+              className="px-6 py-3 bg-transparent border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-gray-900 transition-all duration-300"
+            >
+              Back to Home
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default App;
