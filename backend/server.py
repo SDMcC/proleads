@@ -121,47 +121,78 @@ async def get_current_user(authorization: Optional[str] = Header(None)):
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
-async def calculate_commissions(referrer_address: str, amount: float, tier: str):
-    """Calculate and distribute commissions through the referral chain"""
-    commissions_paid = []
-    current_referrer = referrer_address
+async def calculate_commissions(new_member_address: str, new_member_tier: str, new_member_amount: float):
+    """Calculate and distribute commissions through the referral chain
     
+    Logic: 
+    - Referrer's tier determines commission RATES
+    - Referrer's level/depth determines which rate to use
+    - New member's membership price is what commission is calculated from
+    """
+    commissions_paid = []
+    current_referrer_address = None
+    
+    # Get the new member to find their referrer
+    new_member = await db.users.find_one({"address": new_member_address})
+    if not new_member or not new_member.get("referrer_address"):
+        logger.info(f"No referrer found for {new_member_address}")
+        return commissions_paid
+    
+    current_referrer_address = new_member.get("referrer_address")
+    
+    # Walk up the referral chain
     for level in range(4):  # Maximum 4 levels
-        if not current_referrer:
+        if not current_referrer_address:
             break
             
-        referrer = await db.users.find_one({"address": current_referrer})
+        # Get the referrer at this level
+        referrer = await db.users.find_one({"address": current_referrer_address})
         if not referrer:
+            logger.warning(f"Referrer not found: {current_referrer_address}")
             break
             
         referrer_tier = referrer.get("membership_tier", "affiliate")
-        tier_commissions = MEMBERSHIP_TIERS[referrer_tier]["commissions"]
+        referrer_commission_rates = MEMBERSHIP_TIERS[referrer_tier]["commissions"]
         
-        if level < len(tier_commissions):
-            commission_rate = tier_commissions[level]
-            commission_amount = amount * commission_rate
+        # Check if this referrer's tier has enough commission levels
+        if level < len(referrer_commission_rates):
+            commission_rate = referrer_commission_rates[level]
+            commission_amount = new_member_amount * commission_rate
             
-            # Record commission
-            commission_doc = {
-                "id": str(uuid.uuid4()),
-                "recipient_address": current_referrer,
-                "amount": commission_amount,
-                "level": level + 1,
-                "source_payment": amount,
-                "source_tier": tier,
-                "recipient_tier": referrer_tier,
-                "status": "pending",
-                "created_at": datetime.utcnow()
-            }
-            
-            await db.commissions.insert_one(commission_doc)
-            commissions_paid.append(commission_doc)
-            
-            # Initiate instant payout
-            await initiate_payout(current_referrer, commission_amount)
+            # Only create commission if amount > 0
+            if commission_amount > 0:
+                # Record commission
+                commission_doc = {
+                    "id": str(uuid.uuid4()),
+                    "recipient_address": current_referrer_address,
+                    "recipient_tier": referrer_tier,
+                    "amount": commission_amount,
+                    "commission_rate": commission_rate,
+                    "level": level + 1,
+                    "new_member_address": new_member_address,
+                    "new_member_tier": new_member_tier,
+                    "new_member_amount": new_member_amount,
+                    "status": "pending",
+                    "created_at": datetime.utcnow()
+                }
+                
+                await db.commissions.insert_one(commission_doc)
+                commissions_paid.append(commission_doc)
+                
+                logger.info(f"Commission Level {level + 1}: {referrer_tier} earns {commission_rate*100}% of ${new_member_amount} = ${commission_amount}")
+                
+                # Initiate instant payout
+                await initiate_payout(current_referrer_address, commission_amount)
+            else:
+                logger.info(f"No commission for level {level + 1} - rate is 0%")
+        else:
+            logger.info(f"Referrer {referrer_tier} tier only has {len(referrer_commission_rates)} commission levels, stopping at level {level + 1}")
+            break
         
-        current_referrer = referrer.get("referrer_address")
+        # Move to next level up the chain
+        current_referrer_address = referrer.get("referrer_address")
     
+    logger.info(f"Total commissions calculated: {len(commissions_paid)}")
     return commissions_paid
 
 async def initiate_payout(address: str, amount: float):
