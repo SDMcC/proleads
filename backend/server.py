@@ -543,6 +543,21 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
         {"recipient_address": current_user["address"]}
     ).sort("created_at", -1).limit(10).to_list(10)
     
+    # Format commissions for display
+    formatted_commissions = []
+    for commission in recent_commissions:
+        formatted_commissions.append({
+            "id": commission.get("id"),
+            "amount": commission.get("amount", 0),
+            "commission_rate": commission.get("commission_rate", 0),
+            "level": commission.get("level"),
+            "new_member_tier": commission.get("new_member_tier"),
+            "new_member_amount": commission.get("new_member_amount"),
+            "recipient_tier": commission.get("recipient_tier"),
+            "status": commission.get("status"),
+            "created_at": commission.get("created_at")
+        })
+    
     # Format earnings by status
     earnings_by_status = {stat["_id"]: stat["total"] for stat in earnings_stats}
     
