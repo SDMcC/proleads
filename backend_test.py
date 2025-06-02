@@ -1,21 +1,26 @@
-
 import requests
 import sys
 import json
+import uuid
 from datetime import datetime
 
-class Web3MembershipAPITester:
-    def __init__(self, base_url):
+class Web3MembershipTester:
+    def __init__(self, base_url="https://bcf818be-3505-417c-beaf-52bc651b496c.preview.emergentagent.com"):
         self.base_url = base_url
+        self.token = None
         self.tests_run = 0
         self.tests_passed = 0
-        self.token = None
+        self.wallet_address = f"0x{uuid.uuid4().hex[:40]}"  # Generate a random wallet address for testing
+        self.test_user = {
+            "username": f"test_user_{datetime.now().strftime('%H%M%S')}",
+            "email": f"test_{datetime.now().strftime('%H%M%S')}@example.com",
+            "wallet_address": self.wallet_address
+        }
 
-    def run_test(self, name, method, endpoint, expected_status, data=None, headers=None):
+    def run_test(self, name, method, endpoint, expected_status, data=None, params=None):
         """Run a single API test"""
-        url = f"{self.base_url}/{endpoint}"
-        if not headers:
-            headers = {'Content-Type': 'application/json'}
+        url = f"{self.base_url}/api/{endpoint}"
+        headers = {'Content-Type': 'application/json'}
         if self.token:
             headers['Authorization'] = f'Bearer {self.token}'
 
@@ -24,9 +29,13 @@ class Web3MembershipAPITester:
         
         try:
             if method == 'GET':
-                response = requests.get(url, headers=headers)
+                response = requests.get(url, headers=headers, params=params)
             elif method == 'POST':
                 response = requests.post(url, json=data, headers=headers)
+            elif method == 'PUT':
+                response = requests.put(url, json=data, headers=headers)
+            elif method == 'DELETE':
+                response = requests.delete(url, headers=headers)
 
             success = response.status_code == expected_status
             if success:
@@ -39,80 +48,148 @@ class Web3MembershipAPITester:
             else:
                 print(f"❌ Failed - Expected {expected_status}, got {response.status_code}")
                 try:
-                    print(f"Response: {response.text}")
-                    return False, response.json()
+                    print(f"Response: {response.json()}")
                 except:
-                    return False, {}
+                    print(f"Response: {response.text}")
+                return False, {}
 
         except Exception as e:
             print(f"❌ Failed - Error: {str(e)}")
             return False, {}
 
-    def test_health_endpoint(self):
-        """Test the health endpoint"""
-        success, response = self.run_test(
-            "Health Endpoint",
+    def test_health_check(self):
+        """Test API health check endpoint"""
+        return self.run_test(
+            "API Health Check",
             "GET",
-            "api/health",
+            "health",
             200
         )
-        if success:
-            print(f"Health Status: {response.get('status')}")
-            print(f"Timestamp: {response.get('timestamp')}")
-        return success
 
-    def test_membership_tiers(self):
-        """Test the membership tiers endpoint"""
-        success, response = self.run_test(
-            "Membership Tiers Endpoint",
+    def test_get_membership_tiers(self):
+        """Test getting membership tiers"""
+        return self.run_test(
+            "Get Membership Tiers",
             "GET",
-            "api/membership/tiers",
+            "membership/tiers",
             200
         )
-        if success:
-            tiers = response.get('tiers', {})
-            print(f"Available tiers: {', '.join(tiers.keys())}")
-            for tier, details in tiers.items():
-                print(f"  - {tier.capitalize()}: ${details.get('price')} with {len(details.get('commissions', []))} commission levels")
-        return success
 
-    def test_referral_info(self, referral_code):
-        """Test the referral info endpoint"""
-        success, response = self.run_test(
-            f"Referral Info Endpoint (code: {referral_code})",
-            "GET",
-            f"api/referral/{referral_code}",
-            404  # Expecting 404 since no users exist yet
+    def test_register_user(self):
+        """Test user registration"""
+        return self.run_test(
+            "Register User",
+            "POST",
+            "auth/register",
+            201,
+            data=self.test_user
         )
-        if success:
-            print("Unexpected success - referral code found")
-        else:
-            print("Expected 404 response - no users exist yet")
-            # For this test, a 404 is actually expected
-            self.tests_passed += 1
-            return True
-        return success
+
+    def test_login_user(self):
+        """Test user login with wallet"""
+        success, response = self.run_test(
+            "Login User",
+            "POST",
+            "auth/login",
+            200,
+            data={"wallet_address": self.wallet_address}
+        )
+        if success and 'token' in response:
+            self.token = response['token']
+            print(f"🔑 Authenticated with token: {self.token[:10]}...")
+        return success, response
+
+    def test_get_user_profile(self):
+        """Test getting user profile"""
+        return self.run_test(
+            "Get User Profile",
+            "GET",
+            "users/profile",
+            200
+        )
+
+    def test_get_referral_code(self):
+        """Test getting user's referral code"""
+        return self.run_test(
+            "Get Referral Code",
+            "GET",
+            "referrals/code",
+            200
+        )
+
+    def test_get_referral_stats(self):
+        """Test getting referral statistics"""
+        return self.run_test(
+            "Get Referral Stats",
+            "GET",
+            "referrals/stats",
+            200
+        )
+
+    def test_get_payment_methods(self):
+        """Test getting available payment methods"""
+        return self.run_test(
+            "Get Payment Methods",
+            "GET",
+            "payments/methods",
+            200
+        )
+
+    def test_create_payment(self):
+        """Test creating a payment for membership"""
+        return self.run_test(
+            "Create Payment",
+            "POST",
+            "payments/create",
+            200,
+            data={"tier": "bronze", "payment_method": "usdc"}
+        )
 
 def main():
-    # Get the backend URL from environment variable or use default
-    import os
-    backend_url = "https://bcf818be-3505-417c-beaf-52bc651b496c.preview.emergentagent.com"
+    print("🚀 Starting Web3 Membership Platform API Tests")
+    print("=" * 60)
     
-    print(f"Testing backend API at: {backend_url}")
+    tester = Web3MembershipTester()
     
-    # Setup tester
-    tester = Web3MembershipAPITester(backend_url)
+    # Test health check
+    tester.test_health_check()
     
-    # Run tests
-    health_success = tester.test_health_endpoint()
-    tiers_success = tester.test_membership_tiers()
-    referral_success = tester.test_referral_info("TESTCODE123")
+    # Test membership tiers
+    success, tiers_data = tester.test_get_membership_tiers()
+    if success:
+        print("\n📊 Membership Tiers:")
+        try:
+            tiers = tiers_data.get('tiers', {})
+            for tier, details in tiers.items():
+                print(f"  - {tier.capitalize()}: ${details.get('price', 'N/A')}")
+                print(f"    Commission Levels: {len(details.get('commissions', []))}")
+        except Exception as e:
+            print(f"Error parsing tiers: {str(e)}")
     
-    # Print results
-    print(f"\n📊 Tests passed: {tester.tests_passed}/{tester.tests_run}")
+    # Test user registration
+    tester.test_register_user()
     
-    # Return success if all tests passed
-    return 0 if health_success and tiers_success and referral_success else 1
+    # Test user login
+    tester.test_login_user()
+    
+    # If authenticated, test protected endpoints
+    if tester.token:
+        tester.test_get_user_profile()
+        
+        success, referral_data = tester.test_get_referral_code()
+        if success and 'referral_code' in referral_data:
+            print(f"📋 Referral Code: {referral_data['referral_code']}")
+        
+        tester.test_get_referral_stats()
+        tester.test_get_payment_methods()
+        tester.test_create_payment()
+    
+    # Print test results
+    print("\n" + "=" * 60)
+    print(f"📊 Tests passed: {tester.tests_passed}/{tester.tests_run}")
+    print(f"📊 Success rate: {tester.tests_passed/tester.tests_run*100:.1f}%")
+    
+    return 0 if tester.tests_passed == tester.tests_run else 1
 
 if __name__ == "__main__":
     sys.exit(main())
