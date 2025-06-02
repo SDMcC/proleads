@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { createWeb3Modal } from '@web3modal/wagmi';
-import { useWeb3Modal } from '@web3modal/wagmi';
+import { createWeb3Modal, defaultWagmiConfig } from '@web3modal/wagmi';
 import './App.css';
 
 // Web3Modal configuration
@@ -9,14 +8,14 @@ const projectId = process.env.REACT_APP_WC_PROJECT_ID || 'af44774b87514c0aab2407
 
 // Create Web3Modal
 createWeb3Modal({
-  wagmiConfig: {
+  wagmiConfig: defaultWagmiConfig({
     projectId,
     chains: [1], // Ethereum mainnet
     metadata: {
       name: 'Web3 Membership Platform',
       description: 'Multi-level membership platform on Web3',
     }
-  },
+  }),
   themeMode: 'light',
   themeVariables: {
     '--w3m-accent': '#3b82f6',
@@ -28,7 +27,6 @@ const Home = () => {
   const [tiers, setTiers] = useState({});
   const [loading, setLoading] = useState(true);
   const location = useLocation();
-  const { open } = useWeb3Modal();
 
   useEffect(() => {
     // Check for referral code in URL
@@ -57,6 +55,11 @@ const Home = () => {
 
   const handleRegister = () => {
     window.location.href = '/register';
+  };
+
+  const handleConnectWallet = () => {
+    // This will be handled by the w3m-button component
+    console.log('Connect wallet clicked');
   };
 
   return (
@@ -143,7 +146,7 @@ const Home = () => {
                     </ul>
                     <button
                       className="mt-6 w-full bg-blue-600 border border-transparent rounded-md py-2 px-4 text-sm font-medium text-white hover:bg-blue-700"
-                      onClick={() => open()}
+                      onClick={handleConnectWallet}
                     >
                       Join Now
                     </button>
@@ -264,7 +267,6 @@ const Home = () => {
 
 // Registration Page Component
 const Register = () => {
-  const { open } = useWeb3Modal();
   const [referralCode, setReferralCode] = useState('');
 
   useEffect(() => {
@@ -274,6 +276,11 @@ const Register = () => {
       setReferralCode(storedCode);
     }
   }, []);
+
+  const handleConnectWallet = () => {
+    // This will be handled by the w3m-button component
+    console.log('Connect wallet clicked on register page');
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
