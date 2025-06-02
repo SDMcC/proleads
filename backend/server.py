@@ -462,10 +462,8 @@ async def payment_callback(request: Request):
                 {"$set": {"membership_tier": tier}}
             )
             
-            # Calculate commissions
-            user = await db.users.find_one({"address": user_address})
-            if user and user.get("referrer_address"):
-                await calculate_commissions(user["referrer_address"], amount, tier)
+            # Calculate commissions with corrected logic
+            await calculate_commissions(user_address, tier, amount)
             
             # Broadcast update
             await websocket_manager.broadcast(json.dumps({
