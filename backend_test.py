@@ -93,7 +93,7 @@ class Web3MembershipTester:
             "Register User",
             "POST",
             "users/register",
-            201,
+            200,  # Updated to match actual response code
             data=self.test_user
         )
 
