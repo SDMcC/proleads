@@ -16,6 +16,10 @@ from eth_account.messages import encode_defunct
 import uuid
 from decimal import Decimal
 import logging
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
