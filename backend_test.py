@@ -14,7 +14,7 @@ class Web3MembershipTester:
         self.test_user = {
             "username": f"test_user_{datetime.now().strftime('%H%M%S')}",
             "email": f"test_{datetime.now().strftime('%H%M%S')}@example.com",
-            "wallet_address": self.wallet_address
+            "address": self.wallet_address
         }
 
     def run_test(self, name, method, endpoint, expected_status, data=None, params=None):
@@ -82,7 +82,7 @@ class Web3MembershipTester:
             "POST",
             "auth/nonce",
             200,
-            data={"wallet_address": self.wallet_address}
+            data={"address": self.wallet_address}
         )
 
     def test_register_user(self):
@@ -105,7 +105,7 @@ class Web3MembershipTester:
             "auth/verify",
             200,
             data={
-                "wallet_address": self.wallet_address,
+                "address": self.wallet_address,
                 "signature": "0x" + "1" * 130  # Simulated signature
             }
         )
