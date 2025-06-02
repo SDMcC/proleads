@@ -566,7 +566,7 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
         "pending_earnings": earnings_by_status.get("pending", 0) + earnings_by_status.get("processing", 0),
         "total_referrals": len(referrals),
         "direct_referrals": len([r for r in referrals if r.get("referrer_address") == current_user["address"]]),
-        "recent_commissions": recent_commissions,
+        "recent_commissions": formatted_commissions,
         "referral_network": referrals
     }
 
