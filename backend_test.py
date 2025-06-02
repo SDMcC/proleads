@@ -75,29 +75,40 @@ class Web3MembershipTester:
             200
         )
 
+    def test_get_nonce(self):
+        """Test getting a nonce for wallet authentication"""
+        return self.run_test(
+            "Get Authentication Nonce",
+            "POST",
+            "auth/nonce",
+            200,
+            data={"wallet_address": self.wallet_address}
+        )
+
     def test_register_user(self):
         """Test user registration"""
         return self.run_test(
             "Register User",
             "POST",
-            "auth/register",
+            "users/register",
             201,
             data=self.test_user
         )
 
-    def test_login_user(self):
-        """Test user login with wallet"""
-        success, response = self.run_test(
-            "Login User",
+    def test_verify_wallet(self):
+        """Test wallet verification (simulated)"""
+        # In a real scenario, we would sign the nonce with the wallet's private key
+        # For testing, we'll just simulate this step
+        return self.run_test(
+            "Verify Wallet",
             "POST",
-            "auth/login",
+            "auth/verify",
             200,
-            data={"wallet_address": self.wallet_address}
+            data={
+                "wallet_address": self.wallet_address,
+                "signature": "0x" + "1" * 130  # Simulated signature
+            }
         )
-        if success and 'token' in response:
-            self.token = response['token']
-            print(f"🔑 Authenticated with token: {self.token[:10]}...")
-        return success, response
 
     def test_get_user_profile(self):
         """Test getting user profile"""
@@ -108,30 +119,21 @@ class Web3MembershipTester:
             200
         )
 
-    def test_get_referral_code(self):
-        """Test getting user's referral code"""
+    def test_get_dashboard_stats(self):
+        """Test getting dashboard statistics"""
         return self.run_test(
-            "Get Referral Code",
+            "Get Dashboard Stats",
             "GET",
-            "referrals/code",
+            "dashboard/stats",
             200
         )
 
-    def test_get_referral_stats(self):
-        """Test getting referral statistics"""
+    def test_get_network_data(self):
+        """Test getting network data"""
         return self.run_test(
-            "Get Referral Stats",
+            "Get Network Data",
             "GET",
-            "referrals/stats",
-            200
-        )
-
-    def test_get_payment_methods(self):
-        """Test getting available payment methods"""
-        return self.run_test(
-            "Get Payment Methods",
-            "GET",
-            "payments/methods",
+            "dashboard/network",
             200
         )
 
@@ -143,6 +145,15 @@ class Web3MembershipTester:
             "payments/create",
             200,
             data={"tier": "bronze", "payment_method": "usdc"}
+        )
+
+    def test_get_referral_info(self):
+        """Test getting referral information"""
+        return self.run_test(
+            "Get Referral Info",
+            "GET",
+            "referral/TEST123",  # Test referral code
+            200
         )
 
 def main():
@@ -166,23 +177,27 @@ def main():
         except Exception as e:
             print(f"Error parsing tiers: {str(e)}")
     
+    # Test authentication flow
+    success, nonce_data = tester.test_get_nonce()
+    
     # Test user registration
     tester.test_register_user()
     
-    # Test user login
-    tester.test_login_user()
+    # Test wallet verification
+    success, auth_data = tester.test_verify_wallet()
+    if success and 'token' in auth_data:
+        tester.token = auth_data['token']
+        print(f"🔑 Authenticated with token: {tester.token[:10]}...")
     
     # If authenticated, test protected endpoints
     if tester.token:
         tester.test_get_user_profile()
-        
-        success, referral_data = tester.test_get_referral_code()
-        if success and 'referral_code' in referral_data:
-            print(f"📋 Referral Code: {referral_data['referral_code']}")
-        
-        tester.test_get_referral_stats()
-        tester.test_get_payment_methods()
+        tester.test_get_dashboard_stats()
+        tester.test_get_network_data()
         tester.test_create_payment()
+    
+    # Test referral info (doesn't require authentication)
+    tester.test_get_referral_info()
     
     # Print test results
     print("\n" + "=" * 60)
