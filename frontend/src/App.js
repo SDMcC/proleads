@@ -1,10 +1,25 @@
 
-import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Link, Navigate } from "react-router-dom";
-import { useWeb3Modal } from "@web3modal/wagmi/react";
-import { useAccount, useDisconnect } from "wagmi";
-import axios from "axios";
-import "./App.css";
+import React, { useState, useEffect } from 'react';
+import { createWeb3Modal } from '@web3modal/wagmi/react';
+import { defaultWagmiConfig } from '@web3modal/wagmi/react/config';
+import { WagmiProvider } from 'wagmi';
+import { arbitrum, mainnet } from 'wagmi/chains';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useAccount, useSignMessage } from 'wagmi';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import axios from 'axios';
+import { 
+  Wallet, 
+  Users, 
+  DollarSign, 
+  TrendingUp, 
+  Copy, 
+  ExternalLink,
+  Activity,
+  Award,
+  Network
+} from 'lucide-react';
+import './App.css';
 
 // Components
 const Navbar = ({ isConnected, address, handleConnect, handleDisconnect }) => {
