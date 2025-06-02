@@ -424,6 +424,8 @@ function App() {
                 </ProtectedRoute>
               } 
             />
+            <Route path="/payment" element={<ProtectedRoute><PaymentPage /></ProtectedRoute>} />
+            <Route path="/payment/success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
           </Routes>
         </Router>
       </QueryClientProvider>
