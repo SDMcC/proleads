@@ -39,6 +39,21 @@ createWeb3Modal({
 // Create React Query client
 const queryClient = new QueryClient();
 
+// Stat Card Component
+function StatCard({ icon, title, value, subtitle, action }) {
+  return (
+    <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+      <div className="flex items-center space-x-3 mb-4">
+        {icon}
+        <h3 className="text-lg font-semibold text-white">{title}</h3>
+      </div>
+      <p className="text-2xl font-bold text-white mb-1">{value}</p>
+      <p className="text-gray-400 text-sm">{subtitle}</p>
+      {action && action}
+    </div>
+  );
+}
+
 // Tier Card Component
 function TierCard({ tier, referralCode }) {
   const { user } = useAuth();
