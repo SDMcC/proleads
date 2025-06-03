@@ -97,7 +97,7 @@ def verify_commission_calculation():
             return False
         
         # Check if multi-level referrals are handled
-        if "referrer_chain" in server_code:
+        if "for level in range(4)" in server_code and "current_referrer_address = referrer.get(\"referrer_address\")" in server_code:
             print("✅ Multi-level referrals are properly handled")
         else:
             print("❌ Multi-level referrals are not properly handled")
