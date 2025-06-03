@@ -465,7 +465,7 @@ function TierCard({ tier, referralCode }) {
       // Create payment
       const response = await axios.post(`${API_URL}/api/payments/create`, {
         tier: tier.name.toLowerCase(),
-        currency: 'BTC' // Use BTC instead of USDT which was causing issues
+        currency: 'ETH' // Use ETH as it's more reliable than BTC/USDT
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
