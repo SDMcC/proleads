@@ -643,7 +643,7 @@ function RegisterPage() {
                 value={formData.username}
                 onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
                 className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
-                placeholder="Enter your username"
+                placeholder="Enter your email"
                 required
               />
             </div>
