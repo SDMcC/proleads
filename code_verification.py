@@ -90,7 +90,7 @@ def verify_commission_calculation():
             return False
         
         # Check if commission rates are correctly used
-        if "tier_info = MEMBERSHIP_TIERS.get(tier)" in server_code and "commissions = tier_info.get(\"commissions\")" in server_code:
+        if "referrer_commission_rates = MEMBERSHIP_TIERS[referrer_tier][\"commissions\"]" in server_code:
             print("✅ Commission rates are correctly retrieved from tier info")
         else:
             print("❌ Commission rates are not correctly retrieved")
