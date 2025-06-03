@@ -659,6 +659,20 @@ async def health_check():
 async def get_membership_tiers():
     return {"tiers": MEMBERSHIP_TIERS}
 
+# Get recent payments for user
+@app.get("/api/payments/recent")
+async def get_recent_payments(current_user: dict = Depends(get_current_user)):
+    """Get recent payments for the current user"""
+    try:
+        payments = await db.payments.find(
+            {"user_address": current_user["address"]}
+        ).sort("created_at", -1).limit(10).to_list(10)
+        
+        return {"payments": payments}
+    except Exception as e:
+        logger.error(f"Failed to fetch recent payments: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch payments")
+
 # Public endpoint to get referrer info (for public referral links)
 @app.get("/api/referral/{referral_code}")
 async def get_referral_info(referral_code: str):
