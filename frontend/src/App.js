@@ -447,6 +447,41 @@ function TierCard({ tier, referralCode }) {
     }
   };
 
+  const handleUpgrade = async () => {
+    if (tier.price === 0) {
+      // Free tier - redirect to register
+      handleSelectTier();
+      return;
+    }
+
+    try {
+      // Check if user is authenticated
+      const token = localStorage.getItem('token');
+      if (!token) {
+        handleSelectTier();
+        return;
+      }
+
+      // Create payment
+      const response = await axios.post(`${API_URL}/api/payments/create`, {
+        tier: tier.name.toLowerCase(),
+        currency: 'BTC' // Default to BTC, could make this selectable
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.data.payment_url) {
+        // Redirect to payment page
+        window.open(response.data.payment_url, '_blank');
+      } else {
+        alert('Payment created successfully! Please check your dashboard.');
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      alert('Payment failed. Please try again or contact support.');
+    }
+  };
+
   return (
     <div className={`relative rounded-2xl p-8 ${
       tier.popular 
