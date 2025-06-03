@@ -825,6 +825,12 @@ function Dashboard() {
           <RecentPayments />
         </div>
 
+        {/* Payment Status */}
+        <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6 mb-8">
+          <h3 className="text-xl font-bold text-white mb-4">Recent Payments</h3>
+          <RecentPayments />
+        </div>
+
         {/* Referral Link */}
         <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6 mb-8">
           <h3 className="text-xl font-bold text-white mb-4">Your Referral Link</h3>
