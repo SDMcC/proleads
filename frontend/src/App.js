@@ -5,7 +5,11 @@ import { createWeb3Modal } from '@web3modal/wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { WagmiProvider, createConfig, http } from 'wagmi';
 import { mainnet } from 'wagmi/chains';
+import axios from 'axios';
+import { Network, Award, DollarSign, Copy, ExternalLink, Users } from 'lucide-react';
 import './App.css';
+
+const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 // Create wagmi config
 const projectId = process.env.REACT_APP_WC_PROJECT_ID || 'af44774b87514c0aab24072250c2baa8';
