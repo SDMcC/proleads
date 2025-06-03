@@ -1001,7 +1001,7 @@ function PaymentPage() {
       const token = localStorage.getItem('token');
       const response = await axios.post(`${API_URL}/api/payments/create`, {
         tier: selectedTier,
-        currency: selectedCurrency
+        currency: 'ETH' // Use ETH as it's more reliable than BTC/USDT
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
