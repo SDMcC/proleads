@@ -515,14 +515,14 @@ function TierCard({ tier, referralCode }) {
         </div>
         
         <button 
-          onClick={handleSelectTier}
+          onClick={handleUpgrade}
           className={`w-full py-3 rounded-lg font-semibold transition-all duration-300 ${
             tier.popular
               ? 'bg-white text-blue-600 hover:bg-gray-100'
               : 'bg-blue-600 text-white hover:bg-blue-700'
           }`}
         >
-          {tier.price === 0 ? 'Select Free Tier' : user ? 'Upgrade Now' : 'Join Now'}
+          {tier.price === 0 ? 'Start Free' : 'Upgrade Now'}
         </button>
       </div>
     </div>
