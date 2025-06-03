@@ -888,6 +888,75 @@ function Dashboard() {
   );
 }
 
+// Recent Payments Component
+function RecentPayments() {
+  const [payments, setPayments] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchRecentPayments();
+  }, []);
+
+  const fetchRecentPayments = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API_URL}/api/payments/recent`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setPayments(response.data.payments || []);
+    } catch (error) {
+      console.error('Failed to fetch payments:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <div className="text-gray-400">Loading payments...</div>;
+  }
+
+  if (payments.length === 0) {
+    return <div className="text-gray-400 text-center py-4">No payments yet</div>;
+  }
+
+  return (
+    <div className="space-y-4">
+      {payments.map((payment, index) => (
+        <div key={index} className="flex justify-between items-center py-3 border-b border-gray-600 last:border-b-0">
+          <div>
+            <p className="text-white font-medium">{payment.tier.toUpperCase()} Membership</p>
+            <p className="text-gray-400 text-sm">
+              ${payment.amount} {payment.currency} • {new Date(payment.created_at).toLocaleDateString()}
+            </p>
+          </div>
+          <div className="text-right">
+            <span className={`px-2 py-1 rounded text-xs ${
+              payment.status === 'confirmed' ? 'bg-green-600 text-green-100' :
+              payment.status === 'waiting' ? 'bg-yellow-600 text-yellow-100' :
+              payment.status === 'processing' ? 'bg-blue-600 text-blue-100' :
+              'bg-gray-600 text-gray-100'
+            }`}>
+              {payment.status}
+            </span>
+            {payment.payment_url && payment.status === 'waiting' && (
+              <div className="mt-1">
+                <a 
+                  href={payment.payment_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-400 text-xs hover:text-blue-300"
+                >
+                  Complete Payment
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // Stat Card Component
 function StatCard({ icon, title, value, subtitle, action }) {
   return (
