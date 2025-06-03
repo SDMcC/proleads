@@ -970,7 +970,7 @@ function StatCard({ icon, title, value, subtitle, action }) {
 function PaymentPage() {
   const { user } = useAuth();
   const [selectedTier, setSelectedTier] = useState('bronze');
-  const [selectedCurrency, setSelectedCurrency] = useState('BTC');
+  const [selectedCurrency, setSelectedCurrency] = useState('ETH');
   const [loading, setLoading] = useState(false);
   const [paymentData, setPaymentData] = useState(null);
   const [tiers, setTiers] = useState({});
