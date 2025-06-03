@@ -373,51 +373,89 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
             "Content-Type": "application/json"
         }
         
+        # Use the correct NOWPayments invoice API endpoint
         payment_data = {
             "price_amount": tier_info["price"],
             "price_currency": "USD",
             "pay_currency": request.currency,
             "ipn_callback_url": f"{APP_URL}/api/payments/callback",
-            "order_id": f"{current_user['address']}_{request.tier}_{int(datetime.utcnow().timestamp())}"
+            "order_id": f"{current_user['address']}_{request.tier}_{int(datetime.utcnow().timestamp())}",
+            "order_description": f"{request.tier.title()} Membership Upgrade",
+            "success_url": f"{APP_URL}/payment/success",
+            "cancel_url": f"{APP_URL}/payment"
         }
         
         async with httpx.AsyncClient() as client:
-            response = await client.post(
-                "https://api.nowpayments.io/v1/payment",
+            # First, try the invoice endpoint which provides better UX
+            invoice_response = await client.post(
+                "https://api.nowpayments.io/v1/invoice",
                 headers=headers,
                 json=payment_data
             )
             
-            if response.status_code == 201:
-                payment_result = response.json()
+            if invoice_response.status_code == 201:
+                invoice_result = invoice_response.json()
                 
                 # Store payment record
                 payment_doc = {
-                    "payment_id": payment_result["payment_id"],
+                    "payment_id": invoice_result["id"],
                     "user_address": current_user["address"],
                     "tier": request.tier,
                     "amount": tier_info["price"],
                     "currency": request.currency,
                     "status": "waiting",
                     "created_at": datetime.utcnow(),
-                    "payment_url": payment_result["invoice_url"]
+                    "payment_url": invoice_result["invoice_url"]
                 }
                 
                 await db.payments.insert_one(payment_doc)
                 
                 return {
-                    "payment_id": payment_result["payment_id"],
-                    "payment_url": payment_result["invoice_url"],
-                    "amount": payment_result["pay_amount"],
-                    "currency": payment_result["pay_currency"],
-                    "address": payment_result["pay_address"]
+                    "payment_id": invoice_result["id"],
+                    "payment_url": invoice_result["invoice_url"],
+                    "amount": invoice_result["pay_amount"],
+                    "currency": invoice_result["pay_currency"],
+                    "address": invoice_result.get("pay_address", "")
                 }
             else:
-                raise HTTPException(status_code=400, detail="Payment creation failed")
+                # Fallback to standard payment endpoint
+                payment_response = await client.post(
+                    "https://api.nowpayments.io/v1/payment",
+                    headers=headers,
+                    json=payment_data
+                )
+                
+                if payment_response.status_code == 201:
+                    payment_result = payment_response.json()
+                    
+                    # Store payment record
+                    payment_doc = {
+                        "payment_id": payment_result["payment_id"],
+                        "user_address": current_user["address"],
+                        "tier": request.tier,
+                        "amount": tier_info["price"],
+                        "currency": request.currency,
+                        "status": "waiting",
+                        "created_at": datetime.utcnow(),
+                        "payment_url": f"https://payments.nowpayments.io/payment/{payment_result['payment_id']}"
+                    }
+                    
+                    await db.payments.insert_one(payment_doc)
+                    
+                    return {
+                        "payment_id": payment_result["payment_id"],
+                        "payment_url": f"https://payments.nowpayments.io/payment/{payment_result['payment_id']}",
+                        "amount": payment_result["pay_amount"],
+                        "currency": payment_result["pay_currency"],
+                        "address": payment_result["pay_address"]
+                    }
+                else:
+                    logger.error(f"Payment creation failed: {payment_response.text}")
+                    raise HTTPException(status_code=400, detail=f"Payment creation failed: {payment_response.text}")
                 
     except Exception as e:
         logger.error(f"Payment creation error: {str(e)}")
-        raise HTTPException(status_code=500, detail="Payment service error")
+        raise HTTPException(status_code=500, detail=f"Payment service error: {str(e)}")
 
 @app.post("/api/payments/callback")
 async def payment_callback(request: Request):
