@@ -540,7 +540,7 @@ function CommissionStructure() {
 // Register Page Component
 function RegisterPage() {
   const { address, isConnected } = useAccount();
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const { signMessageAsync } = useSignMessage();
   const [formData, setFormData] = useState({
     username: '',
