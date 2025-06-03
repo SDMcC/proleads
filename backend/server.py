@@ -355,6 +355,8 @@ async def get_profile(current_user: dict = Depends(get_current_user)):
 @app.post("/api/payments/create")
 async def create_payment(request: PaymentRequest, current_user: dict = Depends(get_current_user)):
     """Create payment for membership upgrade"""
+    logger.info(f"Payment request received: tier={request.tier}, currency={request.currency}")
+    
     tier_info = MEMBERSHIP_TIERS.get(request.tier)
     if not tier_info:
         raise HTTPException(status_code=400, detail="Invalid membership tier")
@@ -373,11 +375,15 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
             "Content-Type": "application/json"
         }
         
+        # Ensure currency is lowercase as expected by NOWPayments
+        pay_currency = request.currency.lower()
+        logger.info(f"Using pay_currency: {pay_currency}")
+        
         # Create payment with NOWPayments
         payment_data = {
             "price_amount": tier_info["price"],
             "price_currency": "USD",
-            "pay_currency": request.currency,
+            "pay_currency": pay_currency,
             "ipn_callback_url": f"{APP_URL}/api/payments/callback",
             "order_id": f"{current_user['address']}_{request.tier}_{int(datetime.utcnow().timestamp())}",
             "order_description": f"{request.tier.capitalize()} Membership - {current_user['username']}"
