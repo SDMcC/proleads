@@ -75,7 +75,7 @@ class Web3MembershipTester:
             "username": self.username,
             "email": self.email
         }
-        success, response = self.run_test("Register User", "POST", "auth/register", 201, data)
+        success, response = self.run_test("Register User", "POST", "users/register", 200, data)
         if success and response.get('referral_code'):
             self.referral_code = response.get('referral_code')
         return success, response
