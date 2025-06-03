@@ -334,20 +334,16 @@ def main():
     
     tester = Web3MembershipTester(backend_url)
     
-    # Run tests
+    # Basic API tests
     tester.test_health_check()
     tester.test_get_membership_tiers()
-    tester.test_register_user()
-    tester.test_get_nonce()
-    tester.test_verify_signature()
     
-    # These tests require authentication
-    if tester.token:
-        tester.test_create_payment()
-        tester.test_get_dashboard_stats()
+    # Test complete registration flow
+    flow_success = tester.test_complete_registration_flow()
+    if not flow_success:
+        print("\n⚠️ Complete registration flow test failed")
     else:
-        print("\n⚠️ Skipping authenticated tests because login failed")
-        tester.tests_run += 2  # Count skipped tests
+        print("\n✅ Complete registration flow test passed")
     
     # Test commission calculation
     tester.test_commission_calculation()
