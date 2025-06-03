@@ -385,10 +385,14 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
             "cancel_url": f"{APP_URL}/payment"
         }
         
+        # Determine API base URL based on sandbox mode
+        is_sandbox = os.getenv("NOWPAYMENTS_SANDBOX", "true").lower() == "true"
+        base_url = "https://api-sandbox.nowpayments.io" if is_sandbox else "https://api.nowpayments.io"
+        
         async with httpx.AsyncClient() as client:
             # First, try the invoice endpoint which provides better UX
             invoice_response = await client.post(
-                "https://api.nowpayments.io/v1/invoice",
+                f"{base_url}/v1/invoice",
                 headers=headers,
                 json=payment_data
             )
@@ -420,7 +424,7 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
             else:
                 # Fallback to standard payment endpoint
                 payment_response = await client.post(
-                    "https://api.nowpayments.io/v1/payment",
+                    f"{base_url}/v1/payment",
                     headers=headers,
                     json=payment_data
                 )
@@ -437,14 +441,14 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
                         "currency": request.currency,
                         "status": "waiting",
                         "created_at": datetime.utcnow(),
-                        "payment_url": f"https://payments.nowpayments.io/payment/{payment_result['payment_id']}"
+                        "payment_url": f"https://payments{'sandbox' if is_sandbox else ''}.nowpayments.io/payment/{payment_result['payment_id']}"
                     }
                     
                     await db.payments.insert_one(payment_doc)
                     
                     return {
                         "payment_id": payment_result["payment_id"],
-                        "payment_url": f"https://payments.nowpayments.io/payment/{payment_result['payment_id']}",
+                        "payment_url": f"https://payments{'sandbox' if is_sandbox else ''}.nowpayments.io/payment/{payment_result['payment_id']}",
                         "amount": payment_result["pay_amount"],
                         "currency": payment_result["pay_currency"],
                         "address": payment_result["pay_address"]
