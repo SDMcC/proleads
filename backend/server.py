@@ -682,6 +682,109 @@ async def get_referral_network(current_user: dict = Depends(get_current_user)):
     network_tree = await build_network_tree(current_user["address"])
     return {"network_tree": network_tree}
 
+# Admin dashboard endpoints
+@app.get("/api/admin/dashboard/overview")
+async def get_admin_dashboard_overview(admin: dict = Depends(get_admin_user)):
+    """Get admin dashboard overview with summary statistics"""
+    try:
+        # Get total members count by tier
+        total_members = await db.users.count_documents({})
+        members_by_tier = await db.users.aggregate([
+            {"$group": {"_id": "$membership_tier", "count": {"$sum": 1}}}
+        ]).to_list(None)
+        
+        # Get total payments statistics
+        total_payments = await db.payments.count_documents({})
+        payments_by_status = await db.payments.aggregate([
+            {"$group": {"_id": "$status", "count": {"$sum": 1}, "total_amount": {"$sum": "$amount"}}}
+        ]).to_list(None)
+        
+        # Get total revenue
+        total_revenue = await db.payments.aggregate([
+            {"$match": {"status": "confirmed"}},
+            {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+        ]).to_list(1)
+        
+        # Get total commissions statistics
+        total_commissions = await db.commissions.count_documents({})
+        commissions_by_status = await db.commissions.aggregate([
+            {"$group": {"_id": "$status", "count": {"$sum": 1}, "total_amount": {"$sum": "$amount"}}}
+        ]).to_list(None)
+        
+        # Get total commission payouts
+        total_payouts = await db.commissions.aggregate([
+            {"$match": {"status": "completed"}},
+            {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+        ]).to_list(1)
+        
+        # Get recent activity (last 30 days)
+        thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+        
+        recent_members = await db.users.count_documents({
+            "created_at": {"$gte": thirty_days_ago}
+        })
+        
+        recent_payments = await db.payments.count_documents({
+            "created_at": {"$gte": thirty_days_ago}
+        })
+        
+        recent_commissions = await db.commissions.count_documents({
+            "created_at": {"$gte": thirty_days_ago}
+        })
+        
+        # Format members by tier data
+        members_tier_data = {tier["_id"]: tier["count"] for tier in members_by_tier}
+        
+        # Format payments by status data
+        payments_status_data = {
+            payment["_id"]: {
+                "count": payment["count"],
+                "total_amount": payment["total_amount"]
+            } for payment in payments_by_status
+        }
+        
+        # Format commissions by status data
+        commissions_status_data = {
+            comm["_id"]: {
+                "count": comm["count"],
+                "total_amount": comm["total_amount"]
+            } for comm in commissions_by_status
+        }
+        
+        return {
+            "members": {
+                "total": total_members,
+                "by_tier": members_tier_data,
+                "recent_30_days": recent_members
+            },
+            "payments": {
+                "total": total_payments,
+                "by_status": payments_status_data,
+                "total_revenue": total_revenue[0]["total"] if total_revenue else 0,
+                "recent_30_days": recent_payments
+            },
+            "commissions": {
+                "total": total_commissions,
+                "by_status": commissions_status_data,
+                "total_payouts": total_payouts[0]["total"] if total_payouts else 0,
+                "recent_30_days": recent_commissions
+            },
+            "leads": {
+                "total": 0,  # Placeholder for future leads system
+                "distributed": 0,
+                "pending": 0
+            },
+            "milestones": {
+                "total_achieved": 0,  # Placeholder for future milestones system
+                "pending_bonuses": 0,
+                "total_bonuses_paid": 0
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Admin dashboard overview error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch dashboard overview")
+
 # WebSocket endpoint
 @app.websocket("/ws/updates")
 async def websocket_endpoint(websocket: WebSocket):
