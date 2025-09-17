@@ -1403,8 +1403,14 @@ function AdminLoginPage() {
 // Admin Dashboard Component
 function AdminDashboard() {
   const [stats, setStats] = useState(null);
+  const [members, setMembers] = useState([]);
+  const [selectedMember, setSelectedMember] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
+  const [memberFilter, setMemberFilter] = useState('');
+  const [memberPage, setMemberPage] = useState(1);
+  const [showMemberModal, setShowMemberModal] = useState(false);
+  const [editingMember, setEditingMember] = useState(null);
 
   useEffect(() => {
     fetchAdminData();
