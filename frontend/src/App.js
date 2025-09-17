@@ -1542,45 +1542,11 @@ function AdminDashboard() {
           </div>
         )}
 
-        {/* Users Tab */}
-        {activeTab === 'users' && (
+        {/* Members Tab Placeholder */}
+        {activeTab === 'members' && (
           <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
-            <h3 className="text-xl font-bold text-white mb-4">User Management</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="border-b border-gray-600">
-                    <th className="pb-3 text-gray-300 font-medium">User</th>
-                    <th className="pb-3 text-gray-300 font-medium">Tier</th>
-                    <th className="pb-3 text-gray-300 font-medium">Referrals</th>
-                    <th className="pb-3 text-gray-300 font-medium">Earnings</th>
-                    <th className="pb-3 text-gray-300 font-medium">Joined</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(stats?.users || []).map((user, index) => (
-                    <tr key={index} className="border-b border-gray-700 last:border-b-0">
-                      <td className="py-3">
-                        <div>
-                          <p className="text-white font-medium">{user.username}</p>
-                          <p className="text-gray-400 text-sm">{user.email}</p>
-                        </div>
-                      </td>
-                      <td className="py-3">
-                        <span className="px-2 py-1 bg-blue-600 text-blue-100 rounded text-xs uppercase">
-                          {user.membership_tier}
-                        </span>
-                      </td>
-                      <td className="py-3 text-white">{user.total_referrals || 0}</td>
-                      <td className="py-3 text-white">${user.total_earnings?.toFixed(2) || '0.00'}</td>
-                      <td className="py-3 text-gray-400">
-                        {new Date(user.created_at).toLocaleDateString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <h3 className="text-xl font-bold text-white mb-4">Members Management</h3>
+            <p className="text-gray-400">Member management interface coming soon...</p>
           </div>
         )}
 
