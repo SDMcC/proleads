@@ -1489,30 +1489,36 @@ function AdminDashboard() {
         {activeTab === 'overview' && (
           <div className="space-y-8">
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StatCard
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+              <AdminStatCard
                 icon={<Users className="h-8 w-8 text-blue-400" />}
-                title="Total Users"
-                value={stats?.total_users || 0}
-                subtitle="Registered members"
+                title="Total Members"
+                value={stats?.members?.total || 0}
+                subtitle={`${stats?.members?.recent_30_days || 0} this month`}
               />
-              <StatCard
+              <AdminStatCard
                 icon={<DollarSign className="h-8 w-8 text-green-400" />}
                 title="Total Revenue"
-                value={`$${stats?.total_revenue?.toFixed(2) || '0.00'}`}
-                subtitle="All time earnings"
+                value={`$${stats?.payments?.total_revenue?.toFixed(2) || '0.00'}`}
+                subtitle={`${stats?.payments?.recent_30_days || 0} payments this month`}
               />
-              <StatCard
+              <AdminStatCard
                 icon={<Activity className="h-8 w-8 text-yellow-400" />}
                 title="Active Payments"
-                value={stats?.active_payments || 0}
+                value={stats?.payments?.by_status?.waiting?.count || 0}
                 subtitle="Pending confirmations"
               />
-              <StatCard
+              <AdminStatCard
                 icon={<TrendingUp className="h-8 w-8 text-purple-400" />}
                 title="Commission Payouts"
-                value={`$${stats?.total_commissions?.toFixed(2) || '0.00'}`}
-                subtitle="Total distributed"
+                value={`$${stats?.commissions?.total_payouts?.toFixed(2) || '0.00'}`}
+                subtitle={`${stats?.commissions?.recent_30_days || 0} this month`}
+              />
+              <AdminStatCard
+                icon={<Gift className="h-8 w-8 text-pink-400" />}
+                title="Milestones"
+                value={stats?.milestones?.total_achieved || 0}
+                subtitle="Achieved this month"
               />
             </div>
 
