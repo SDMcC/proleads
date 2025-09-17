@@ -383,6 +383,150 @@ class Web3MembershipTester:
             self.tests_run += 1
         
         return rates_correct, {}
+    
+    def test_admin_login_success(self):
+        """Test admin login with correct credentials"""
+        data = {
+            "username": "admin",
+            "password": "admin123"
+        }
+        success, response = self.run_test("Admin Login (Success)", "POST", "admin/login", 200, data)
+        
+        if success and response.get('token'):
+            self.admin_token = response.get('token')
+            # Verify token contains admin role
+            if response.get('role') == 'admin' and response.get('username') == 'admin':
+                print("✅ Admin token contains correct role and username")
+                return True, response
+            else:
+                print("❌ Admin token missing role or username")
+                return False, {}
+        return success, response
+    
+    def test_admin_login_failure(self):
+        """Test admin login with incorrect credentials"""
+        data = {
+            "username": "admin",
+            "password": "wrongpassword"
+        }
+        success, response = self.run_test("Admin Login (Failure)", "POST", "admin/login", 401, data)
+        return success, response
+    
+    def test_admin_dashboard_overview_success(self):
+        """Test admin dashboard overview with valid admin token"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        success, response = self.run_test("Admin Dashboard Overview (Success)", "GET", "admin/dashboard/overview", 200, headers=headers)
+        
+        if success:
+            # Verify response structure
+            required_keys = ['members', 'payments', 'commissions', 'leads', 'milestones']
+            missing_keys = [key for key in required_keys if key not in response]
+            
+            if not missing_keys:
+                print("✅ Dashboard overview contains all required sections")
+                
+                # Verify members data structure
+                members = response.get('members', {})
+                if 'total' in members and 'by_tier' in members and 'recent_30_days' in members:
+                    print("✅ Members data structure is correct")
+                else:
+                    print("❌ Members data structure is incomplete")
+                    return False, {}
+                
+                # Verify payments data structure
+                payments = response.get('payments', {})
+                if 'total' in payments and 'by_status' in payments and 'total_revenue' in payments and 'recent_30_days' in payments:
+                    print("✅ Payments data structure is correct")
+                else:
+                    print("❌ Payments data structure is incomplete")
+                    return False, {}
+                
+                # Verify commissions data structure
+                commissions = response.get('commissions', {})
+                if 'total' in commissions and 'by_status' in commissions and 'total_payouts' in commissions and 'recent_30_days' in commissions:
+                    print("✅ Commissions data structure is correct")
+                else:
+                    print("❌ Commissions data structure is incomplete")
+                    return False, {}
+                
+                return True, response
+            else:
+                print(f"❌ Dashboard overview missing required keys: {missing_keys}")
+                return False, {}
+        
+        return success, response
+    
+    def test_admin_dashboard_overview_unauthorized(self):
+        """Test admin dashboard overview without admin token"""
+        headers = {'Content-Type': 'application/json'}
+        success, response = self.run_test("Admin Dashboard Overview (Unauthorized)", "GET", "admin/dashboard/overview", 401, headers=headers)
+        return success, response
+    
+    def test_admin_dashboard_overview_regular_user(self):
+        """Test admin dashboard overview with regular user token"""
+        if not self.token or self.token == "mock_token_for_testing":
+            print("⚠️ No regular user token available, skipping regular user test")
+            return True, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.token}'
+        }
+        success, response = self.run_test("Admin Dashboard Overview (Regular User)", "GET", "admin/dashboard/overview", 403, headers=headers)
+        return success, response
+    
+    def test_admin_authentication_system(self):
+        """Test complete admin authentication system"""
+        print("\n🔐 Testing Admin Authentication System")
+        
+        # 1. Test admin login with correct credentials
+        login_success, login_response = self.test_admin_login_success()
+        if not login_success:
+            print("❌ Admin login with correct credentials failed")
+            return False
+        
+        # Verify JWT token structure
+        token = login_response.get('token')
+        if not token:
+            print("❌ No JWT token returned")
+            return False
+        
+        print(f"✅ Admin JWT token received: {token[:20]}...")
+        
+        # 2. Test admin login with incorrect credentials
+        login_fail_success, _ = self.test_admin_login_failure()
+        if not login_fail_success:
+            print("❌ Admin login with incorrect credentials should return 401")
+            return False
+        
+        # 3. Test admin dashboard overview with valid token
+        dashboard_success, dashboard_response = self.test_admin_dashboard_overview_success()
+        if not dashboard_success:
+            print("❌ Admin dashboard overview with valid token failed")
+            return False
+        
+        # 4. Test admin dashboard overview without token
+        unauth_success, _ = self.test_admin_dashboard_overview_unauthorized()
+        if not unauth_success:
+            print("❌ Admin dashboard overview without token should return 401")
+            return False
+        
+        # 5. Test admin dashboard overview with regular user token (if available)
+        self.test_admin_dashboard_overview_regular_user()
+        
+        print("✅ Admin Authentication System Test Passed")
+        return True
 
 def main():
     # Get the backend URL from environment or use default
