@@ -2035,3 +2035,5 @@ function AdminDashboard() {
     </div>
   );
 }
+
+export default App;
