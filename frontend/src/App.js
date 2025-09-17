@@ -1640,11 +1640,115 @@ function AdminDashboard() {
           </div>
         )}
 
-        {/* Members Tab Placeholder */}
+        {/* Members Management Tab */}
         {activeTab === 'members' && (
-          <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
-            <h3 className="text-xl font-bold text-white mb-4">Members Management</h3>
-            <p className="text-gray-400">Member management interface coming soon...</p>
+          <div className="space-y-6">
+            {/* Members Filter */}
+            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+              <div className="flex flex-col sm:flex-row gap-4 items-center">
+                <h3 className="text-xl font-bold text-white">Members Management</h3>
+                <div className="flex gap-2 ml-auto">
+                  <select
+                    value={memberFilter}
+                    onChange={(e) => setMemberFilter(e.target.value)}
+                    className="px-4 py-2 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-red-400"
+                  >
+                    <option value="">All Tiers</option>
+                    <option value="affiliate">Affiliate</option>
+                    <option value="bronze">Bronze</option>
+                    <option value="silver">Silver</option>
+                    <option value="gold">Gold</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Members Table */}
+            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="border-b border-gray-600">
+                      <th className="pb-3 text-gray-300 font-medium">Member</th>
+                      <th className="pb-3 text-gray-300 font-medium">Tier</th>
+                      <th className="pb-3 text-gray-300 font-medium">Referrals</th>
+                      <th className="pb-3 text-gray-300 font-medium">Earnings</th>
+                      <th className="pb-3 text-gray-300 font-medium">Joined</th>
+                      <th className="pb-3 text-gray-300 font-medium">Status</th>
+                      <th className="pb-3 text-gray-300 font-medium">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {members.map((member, index) => (
+                      <tr key={index} className="border-b border-gray-700 last:border-b-0">
+                        <td className="py-3">
+                          <div>
+                            <p className="text-white font-medium">{member.username}</p>
+                            <p className="text-gray-400 text-sm">{member.email}</p>
+                            <p className="text-gray-500 text-xs font-mono">{member.wallet_address.slice(0, 8)}...{member.wallet_address.slice(-6)}</p>
+                          </div>
+                        </td>
+                        <td className="py-3">
+                          <span className={`px-2 py-1 rounded text-xs uppercase font-medium ${
+                            member.membership_tier === 'gold' ? 'bg-yellow-600 text-yellow-100' :
+                            member.membership_tier === 'silver' ? 'bg-gray-600 text-gray-100' :
+                            member.membership_tier === 'bronze' ? 'bg-orange-600 text-orange-100' :
+                            'bg-blue-600 text-blue-100'
+                          }`}>
+                            {member.membership_tier}
+                          </span>
+                        </td>
+                        <td className="py-3 text-white">{member.total_referrals || 0}</td>
+                        <td className="py-3 text-white">${member.total_earnings?.toFixed(2) || '0.00'}</td>
+                        <td className="py-3 text-gray-400">
+                          {new Date(member.created_at).toLocaleDateString()}
+                        </td>
+                        <td className="py-3">
+                          <span className={`px-2 py-1 rounded text-xs ${
+                            member.suspended ? 'bg-red-600 text-red-100' : 'bg-green-600 text-green-100'
+                          }`}>
+                            {member.suspended ? 'Suspended' : 'Active'}
+                          </span>
+                        </td>
+                        <td className="py-3">
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => fetchMemberDetails(member.id)}
+                              className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded transition-all duration-300"
+                            >
+                              View
+                            </button>
+                            <button
+                              onClick={() => {
+                                setEditingMember(member);
+                                setShowMemberModal(true);
+                              }}
+                              className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded transition-all duration-300"
+                            >
+                              Edit
+                            </button>
+                            {!member.suspended && (
+                              <button
+                                onClick={() => suspendMember(member.id)}
+                                className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded transition-all duration-300"
+                              >
+                                Suspend
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                
+                {members.length === 0 && (
+                  <div className="text-center py-8">
+                    <p className="text-gray-400">No members found</p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
