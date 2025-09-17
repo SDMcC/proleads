@@ -140,6 +140,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "✅ TESTED: Admin dashboard overview API fully working. Returns comprehensive statistics including members data (total: 25, by_tier, recent_30_days: 1), payments data (total: 3, by_status, total_revenue: 0, recent_30_days: 3), commissions data (total: 0, by_status, total_payouts: 0, recent_30_days: 0), and leads/milestones placeholders. Proper authorization - returns 401 without admin token."
+      - working: true
+        agent: "testing"
+        comment: "✅ RE-TESTED: Admin dashboard overview API working perfectly. Comprehensive testing shows: 1) Admin login successful with correct credentials (admin/admin123), 2) Dashboard returns accurate user counts that update in real-time after new registrations, 3) Single user registration test: member count increased from 29→30, recent count 5→6, affiliate tier 29→30, 4) Multiple user registration test: successfully tracked 3 new users (30→33 total), 5) All data structures correct (members, payments, commissions, leads, milestones), 6) Proper authorization (401 without token). User registration tracking is working correctly - newly registered users ARE showing up in admin dashboard statistics immediately."
 
   - task: "Members Management API"
     implemented: false
