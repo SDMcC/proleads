@@ -74,6 +74,8 @@ function App() {
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/payment" element={<ProtectedRoute><PaymentPage /></ProtectedRoute>} />
                 <Route path="/payment/success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
+                <Route path="/admin/login" element={<AdminLoginPage />} />
+                <Route path="/admin/dashboard" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
               </Routes>
             </div>
           </Router>
