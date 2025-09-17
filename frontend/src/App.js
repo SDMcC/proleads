@@ -1421,13 +1421,93 @@ function AdminDashboard() {
       const token = localStorage.getItem('adminToken');
       const headers = { Authorization: `Bearer ${token}` };
 
-      const response = await axios.get(`${API_URL}/api/admin/dashboard/overview`, { headers });
-      setStats(response.data);
+      // Fetch dashboard overview
+      const overviewResponse = await axios.get(`${API_URL}/api/admin/dashboard/overview`, { headers });
+      setStats(overviewResponse.data);
+      
+      // Fetch members data if on members tab
+      if (activeTab === 'members') {
+        fetchMembers();
+      }
       
     } catch (error) {
       console.error('Failed to fetch admin data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchMembers = async (tier = '', page = 1) => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const headers = { Authorization: `Bearer ${token}` };
+      
+      const params = new URLSearchParams();
+      if (tier) params.append('tier', tier);
+      params.append('page', page.toString());
+      params.append('limit', '20');
+      
+      const response = await axios.get(`${API_URL}/api/admin/members?${params}`, { headers });
+      setMembers(response.data.members || []);
+      
+    } catch (error) {
+      console.error('Failed to fetch members:', error);
+    }
+  };
+
+  const fetchMemberDetails = async (memberId) => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const headers = { Authorization: `Bearer ${token}` };
+      
+      const response = await axios.get(`${API_URL}/api/admin/members/${memberId}`, { headers });
+      setSelectedMember(response.data);
+      setShowMemberModal(true);
+      
+    } catch (error) {
+      console.error('Failed to fetch member details:', error);
+      alert('Failed to fetch member details');
+    }
+  };
+
+  const updateMember = async (memberId, updateData) => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const headers = { Authorization: `Bearer ${token}` };
+      
+      await axios.put(`${API_URL}/api/admin/members/${memberId}`, updateData, { headers });
+      
+      // Refresh members list
+      fetchMembers(memberFilter, memberPage);
+      setShowMemberModal(false);
+      setEditingMember(null);
+      alert('Member updated successfully');
+      
+    } catch (error) {
+      console.error('Failed to update member:', error);
+      alert('Failed to update member: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const suspendMember = async (memberId) => {
+    if (!window.confirm('Are you sure you want to suspend this member?')) {
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem('adminToken');
+      const headers = { Authorization: `Bearer ${token}` };
+      
+      await axios.delete(`${API_URL}/api/admin/members/${memberId}`, { headers });
+      
+      // Refresh members list
+      fetchMembers(memberFilter, memberPage);
+      setShowMemberModal(false);
+      alert('Member suspended successfully');
+      
+    } catch (error) {
+      console.error('Failed to suspend member:', error);
+      alert('Failed to suspend member: ' + (error.response?.data?.detail || error.message));
     }
   };
 
