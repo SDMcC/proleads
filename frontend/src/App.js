@@ -1404,3 +1404,245 @@ function AdminProtectedRoute({ children }) {
   return isAdmin ? children : <Navigate to="/admin/login" />;
 }
 export default App;
+// Admin Dashboard Component
+function AdminDashboard() {
+  const [stats, setStats] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [payments, setPayments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('overview');
+
+  useEffect(() => {
+    fetchAdminData();
+  }, []);
+
+  const fetchAdminData = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const headers = { Authorization: `Bearer ${token}` };
+
+      const [statsRes, usersRes, paymentsRes] = await Promise.all([
+        axios.get(`${API_URL}/api/admin/stats`, { headers }),
+        axios.get(`${API_URL}/api/admin/users`, { headers }),
+        axios.get(`${API_URL}/api/admin/payments`, { headers })
+      ]);
+
+      setStats(statsRes.data);
+      setUsers(usersRes.data.users || []);
+      setPayments(paymentsRes.data.payments || []);
+    } catch (error) {
+      console.error('Failed to fetch admin data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('adminToken');
+    window.location.href = '/admin/login';
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-red-500"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen">
+      {/* Admin Navigation */}
+      <nav className="bg-red-900 bg-opacity-50 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-6">
+            <div className="flex items-center space-x-2">
+              <Shield className="h-8 w-8 text-red-400" />
+              <span className="text-2xl font-bold text-white">Admin Dashboard</span>
+            </div>
+            <div className="flex items-center space-x-4">
+              <span className="text-gray-300">Administrator</span>
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-300"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Tab Navigation */}
+        <div className="flex space-x-1 mb-8">
+          {[
+            { id: 'overview', label: 'Overview', icon: BarChart3 },
+            { id: 'users', label: 'Users', icon: Users },
+            { id: 'payments', label: 'Payments', icon: DollarSign }
+          ].map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              onClick={() => setActiveTab(id)}
+              className={`px-6 py-3 rounded-lg font-medium transition-all duration-300 flex items-center space-x-2 ${
+                activeTab === id
+                  ? 'bg-red-600 text-white'
+                  : 'bg-white bg-opacity-10 text-gray-300 hover:bg-opacity-20'
+              }`}
+            >
+              <Icon className="h-4 w-4" />
+              <span>{label}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Overview Tab */}
+        {activeTab === 'overview' && (
+          <div className="space-y-8">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <StatCard
+                icon={<Users className="h-8 w-8 text-blue-400" />}
+                title="Total Users"
+                value={stats?.total_users || 0}
+                subtitle="Registered members"
+              />
+              <StatCard
+                icon={<DollarSign className="h-8 w-8 text-green-400" />}
+                title="Total Revenue"
+                value={`$${stats?.total_revenue?.toFixed(2) || '0.00'}`}
+                subtitle="All time earnings"
+              />
+              <StatCard
+                icon={<Activity className="h-8 w-8 text-yellow-400" />}
+                title="Active Payments"
+                value={stats?.active_payments || 0}
+                subtitle="Pending confirmations"
+              />
+              <StatCard
+                icon={<TrendingUp className="h-8 w-8 text-purple-400" />}
+                title="Commission Payouts"
+                value={`$${stats?.total_commissions?.toFixed(2) || '0.00'}`}
+                subtitle="Total distributed"
+              />
+            </div>
+
+            {/* Recent Activity */}
+            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+              <h3 className="text-xl font-bold text-white mb-4">Recent Activity</h3>
+              <div className="space-y-4">
+                {stats?.recent_activity?.length > 0 ? (
+                  stats.recent_activity.map((activity, index) => (
+                    <div key={index} className="flex justify-between items-center py-3 border-b border-gray-600 last:border-b-0">
+                      <div>
+                        <p className="text-white font-medium">{activity.description}</p>
+                        <p className="text-gray-400 text-sm">{activity.user}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-gray-400 text-sm">
+                          {new Date(activity.timestamp).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-400 text-center py-8">No recent activity</p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Users Tab */}
+        {activeTab === 'users' && (
+          <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+            <h3 className="text-xl font-bold text-white mb-4">User Management</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-gray-600">
+                    <th className="pb-3 text-gray-300 font-medium">User</th>
+                    <th className="pb-3 text-gray-300 font-medium">Tier</th>
+                    <th className="pb-3 text-gray-300 font-medium">Referrals</th>
+                    <th className="pb-3 text-gray-300 font-medium">Earnings</th>
+                    <th className="pb-3 text-gray-300 font-medium">Joined</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((user, index) => (
+                    <tr key={index} className="border-b border-gray-700 last:border-b-0">
+                      <td className="py-3">
+                        <div>
+                          <p className="text-white font-medium">{user.username}</p>
+                          <p className="text-gray-400 text-sm">{user.email}</p>
+                        </div>
+                      </td>
+                      <td className="py-3">
+                        <span className="px-2 py-1 bg-blue-600 text-blue-100 rounded text-xs uppercase">
+                          {user.membership_tier}
+                        </span>
+                      </td>
+                      <td className="py-3 text-white">{user.total_referrals || 0}</td>
+                      <td className="py-3 text-white">${user.total_earnings?.toFixed(2) || '0.00'}</td>
+                      <td className="py-3 text-gray-400">
+                        {new Date(user.created_at).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Payments Tab */}
+        {activeTab === 'payments' && (
+          <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+            <h3 className="text-xl font-bold text-white mb-4">Payment Management</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-gray-600">
+                    <th className="pb-3 text-gray-300 font-medium">User</th>
+                    <th className="pb-3 text-gray-300 font-medium">Tier</th>
+                    <th className="pb-3 text-gray-300 font-medium">Amount</th>
+                    <th className="pb-3 text-gray-300 font-medium">Currency</th>
+                    <th className="pb-3 text-gray-300 font-medium">Status</th>
+                    <th className="pb-3 text-gray-300 font-medium">Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {payments.map((payment, index) => (
+                    <tr key={index} className="border-b border-gray-700 last:border-b-0">
+                      <td className="py-3 text-white">{payment.username}</td>
+                      <td className="py-3">
+                        <span className="px-2 py-1 bg-blue-600 text-blue-100 rounded text-xs uppercase">
+                          {payment.tier}
+                        </span>
+                      </td>
+                      <td className="py-3 text-white">${payment.amount}</td>
+                      <td className="py-3 text-white">{payment.currency}</td>
+                      <td className="py-3">
+                        <span className={`px-2 py-1 rounded text-xs ${
+                          payment.status === 'confirmed' ? 'bg-green-600 text-green-100' :
+                          payment.status === 'waiting' ? 'bg-yellow-600 text-yellow-100' :
+                          payment.status === 'processing' ? 'bg-blue-600 text-blue-100' :
+                          'bg-gray-600 text-gray-100'
+                        }`}>
+                          {payment.status}
+                        </span>
+                      </td>
+                      <td className="py-3 text-gray-400">
+                        {new Date(payment.created_at).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
