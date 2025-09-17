@@ -1403,6 +1403,8 @@ function AdminLoginPage() {
 // Admin Dashboard Component
 function AdminDashboard() {
   const [stats, setStats] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
 
