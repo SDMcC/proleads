@@ -1600,7 +1600,7 @@ function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {payments.map((payment, index) => (
+                  {(stats?.payments || []).map((payment, index) => (
                     <tr key={index} className="border-b border-gray-700 last:border-b-0">
                       <td className="py-3 text-white">{payment.username}</td>
                       <td className="py-3">
