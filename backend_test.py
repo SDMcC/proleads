@@ -541,6 +541,13 @@ def main():
     tester.test_health_check()
     tester.test_get_membership_tiers()
     
+    # Test admin authentication system
+    admin_success = tester.test_admin_authentication_system()
+    if not admin_success:
+        print("\n⚠️ Admin authentication system test failed")
+    else:
+        print("\n✅ Admin authentication system test passed")
+    
     # Test complete registration flow
     flow_success = tester.test_complete_registration_flow()
     if not flow_success:
