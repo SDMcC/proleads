@@ -16,7 +16,15 @@ import {
   ExternalLink,
   Activity,
   Award,
-  Network
+  Network,
+  Settings,
+  BarChart3,
+  Shield,
+  UserCheck,
+  FileText,
+  Gift,
+  Menu,
+  X
 } from 'lucide-react';
 import './App.css';
 
