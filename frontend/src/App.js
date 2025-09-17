@@ -1557,7 +1557,7 @@ function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map((user, index) => (
+                  {(stats?.users || []).map((user, index) => (
                     <tr key={index} className="border-b border-gray-700 last:border-b-0">
                       <td className="py-3">
                         <div>
