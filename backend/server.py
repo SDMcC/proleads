@@ -48,6 +48,10 @@ JWT_SECRET = os.getenv("JWT_SECRET")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 APP_URL = os.getenv("APP_URL")
 
+# Admin Configuration
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin123")  # Change in production
+
 # Membership tiers and commission rates
 MEMBERSHIP_TIERS = {
     "affiliate": {"price": 0, "commissions": [0.25, 0.05]},
