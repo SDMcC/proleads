@@ -1417,15 +1417,9 @@ function AdminDashboard() {
       const token = localStorage.getItem('adminToken');
       const headers = { Authorization: `Bearer ${token}` };
 
-      const [statsRes, usersRes, paymentsRes] = await Promise.all([
-        axios.get(`${API_URL}/api/admin/stats`, { headers }),
-        axios.get(`${API_URL}/api/admin/users`, { headers }),
-        axios.get(`${API_URL}/api/admin/payments`, { headers })
-      ]);
-
-      setStats(statsRes.data);
-      setUsers(usersRes.data.users || []);
-      setPayments(paymentsRes.data.payments || []);
+      const response = await axios.get(`${API_URL}/api/admin/dashboard/overview`, { headers });
+      setStats(response.data);
+      
     } catch (error) {
       console.error('Failed to fetch admin data:', error);
     } finally {
