@@ -868,6 +868,13 @@ def main():
     else:
         print("\n✅ Admin authentication system test passed")
     
+    # Test Members Management API system (Priority 1b)
+    members_success = tester.test_members_management_system()
+    if not members_success:
+        print("\n⚠️ Members Management API system test failed")
+    else:
+        print("\n✅ Members Management API system test passed")
+    
     # Test complete registration flow
     flow_success = tester.test_complete_registration_flow()
     if not flow_success:
