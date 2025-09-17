@@ -1400,7 +1400,6 @@ function AdminLoginPage() {
   );
 }
 
-export default App;
 // Admin Dashboard Component
 function AdminDashboard() {
   const [stats, setStats] = useState(null);
