@@ -430,7 +430,7 @@ class Web3MembershipTester:
 
 def main():
     # Get the backend URL from environment or use default
-    backend_url = "https://bcf818be-3505-417c-beaf-52bc651b496c.preview.emergentagent.com"
+    backend_url = "https://web3-affiliate.preview.emergentagent.com"
     
     logger.info("🚀 Starting Web3 Membership Platform API Tests")
     logger.info("=============================")
