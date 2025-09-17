@@ -87,6 +87,12 @@ class AdminLogin(BaseModel):
     username: str
     password: str
 
+class UserUpdate(BaseModel):
+    email: Optional[str] = None
+    membership_tier: Optional[str] = None
+    wallet_address: Optional[str] = None
+    suspended: Optional[bool] = None
+
 # WebSocket connection manager
 class ConnectionManager:
     def __init__(self):
