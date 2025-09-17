@@ -791,6 +791,267 @@ async def get_admin_dashboard_overview(admin: dict = Depends(get_admin_user)):
         logger.error(f"Admin dashboard overview error: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to fetch dashboard overview")
 
+# Admin members management endpoints
+@app.get("/api/admin/members")
+async def get_all_members(
+    tier: Optional[str] = None,
+    page: int = 1,
+    limit: int = 50,
+    admin: dict = Depends(get_admin_user)
+):
+    """Get all members with optional filtering and pagination"""
+    try:
+        skip = (page - 1) * limit
+        
+        # Build filter query
+        filter_query = {}
+        if tier:
+            filter_query["membership_tier"] = tier
+        
+        # Get total count
+        total_count = await db.users.count_documents(filter_query)
+        
+        # Get members with pagination
+        members_cursor = db.users.find(filter_query).skip(skip).limit(limit).sort("created_at", -1)
+        members = await members_cursor.to_list(length=None)
+        
+        # Enrich member data with additional info
+        enriched_members = []
+        for member in members:
+            # Get referral count
+            referral_count = await db.users.count_documents({"referrer_address": member["address"]})
+            
+            # Get total earnings
+            earnings_pipeline = [
+                {"$match": {"recipient_address": member["address"], "status": "completed"}},
+                {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+            ]
+            earnings_result = await db.commissions.aggregate(earnings_pipeline).to_list(1)
+            total_earnings = earnings_result[0]["total"] if earnings_result else 0.0
+            
+            # Get sponsor info
+            sponsor_info = None
+            if member.get("referrer_address"):
+                sponsor = await db.users.find_one({"address": member["referrer_address"]})
+                if sponsor:
+                    sponsor_info = {
+                        "username": sponsor["username"],
+                        "address": sponsor["address"]
+                    }
+            
+            enriched_member = {
+                "id": member["address"],  # Using address as ID
+                "username": member["username"],
+                "email": member["email"],
+                "wallet_address": member["address"],
+                "membership_tier": member["membership_tier"],
+                "total_referrals": referral_count,
+                "total_earnings": total_earnings,
+                "sponsor": sponsor_info,
+                "created_at": member["created_at"],
+                "last_active": member.get("last_active"),
+                "suspended": member.get("suspended", False),
+                "referral_code": member["referral_code"]
+            }
+            enriched_members.append(enriched_member)
+        
+        return {
+            "members": enriched_members,
+            "total_count": total_count,
+            "page": page,
+            "limit": limit,
+            "total_pages": (total_count + limit - 1) // limit
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to fetch members: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch members")
+
+@app.get("/api/admin/members/{member_id}")
+async def get_member_details(member_id: str, admin: dict = Depends(get_admin_user)):
+    """Get detailed information about a specific member"""
+    try:
+        # Find member by address (using address as member_id)
+        member = await db.users.find_one({"address": member_id})
+        if not member:
+            raise HTTPException(status_code=404, detail="Member not found")
+        
+        # Get referral count and details
+        referrals = await db.users.find({"referrer_address": member_id}).to_list(None)
+        
+        # Get earnings details
+        earnings = await db.commissions.find({"recipient_address": member_id}).to_list(None)
+        total_earnings = sum(e["amount"] for e in earnings if e["status"] == "completed")
+        pending_earnings = sum(e["amount"] for e in earnings if e["status"] in ["pending", "processing"])
+        
+        # Get payment history
+        payments = await db.payments.find({"user_address": member_id}).to_list(None)
+        
+        # Get sponsor info
+        sponsor_info = None
+        if member.get("referrer_address"):
+            sponsor = await db.users.find_one({"address": member["referrer_address"]})
+            if sponsor:
+                sponsor_info = {
+                    "username": sponsor["username"],
+                    "email": sponsor["email"],
+                    "address": sponsor["address"],
+                    "membership_tier": sponsor["membership_tier"]
+                }
+        
+        return {
+            "member": {
+                "id": member["address"],
+                "username": member["username"],
+                "email": member["email"],
+                "wallet_address": member["address"],
+                "membership_tier": member["membership_tier"],
+                "referral_code": member["referral_code"],
+                "created_at": member["created_at"],
+                "last_active": member.get("last_active"),
+                "suspended": member.get("suspended", False)
+            },
+            "stats": {
+                "total_referrals": len(referrals),
+                "total_earnings": total_earnings,
+                "pending_earnings": pending_earnings,
+                "total_payments": len(payments)
+            },
+            "referrals": [
+                {
+                    "username": r["username"],
+                    "email": r["email"],
+                    "membership_tier": r["membership_tier"],
+                    "created_at": r["created_at"]
+                } for r in referrals
+            ],
+            "recent_earnings": [
+                {
+                    "amount": e["amount"],
+                    "status": e["status"],
+                    "created_at": e["created_at"],
+                    "level": e.get("level"),
+                    "new_member_tier": e.get("new_member_tier")
+                } for e in sorted(earnings, key=lambda x: x["created_at"], reverse=True)[:10]
+            ],
+            "recent_payments": [
+                {
+                    "amount": p["amount"],
+                    "tier": p["tier"],
+                    "status": p["status"],
+                    "created_at": p["created_at"]
+                } for p in sorted(payments, key=lambda x: x["created_at"], reverse=True)[:10]
+            ],
+            "sponsor": sponsor_info
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to fetch member details: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch member details")
+
+@app.put("/api/admin/members/{member_id}")
+async def update_member(member_id: str, update_data: UserUpdate, admin: dict = Depends(get_admin_user)):
+    """Update member information"""
+    try:
+        # Check if member exists
+        existing_member = await db.users.find_one({"address": member_id})
+        if not existing_member:
+            raise HTTPException(status_code=404, detail="Member not found")
+        
+        # Build update query
+        update_fields = {}
+        if update_data.email is not None:
+            update_fields["email"] = update_data.email
+        if update_data.membership_tier is not None:
+            # Validate membership tier
+            if update_data.membership_tier not in MEMBERSHIP_TIERS:
+                raise HTTPException(status_code=400, detail="Invalid membership tier")
+            update_fields["membership_tier"] = update_data.membership_tier
+        if update_data.wallet_address is not None:
+            # Check if new wallet address is already taken
+            if update_data.wallet_address != member_id:
+                existing_wallet = await db.users.find_one({"address": update_data.wallet_address.lower()})
+                if existing_wallet:
+                    raise HTTPException(status_code=400, detail="Wallet address already in use")
+                update_fields["address"] = update_data.wallet_address.lower()
+        if update_data.suspended is not None:
+            update_fields["suspended"] = update_data.suspended
+        
+        if not update_fields:
+            raise HTTPException(status_code=400, detail="No valid fields to update")
+        
+        # Update the member
+        result = await db.users.update_one(
+            {"address": member_id},
+            {"$set": update_fields}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=400, detail="No changes made")
+        
+        # If wallet address was changed, update related records
+        if "address" in update_fields:
+            new_address = update_fields["address"]
+            
+            # Update referrals pointing to this user
+            await db.users.update_many(
+                {"referrer_address": member_id},
+                {"$set": {"referrer_address": new_address}}
+            )
+            
+            # Update payments
+            await db.payments.update_many(
+                {"user_address": member_id},
+                {"$set": {"user_address": new_address}}
+            )
+            
+            # Update commissions
+            await db.commissions.update_many(
+                {"recipient_address": member_id},
+                {"$set": {"recipient_address": new_address}}
+            )
+            
+            await db.commissions.update_many(
+                {"new_member_address": member_id},
+                {"$set": {"new_member_address": new_address}}
+            )
+        
+        return {"message": "Member updated successfully", "modified_count": result.modified_count}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to update member: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to update member")
+
+@app.delete("/api/admin/members/{member_id}")
+async def suspend_member(member_id: str, admin: dict = Depends(get_admin_user)):
+    """Suspend a member (soft delete)"""
+    try:
+        # Check if member exists
+        member = await db.users.find_one({"address": member_id})
+        if not member:
+            raise HTTPException(status_code=404, detail="Member not found")
+        
+        # Suspend the member
+        result = await db.users.update_one(
+            {"address": member_id},
+            {"$set": {"suspended": True, "suspended_at": datetime.utcnow()}}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=400, detail="Failed to suspend member")
+        
+        return {"message": "Member suspended successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to suspend member: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to suspend member")
+
 # WebSocket endpoint
 @app.websocket("/ws/updates")
 async def websocket_endpoint(websocket: WebSocket):
