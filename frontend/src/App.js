@@ -1403,6 +1403,310 @@ function AdminProtectedRoute({ children }) {
 
   return isAdmin ? children : <Navigate to="/admin/login" />;
 }
+// Admin Login Page Component
+function AdminLoginPage() {
+  const [credentials, setCredentials] = useState({
+    username: "",
+    password: ""
+  });
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      const response = await axios.post(`${API_URL}/api/admin/login`, credentials);
+      const { token } = response.data;
+      
+      localStorage.setItem("adminToken", token);
+      window.location.href = "/admin/dashboard";
+      
+    } catch (error) {
+      console.error("Admin login failed:", error);
+      alert("Invalid credentials. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="max-w-md w-full">
+        <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-8">
+          <div className="text-center mb-8">
+            <Shield className="h-16 w-16 text-red-400 mx-auto mb-4" />
+            <h1 className="text-3xl font-bold text-white mb-2">Admin Login</h1>
+            <p className="text-gray-300">Access the admin dashboard</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label className="block text-gray-300 text-sm font-medium mb-2">Username</label>
+              <input
+                type="text"
+                value={credentials.username}
+                onChange={(e) => setCredentials(prev => ({ ...prev, username: e.target.value }))}
+                className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-red-400"
+                placeholder="Enter admin username"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-300 text-sm font-medium mb-2">Password</label>
+              <input
+                type="password"
+                value={credentials.password}
+                onChange={(e) => setCredentials(prev => ({ ...prev, password: e.target.value }))}
+                className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-red-400"
+                placeholder="Enter admin password"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 bg-red-600 hover:bg-red-700 disabled:bg-gray-600 text-white font-semibold rounded-lg transition-all duration-300"
+            >
+              {loading ? "Signing In..." : "Sign In"}
+            </button>
+          </form>
+
+          <div className="mt-6 text-center">
+            <button
+              onClick={() => window.location.href = "/"}
+              className="text-gray-400 hover:text-white transition-colors duration-300"
+            >
+              ← Back to Home
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Admin Protected Route Component
+function AdminProtectedRoute({ children }) {
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const checkAdminAuth = async () => {
+      try {
+        const token = localStorage.getItem("adminToken");
+        if (!token) {
+          setLoading(false);
+          return;
+        }
+
+        // For now, we'll assume the token is valid if it exists
+        // In a real app, you'd verify with the server
+        setIsAdmin(true);
+        
+      } catch (error) {
+        console.error("Admin auth check failed:", error);
+        localStorage.removeItem("adminToken");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAdminAuth();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-red-500"></div>
+      </div>
+    );
+  }
+
+  return isAdmin ? children : <Navigate to="/admin/login" />;
+}
+
+// Admin Dashboard Component
+function AdminDashboard() {
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('overview');
+
+  useEffect(() => {
+    fetchAdminData();
+  }, []);
+
+  const fetchAdminData = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const headers = { Authorization: `Bearer ${token}` };
+
+      const response = await axios.get(`${API_URL}/api/admin/dashboard/overview`, { headers });
+      setStats(response.data);
+      
+    } catch (error) {
+      console.error('Failed to fetch admin data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('adminToken');
+    window.location.href = '/admin/login';
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-red-500"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen">
+      {/* Admin Navigation */}
+      <nav className="bg-red-900 bg-opacity-50 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-6">
+            <div className="flex items-center space-x-2">
+              <Shield className="h-8 w-8 text-red-400" />
+              <span className="text-2xl font-bold text-white">Admin Dashboard</span>
+            </div>
+            <div className="flex items-center space-x-4">
+              <span className="text-gray-300">Administrator</span>
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-300"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Tab Navigation */}
+        <div className="flex space-x-1 mb-8">
+          {[
+            { id: 'overview', label: 'Overview', icon: BarChart3 },
+            { id: 'members', label: 'Members', icon: Users },
+            { id: 'payments', label: 'Payments', icon: DollarSign },
+            { id: 'commissions', label: 'Commissions', icon: TrendingUp }
+          ].map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              onClick={() => setActiveTab(id)}
+              className={`px-6 py-3 rounded-lg font-medium transition-all duration-300 flex items-center space-x-2 ${
+                activeTab === id
+                  ? 'bg-red-600 text-white'
+                  : 'bg-white bg-opacity-10 text-gray-300 hover:bg-opacity-20'
+              }`}
+            >
+              <Icon className="h-4 w-4" />
+              <span>{label}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Overview Tab */}
+        {activeTab === 'overview' && (
+          <div className="space-y-8">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+              <AdminStatCard
+                icon={<Users className="h-8 w-8 text-blue-400" />}
+                title="Total Members"
+                value={stats?.members?.total || 0}
+                subtitle={`${stats?.members?.recent_30_days || 0} this month`}
+              />
+              <AdminStatCard
+                icon={<DollarSign className="h-8 w-8 text-green-400" />}
+                title="Total Revenue"
+                value={`$${stats?.payments?.total_revenue?.toFixed(2) || '0.00'}`}
+                subtitle={`${stats?.payments?.recent_30_days || 0} payments this month`}
+              />
+              <AdminStatCard
+                icon={<Activity className="h-8 w-8 text-yellow-400" />}
+                title="Active Payments"
+                value={stats?.payments?.by_status?.waiting?.count || 0}
+                subtitle="Pending confirmations"
+              />
+              <AdminStatCard
+                icon={<TrendingUp className="h-8 w-8 text-purple-400" />}
+                title="Commission Payouts"
+                value={`$${stats?.commissions?.total_payouts?.toFixed(2) || '0.00'}`}
+                subtitle={`${stats?.commissions?.recent_30_days || 0} this month`}
+              />
+              <AdminStatCard
+                icon={<Gift className="h-8 w-8 text-pink-400" />}
+                title="Milestones"
+                value={stats?.milestones?.total_achieved || 0}
+                subtitle="Achieved this month"
+              />
+            </div>
+
+            {/* Members by Tier */}
+            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+              <h3 className="text-xl font-bold text-white mb-4">Members by Tier</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {['affiliate', 'bronze', 'silver', 'gold'].map((tier) => (
+                  <div key={tier} className="bg-black bg-opacity-30 rounded-lg p-4 text-center">
+                    <h4 className="text-lg font-bold text-white capitalize">{tier}</h4>
+                    <p className="text-2xl font-bold text-blue-400">{stats?.members?.by_tier?.[tier] || 0}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Members Tab Placeholder */}
+        {activeTab === 'members' && (
+          <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+            <h3 className="text-xl font-bold text-white mb-4">Members Management</h3>
+            <p className="text-gray-400">Member management interface coming soon...</p>
+          </div>
+        )}
+
+        {/* Payments Tab Placeholder */}
+        {activeTab === 'payments' && (
+          <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+            <h3 className="text-xl font-bold text-white mb-4">Payments Management</h3>
+            <p className="text-gray-400">Payment management interface coming soon...</p>
+          </div>
+        )}
+
+        {/* Commissions Tab Placeholder */}
+        {activeTab === 'commissions' && (
+          <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+            <h3 className="text-xl font-bold text-white mb-4">Commissions Management</h3>
+            <p className="text-gray-400">Commission management interface coming soon...</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Admin Stat Card Component
+function AdminStatCard({ icon, title, value, subtitle }) {
+  return (
+    <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+      <div className="flex items-center space-x-3 mb-4">
+        {icon}
+        <h3 className="text-lg font-semibold text-white">{title}</h3>
+      </div>
+      <p className="text-2xl font-bold text-white mb-1">{value}</p>
+      <p className="text-gray-400 text-sm">{subtitle}</p>
+    </div>
+  );
+}
+
 export default App;
 // Admin Dashboard Component
 function AdminDashboard() {
