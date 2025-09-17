@@ -1643,4 +1643,18 @@ function AdminDashboard() {
   );
 }
 
+// Admin Stat Card Component
+function AdminStatCard({ icon, title, value, subtitle }) {
+  return (
+    <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+      <div className="flex items-center space-x-3 mb-4">
+        {icon}
+        <h3 className="text-lg font-semibold text-white">{title}</h3>
+      </div>
+      <p className="text-2xl font-bold text-white mb-1">{value}</p>
+      <p className="text-gray-400 text-sm">{subtitle}</p>
+    </div>
+  );
+}
+
 export default App;
