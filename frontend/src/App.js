@@ -1707,6 +1707,7 @@ function AdminStatCard({ icon, title, value, subtitle }) {
   );
 }
 
+// Admin components will be added here
 export default App;
 // Admin Dashboard Component
 function AdminDashboard() {
