@@ -145,8 +145,8 @@ backend:
         comment: "✅ RE-TESTED: Admin dashboard overview API working perfectly. Comprehensive testing shows: 1) Admin login successful with correct credentials (admin/admin123), 2) Dashboard returns accurate user counts that update in real-time after new registrations, 3) Single user registration test: member count increased from 29→30, recent count 5→6, affiliate tier 29→30, 4) Multiple user registration test: successfully tracked 3 new users (30→33 total), 5) All data structures correct (members, payments, commissions, leads, milestones), 6) Proper authorization (401 without token). User registration tracking is working correctly - newly registered users ARE showing up in admin dashboard statistics immediately."
 
   - task: "Members Management API"
-    implemented: false
-    working: "NA"
+    implemented: true
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "high"
@@ -155,6 +155,9 @@ backend:
       - working: "NA"
         agent: "main"
         comment: "Need user management APIs with edit/suspend capabilities"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Members Management API fully implemented and working perfectly. Comprehensive testing shows: 1) Admin login successful with correct credentials (admin/admin123), 2) GET /api/admin/members returns paginated member list with all required fields (id, username, email, wallet_address, membership_tier, total_referrals, total_earnings, sponsor, created_at, suspended, referral_code), 3) Tier filtering working correctly (?tier=affiliate), 4) GET /api/admin/members/{member_id} returns detailed member information including stats, referrals, recent_earnings, recent_payments, sponsor info, 5) PUT /api/admin/members/{member_id} successfully updates member email and membership_tier with proper validation, 6) All endpoints properly enforce admin authorization (return 401 without admin token), 7) Error handling working correctly (404 for non-existent members, 400 for invalid tiers). All 34 members in database accessible with complete data structures."
 
   - task: "Payments Listing API with CSV Export"
     implemented: false
