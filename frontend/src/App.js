@@ -1760,6 +1760,21 @@ function AdminDashboard() {
           </div>
         )}
       </div>
+
+      {/* Member Details/Edit Modal */}
+      {showMemberModal && (
+        <MemberModal
+          member={selectedMember}
+          editingMember={editingMember}
+          onClose={() => {
+            setShowMemberModal(false);
+            setSelectedMember(null);
+            setEditingMember(null);
+          }}
+          onUpdate={updateMember}
+          onSuspend={suspendMember}
+        />
+      )}
     </div>
   );
 }
