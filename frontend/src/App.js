@@ -1779,6 +1779,194 @@ function AdminDashboard() {
   );
 }
 
+// Member Modal Component
+function MemberModal({ member, editingMember, onClose, onUpdate, onSuspend }) {
+  const [formData, setFormData] = useState({
+    username: member?.username || '',
+    email: member?.email || '',
+    membership_tier: member?.membership_tier || 'affiliate'
+  });
+
+  useEffect(() => {
+    if (member) {
+      setFormData({
+        username: member.username || '',
+        email: member.email || '',
+        membership_tier: member.membership_tier || 'affiliate'
+      });
+    }
+  }, [member]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (member) {
+      onUpdate(member.id, formData);
+    }
+  };
+
+  const handleSuspend = () => {
+    if (member) {
+      onSuspend(member.id);
+    }
+  };
+
+  if (!member) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-gray-900 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-white">
+            {editingMember ? 'Edit Member' : 'Member Details'}
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-white transition-colors"
+          >
+            <X className="h-6 w-6" />
+          </button>
+        </div>
+
+        {editingMember ? (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-gray-300 text-sm font-medium mb-2">Username</label>
+              <input
+                type="text"
+                value={formData.username}
+                onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
+                className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-red-400"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-300 text-sm font-medium mb-2">Email</label>
+              <input
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-red-400"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-300 text-sm font-medium mb-2">Membership Tier</label>
+              <select
+                value={formData.membership_tier}
+                onChange={(e) => setFormData(prev => ({ ...prev, membership_tier: e.target.value }))}
+                className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-red-400"
+              >
+                <option value="affiliate">Affiliate</option>
+                <option value="bronze">Bronze</option>
+                <option value="silver">Silver</option>
+                <option value="gold">Gold</option>
+              </select>
+            </div>
+
+            <div className="flex space-x-4 pt-4">
+              <button
+                type="submit"
+                className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all duration-300"
+              >
+                Update Member
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition-all duration-300"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        ) : (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h3 className="text-lg font-semibold text-white mb-4">Member Information</h3>
+                <div className="space-y-3">
+                  <div>
+                    <span className="text-gray-400">Username:</span>
+                    <span className="text-white ml-2">{member.username}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Email:</span>
+                    <span className="text-white ml-2">{member.email}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Wallet:</span>
+                    <span className="text-white ml-2 font-mono text-sm">
+                      {member.wallet_address}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Tier:</span>
+                    <span className={`ml-2 px-2 py-1 rounded text-xs uppercase font-medium ${
+                      member.membership_tier === 'gold' ? 'bg-yellow-600 text-yellow-100' :
+                      member.membership_tier === 'silver' ? 'bg-gray-600 text-gray-100' :
+                      member.membership_tier === 'bronze' ? 'bg-orange-600 text-orange-100' :
+                      'bg-blue-600 text-blue-100'
+                    }`}>
+                      {member.membership_tier}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Joined:</span>
+                    <span className="text-white ml-2">
+                      {new Date(member.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold text-white mb-4">Statistics</h3>
+                <div className="space-y-3">
+                  <div>
+                    <span className="text-gray-400">Total Referrals:</span>
+                    <span className="text-white ml-2">{member.total_referrals || 0}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Total Earnings:</span>
+                    <span className="text-white ml-2">${member.total_earnings?.toFixed(2) || '0.00'}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Referral Code:</span>
+                    <span className="text-white ml-2 font-mono text-sm">{member.referral_code}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex space-x-4 pt-6 border-t border-gray-700">
+              <button
+                onClick={() => window.location.href = `/admin/dashboard?edit=${member.id}`}
+                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all duration-300"
+              >
+                Edit Member
+              </button>
+              <button
+                onClick={handleSuspend}
+                className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-all duration-300"
+              >
+                Suspend Member
+              </button>
+              <button
+                onClick={onClose}
+                className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition-all duration-300"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // Admin Stat Card Component
 function AdminStatCard({ icon, title, value, subtitle }) {
   return (
