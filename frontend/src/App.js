@@ -472,10 +472,10 @@ function TierCard({ tier, referralCode }) {
         return;
       }
 
-      // Create payment
+      // Create payment with default ETH currency
       const response = await axios.post(`${API_URL}/api/payments/create`, {
         tier: tier.name.toLowerCase(),
-        currency: selectedCurrency // Use the selected currency from the form
+        currency: 'ETH' // Default to ETH
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
