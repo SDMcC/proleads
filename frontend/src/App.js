@@ -1550,51 +1550,11 @@ function AdminDashboard() {
           </div>
         )}
 
-        {/* Payments Tab */}
+        {/* Payments Tab Placeholder */}
         {activeTab === 'payments' && (
           <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
-            <h3 className="text-xl font-bold text-white mb-4">Payment Management</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="border-b border-gray-600">
-                    <th className="pb-3 text-gray-300 font-medium">User</th>
-                    <th className="pb-3 text-gray-300 font-medium">Tier</th>
-                    <th className="pb-3 text-gray-300 font-medium">Amount</th>
-                    <th className="pb-3 text-gray-300 font-medium">Currency</th>
-                    <th className="pb-3 text-gray-300 font-medium">Status</th>
-                    <th className="pb-3 text-gray-300 font-medium">Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(stats?.payments || []).map((payment, index) => (
-                    <tr key={index} className="border-b border-gray-700 last:border-b-0">
-                      <td className="py-3 text-white">{payment.username}</td>
-                      <td className="py-3">
-                        <span className="px-2 py-1 bg-blue-600 text-blue-100 rounded text-xs uppercase">
-                          {payment.tier}
-                        </span>
-                      </td>
-                      <td className="py-3 text-white">${payment.amount}</td>
-                      <td className="py-3 text-white">{payment.currency}</td>
-                      <td className="py-3">
-                        <span className={`px-2 py-1 rounded text-xs ${
-                          payment.status === 'confirmed' ? 'bg-green-600 text-green-100' :
-                          payment.status === 'waiting' ? 'bg-yellow-600 text-yellow-100' :
-                          payment.status === 'processing' ? 'bg-blue-600 text-blue-100' :
-                          'bg-gray-600 text-gray-100'
-                        }`}>
-                          {payment.status}
-                        </span>
-                      </td>
-                      <td className="py-3 text-gray-400">
-                        {new Date(payment.created_at).toLocaleDateString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <h3 className="text-xl font-bold text-white mb-4">Payments Management</h3>
+            <p className="text-gray-400">Payment management interface coming soon...</p>
           </div>
         )}
       </div>
