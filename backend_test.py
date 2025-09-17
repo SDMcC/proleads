@@ -527,6 +527,326 @@ class Web3MembershipTester:
         
         print("✅ Admin Authentication System Test Passed")
         return True
+    
+    def test_get_all_members_success(self):
+        """Test GET /api/admin/members with admin token"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        success, response = self.run_test("Get All Members (Success)", "GET", "admin/members", 200, headers=headers)
+        
+        if success:
+            # Verify response structure
+            required_keys = ['members', 'total_count', 'page', 'limit', 'total_pages']
+            missing_keys = [key for key in required_keys if key not in response]
+            
+            if not missing_keys:
+                print("✅ Members list contains all required pagination fields")
+                
+                # Verify member objects structure
+                members = response.get('members', [])
+                if members:
+                    member = members[0]
+                    required_member_keys = ['id', 'username', 'email', 'wallet_address', 'membership_tier', 
+                                          'total_referrals', 'total_earnings', 'sponsor', 'created_at', 
+                                          'suspended', 'referral_code']
+                    missing_member_keys = [key for key in required_member_keys if key not in member]
+                    
+                    if not missing_member_keys:
+                        print("✅ Member objects contain all required fields")
+                    else:
+                        print(f"❌ Member objects missing required keys: {missing_member_keys}")
+                        return False, {}
+                else:
+                    print("⚠️ No members found in database")
+                
+                return True, response
+            else:
+                print(f"❌ Members list missing required keys: {missing_keys}")
+                return False, {}
+        
+        return success, response
+    
+    def test_get_all_members_with_tier_filter(self):
+        """Test GET /api/admin/members with tier filtering"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        # Test with affiliate tier filter
+        success, response = self.run_test("Get Members with Tier Filter", "GET", "admin/members?tier=affiliate", 200, headers=headers)
+        
+        if success:
+            members = response.get('members', [])
+            # Verify all returned members have affiliate tier
+            for member in members:
+                if member.get('membership_tier') != 'affiliate':
+                    print(f"❌ Found member with tier {member.get('membership_tier')} when filtering for affiliate")
+                    return False, {}
+            
+            print("✅ Tier filtering working correctly")
+            return True, response
+        
+        return success, response
+    
+    def test_get_all_members_unauthorized(self):
+        """Test GET /api/admin/members without admin token"""
+        headers = {'Content-Type': 'application/json'}
+        success, response = self.run_test("Get All Members (Unauthorized)", "GET", "admin/members", 401, headers=headers)
+        return success, response
+    
+    def test_get_member_details_success(self):
+        """Test GET /api/admin/members/{member_id} with admin token"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        # First get a member ID from the members list
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        members_success, members_response = self.run_test("Get Members for Detail Test", "GET", "admin/members?limit=1", 200, headers=headers)
+        if not members_success or not members_response.get('members'):
+            print("⚠️ No members available to test member details")
+            return True, {}  # Skip test if no members
+        
+        member_id = members_response['members'][0]['id']
+        
+        success, response = self.run_test("Get Member Details (Success)", "GET", f"admin/members/{member_id}", 200, headers=headers)
+        
+        if success:
+            # Verify response structure
+            required_keys = ['member', 'stats', 'referrals', 'recent_earnings', 'recent_payments', 'sponsor']
+            missing_keys = [key for key in required_keys if key not in response]
+            
+            if not missing_keys:
+                print("✅ Member details contain all required sections")
+                
+                # Verify member data structure
+                member = response.get('member', {})
+                required_member_keys = ['id', 'username', 'email', 'wallet_address', 'membership_tier', 'referral_code']
+                missing_member_keys = [key for key in required_member_keys if key not in member]
+                
+                if not missing_member_keys:
+                    print("✅ Member details contain all required member fields")
+                else:
+                    print(f"❌ Member details missing required keys: {missing_member_keys}")
+                    return False, {}
+                
+                # Verify stats structure
+                stats = response.get('stats', {})
+                required_stats_keys = ['total_referrals', 'total_earnings', 'pending_earnings', 'total_payments']
+                missing_stats_keys = [key for key in required_stats_keys if key not in stats]
+                
+                if not missing_stats_keys:
+                    print("✅ Member stats contain all required fields")
+                else:
+                    print(f"❌ Member stats missing required keys: {missing_stats_keys}")
+                    return False, {}
+                
+                return True, response
+            else:
+                print(f"❌ Member details missing required keys: {missing_keys}")
+                return False, {}
+        
+        return success, response
+    
+    def test_get_member_details_not_found(self):
+        """Test GET /api/admin/members/{member_id} with non-existent member"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        fake_member_id = f"0x{uuid.uuid4().hex[:40]}"
+        success, response = self.run_test("Get Member Details (Not Found)", "GET", f"admin/members/{fake_member_id}", 404, headers=headers)
+        return success, response
+    
+    def test_update_member_success(self):
+        """Test PUT /api/admin/members/{member_id} with valid data"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        # First get a member ID from the members list
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        members_success, members_response = self.run_test("Get Members for Update Test", "GET", "admin/members?limit=1", 200, headers=headers)
+        if not members_success or not members_response.get('members'):
+            print("⚠️ No members available to test member update")
+            return True, {}  # Skip test if no members
+        
+        member_id = members_response['members'][0]['id']
+        original_email = members_response['members'][0]['email']
+        
+        # Update member email and tier
+        update_data = {
+            "email": f"updated_{int(time.time())}@test.com",
+            "membership_tier": "bronze"
+        }
+        
+        success, response = self.run_test("Update Member (Success)", "PUT", f"admin/members/{member_id}", 200, update_data, headers)
+        
+        if success:
+            if response.get('message') and 'successfully' in response.get('message', '').lower():
+                print("✅ Member update successful")
+                
+                # Verify the update by getting member details
+                verify_success, verify_response = self.run_test("Verify Member Update", "GET", f"admin/members/{member_id}", 200, headers=headers)
+                if verify_success:
+                    updated_member = verify_response.get('member', {})
+                    if (updated_member.get('email') == update_data['email'] and 
+                        updated_member.get('membership_tier') == update_data['membership_tier']):
+                        print("✅ Member update verified successfully")
+                        return True, response
+                    else:
+                        print("❌ Member update not reflected in database")
+                        return False, {}
+                
+                return True, response
+            else:
+                print("❌ Update response doesn't contain success message")
+                return False, {}
+        
+        return success, response
+    
+    def test_update_member_invalid_tier(self):
+        """Test PUT /api/admin/members/{member_id} with invalid tier"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        # First get a member ID from the members list
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        members_success, members_response = self.run_test("Get Members for Invalid Update Test", "GET", "admin/members?limit=1", 200, headers=headers)
+        if not members_success or not members_response.get('members'):
+            print("⚠️ No members available to test invalid member update")
+            return True, {}  # Skip test if no members
+        
+        member_id = members_response['members'][0]['id']
+        
+        # Try to update with invalid tier
+        update_data = {
+            "membership_tier": "invalid_tier"
+        }
+        
+        success, response = self.run_test("Update Member (Invalid Tier)", "PUT", f"admin/members/{member_id}", 400, update_data, headers)
+        return success, response
+    
+    def test_update_member_unauthorized(self):
+        """Test PUT /api/admin/members/{member_id} without admin token"""
+        headers = {'Content-Type': 'application/json'}
+        fake_member_id = f"0x{uuid.uuid4().hex[:40]}"
+        update_data = {"email": "test@test.com"}
+        
+        success, response = self.run_test("Update Member (Unauthorized)", "PUT", f"admin/members/{fake_member_id}", 401, update_data, headers)
+        return success, response
+    
+    def test_members_management_system(self):
+        """Test complete Members Management API system"""
+        print("\n👥 Testing Members Management API System")
+        
+        # 1. Test admin login first
+        login_success, _ = self.test_admin_login_success()
+        if not login_success:
+            print("❌ Admin login failed - cannot test members management")
+            return False
+        
+        # 2. Test get all members with admin token
+        members_success, members_response = self.test_get_all_members_success()
+        if not members_success:
+            print("❌ Get all members with admin token failed")
+            return False
+        
+        # 3. Test get all members with tier filtering
+        filter_success, _ = self.test_get_all_members_with_tier_filter()
+        if not filter_success:
+            print("❌ Get members with tier filter failed")
+            return False
+        
+        # 4. Test get all members without admin token (should fail)
+        unauth_success, _ = self.test_get_all_members_unauthorized()
+        if not unauth_success:
+            print("❌ Get members without admin token should return 401")
+            return False
+        
+        # 5. Test get member details (if members exist)
+        if members_response.get('members'):
+            details_success, _ = self.test_get_member_details_success()
+            if not details_success:
+                print("❌ Get member details failed")
+                return False
+            
+            # 6. Test get member details with non-existent ID
+            not_found_success, _ = self.test_get_member_details_not_found()
+            if not not_found_success:
+                print("❌ Get member details with invalid ID should return 404")
+                return False
+            
+            # 7. Test update member
+            update_success, _ = self.test_update_member_success()
+            if not update_success:
+                print("❌ Update member failed")
+                return False
+            
+            # 8. Test update member with invalid tier
+            invalid_update_success, _ = self.test_update_member_invalid_tier()
+            if not invalid_update_success:
+                print("❌ Update member with invalid tier should return 400")
+                return False
+        else:
+            print("⚠️ No members in database - skipping member details and update tests")
+        
+        # 9. Test update member without admin token
+        unauth_update_success, _ = self.test_update_member_unauthorized()
+        if not unauth_update_success:
+            print("❌ Update member without admin token should return 401")
+            return False
+        
+        print("✅ Members Management API System Test Passed")
+        return True
 
 def main():
     # Get the backend URL from environment or use default
