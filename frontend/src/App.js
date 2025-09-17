@@ -1416,6 +1416,12 @@ function AdminDashboard() {
     fetchAdminData();
   }, []);
 
+  useEffect(() => {
+    if (activeTab === 'members') {
+      fetchMembers(memberFilter, memberPage);
+    }
+  }, [activeTab, memberFilter, memberPage]);
+
   const fetchAdminData = async () => {
     try {
       const token = localStorage.getItem('adminToken');
