@@ -246,9 +246,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Admin Authentication System"
-    - "Admin Dashboard Overview API"
-    - "Admin Login Interface"
+    - "Payments Listing API with CSV Export"
+    - "Commissions Listing API with CSV Export"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
