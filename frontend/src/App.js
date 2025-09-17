@@ -1360,4 +1360,47 @@ function AdminLoginPage() {
     </div>
   );
 }
+
+// Admin Protected Route Component
+function AdminProtectedRoute({ children }) {
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const checkAdminAuth = async () => {
+      try {
+        const token = localStorage.getItem("adminToken");
+        if (!token) {
+          setLoading(false);
+          return;
+        }
+
+        const response = await axios.get(`${API_URL}/api/admin/verify`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (response.data.valid) {
+          setIsAdmin(true);
+        }
+      } catch (error) {
+        console.error("Admin auth check failed:", error);
+        localStorage.removeItem("adminToken");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAdminAuth();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-red-500"></div>
+      </div>
+    );
+  }
+
+  return isAdmin ? children : <Navigate to="/admin/login" />;
+}
 export default App;
