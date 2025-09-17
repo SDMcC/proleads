@@ -312,6 +312,23 @@ async def verify_signature(request: VerifySignature):
     
     return {"token": token, "address": request.address}
 
+# Admin authentication endpoint
+@app.post("/api/admin/login")
+async def admin_login(request: AdminLogin):
+    """Admin login with username and password"""
+    if request.username != ADMIN_USERNAME or request.password != ADMIN_PASSWORD:
+        raise HTTPException(status_code=401, detail="Invalid admin credentials")
+    
+    # Generate admin JWT token
+    token_data = {
+        "username": request.username,
+        "role": "admin",
+        "exp": datetime.utcnow() + timedelta(hours=8)  # 8 hour admin session
+    }
+    token = jwt.encode(token_data, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    
+    return {"token": token, "role": "admin", "username": request.username}
+
 # User management endpoints
 @app.post("/api/users/register")
 async def register_user(request: UserRegistration):
