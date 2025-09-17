@@ -83,6 +83,10 @@ class PayoutRequest(BaseModel):
     amount: float
     currency: str = "USDC"
 
+class AdminLogin(BaseModel):
+    username: str
+    password: str
+
 # WebSocket connection manager
 class ConnectionManager:
     def __init__(self):
