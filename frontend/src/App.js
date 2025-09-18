@@ -1678,6 +1678,50 @@ function AdminDashboard() {
     }
   };
 
+  const exportCommissionsCSV = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const headers = { Authorization: `Bearer ${token}` };
+      
+      const params = new URLSearchParams();
+      if (commissionUserFilter) params.append('user_filter', commissionUserFilter);
+      if (commissionTierFilter) params.append('tier_filter', commissionTierFilter);
+      if (commissionStatusFilter) params.append('status_filter', commissionStatusFilter);
+      if (commissionDateFrom) params.append('date_from', commissionDateFrom);
+      if (commissionDateTo) params.append('date_to', commissionDateTo);
+      
+      const response = await axios.get(`${API_URL}/api/admin/commissions/export?${params}`, { 
+        headers,
+        responseType: 'blob'
+      });
+      
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Get filename from response headers or use default
+      const contentDisposition = response.headers['content-disposition'];
+      let filename = 'commissions_export.csv';
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).+?\2|[^;\n]*)/);
+        if (filenameMatch && filenameMatch[1]) {
+          filename = filenameMatch[1].replace(/['"]/g, '');
+        }
+      }
+      
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+    } catch (error) {
+      console.error('Failed to export commissions:', error);
+      alert('Failed to export commissions CSV');
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('adminToken');
     window.location.href = '/admin/login';
