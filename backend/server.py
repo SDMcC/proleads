@@ -788,9 +788,9 @@ async def get_admin_dashboard_overview(admin: dict = Depends(get_admin_user)):
                 "recent_30_days": recent_commissions
             },
             "leads": {
-                "total": 0,  # Placeholder for future leads system
-                "distributed": 0,
-                "pending": 0
+                "total": await db.lead_distributions.count_documents({}),
+                "distributed": await db.member_leads.count_documents({}),
+                "pending": await db.lead_distributions.count_documents({"status": {"$in": ["queued", "processing"]}})
             },
             "milestones": {
                 "total_achieved": 0,  # Placeholder for future milestones system
