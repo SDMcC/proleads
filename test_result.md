@@ -170,6 +170,9 @@ backend:
       - working: "NA"
         agent: "main"
         comment: "Need payments API with filtering and CSV export"
+      - working: "in_progress"
+        agent: "main"
+        comment: "Starting implementation of Payments Listing API with filtering by date, membership level, user, and CSV export functionality"
 
   - task: "Commissions Listing API with CSV Export"
     implemented: false
