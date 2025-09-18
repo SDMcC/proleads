@@ -24,7 +24,8 @@ import {
   FileText,
   Gift,
   Menu,
-  X
+  X,
+  Clock
 } from 'lucide-react';
 import './App.css';
 
