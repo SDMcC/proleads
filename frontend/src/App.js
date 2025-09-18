@@ -3151,7 +3151,8 @@ function AdminDashboard() {
             { id: 'overview', label: 'Overview', icon: BarChart3 },
             { id: 'members', label: 'Members', icon: Users },
             { id: 'payments', label: 'Payments', icon: DollarSign },
-            { id: 'commissions', label: 'Commissions', icon: TrendingUp }
+            { id: 'commissions', label: 'Commissions', icon: TrendingUp },
+            { id: 'leads', label: 'Leads', icon: FileText }
           ].map(({ id, label, icon: Icon }) => (
             <button
               key={id}
