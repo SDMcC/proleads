@@ -1791,10 +1791,7 @@ function AdminDashboard() {
                               View
                             </button>
                             <button
-                              onClick={() => {
-                                setEditingMember(member);
-                                setShowMemberModal(true);
-                              }}
+                              onClick={() => handleEditMember(member)}
                               className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded transition-all duration-300"
                             >
                               Edit
