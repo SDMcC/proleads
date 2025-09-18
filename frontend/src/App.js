@@ -2789,7 +2789,9 @@ function AdminLoginPage() {
   );
 }
 
-// Admin Dashboard Component
+//=====================================================
+// ADMIN DASHBOARD COMPONENT
+//=====================================================
 function AdminDashboard() {
   const [stats, setStats] = useState(null);
   const [members, setMembers] = useState([]);
