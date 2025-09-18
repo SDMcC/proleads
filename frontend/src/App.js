@@ -1817,6 +1817,52 @@ function AdminDashboard() {
                   </div>
                 )}
               </div>
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center space-x-4 mt-6 pt-6 border-t border-gray-700">
+                  <button
+                    onClick={() => setMemberPage(Math.max(1, memberPage - 1))}
+                    disabled={memberPage === 1}
+                    className="px-4 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-800 disabled:text-gray-500 text-white rounded-lg transition-all duration-300"
+                  >
+                    Previous
+                  </button>
+                  
+                  <div className="flex space-x-2">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      const page = i + Math.max(1, memberPage - 2);
+                      if (page > totalPages) return null;
+                      
+                      return (
+                        <button
+                          key={page}
+                          onClick={() => setMemberPage(page)}
+                          className={`px-3 py-2 rounded-lg transition-all duration-300 ${
+                            memberPage === page
+                              ? 'bg-red-600 text-white'
+                              : 'bg-gray-600 hover:bg-gray-700 text-white'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  
+                  <button
+                    onClick={() => setMemberPage(Math.min(totalPages, memberPage + 1))}
+                    disabled={memberPage === totalPages}
+                    className="px-4 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-800 disabled:text-gray-500 text-white rounded-lg transition-all duration-300"
+                  >
+                    Next
+                  </button>
+                  
+                  <span className="text-gray-400 text-sm">
+                    Page {memberPage} of {totalPages}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         )}
