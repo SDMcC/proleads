@@ -762,6 +762,7 @@ function Dashboard() {
     { id: 'earnings', label: 'Earnings', icon: DollarSign },
     { id: 'payments', label: 'Payment History', icon: Activity },
     { id: 'milestones', label: 'Milestones', icon: Award },
+    { id: 'leads', label: 'My Leads', icon: FileText },
     { id: 'account', label: 'Account Settings', icon: Settings }
   ];
 
