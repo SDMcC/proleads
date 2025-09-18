@@ -843,11 +843,6 @@ function Dashboard() {
           {activeTab === 'payments' && <PaymentHistoryTab />}
           {activeTab === 'milestones' && <MilestonesTab />}
           {activeTab === 'account' && <AccountSettingsTab user={user} />}
-
-        {/* Leads Management Tab */}
-        {activeTab === 'leads' && (
-          <LeadsManagementTab />
-        )}
         </div>
       </div>
 
