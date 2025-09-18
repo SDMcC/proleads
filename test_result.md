@@ -160,8 +160,8 @@ backend:
         comment: "✅ TESTED: Members Management API fully implemented and working perfectly. Comprehensive testing shows: 1) Admin login successful with correct credentials (admin/admin123), 2) GET /api/admin/members returns paginated member list with all required fields (id, username, email, wallet_address, membership_tier, total_referrals, total_earnings, sponsor, created_at, suspended, referral_code), 3) Tier filtering working correctly (?tier=affiliate), 4) GET /api/admin/members/{member_id} returns detailed member information including stats, referrals, recent_earnings, recent_payments, sponsor info, 5) PUT /api/admin/members/{member_id} successfully updates member email and membership_tier with proper validation, 6) All endpoints properly enforce admin authorization (return 401 without admin token), 7) Error handling working correctly (404 for non-existent members, 400 for invalid tiers). All 34 members in database accessible with complete data structures."
 
   - task: "Payments Listing API with CSV Export"
-    implemented: false
-    working: "NA"
+    implemented: true
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "high"
@@ -173,6 +173,9 @@ backend:
       - working: "in_progress"
         agent: "main"
         comment: "Starting implementation of Payments Listing API with filtering by date, membership level, user, and CSV export functionality"
+      - working: true
+        agent: "testing"
+        comment: "✅ COMPREHENSIVE TESTING COMPLETED: Payments Management API fully implemented and working perfectly. TESTED ENDPOINTS: 1) POST /api/admin/login - Admin authentication working with credentials (admin/admin123), 2) GET /api/admin/payments - Returns paginated payments list with all required fields (id, user_address, username, email, amount, currency, tier, status, payment_url, created_at, updated_at, nowpayments_id, invoice_id), 3) Filtering functionality working correctly: User filtering (by username/email), Tier filtering (?tier_filter=bronze), Status filtering (?status_filter=waiting), Date range filtering (?date_from=2024-01-01&date_to=2024-12-31), 4) GET /api/admin/payments/export - CSV export working with proper headers and content, CSV export with filters working correctly, 5) Authorization properly enforced - returns 401 without admin token for both endpoints. DATABASE STATUS: 3 payments found in database with complete data structures. ALL TESTS PASSED: 10/10 (100% success rate) for Payments Management API."
 
   - task: "Commissions Listing API with CSV Export"
     implemented: false
