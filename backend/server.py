@@ -194,7 +194,7 @@ async def calculate_commissions(new_member_address: str, new_member_tier: str, n
             if commission_amount > 0:
                 # Record commission
                 commission_doc = {
-                    "id": str(uuid.uuid4()),
+                    "commission_id": str(uuid.uuid4()),
                     "recipient_address": current_referrer_address,
                     "recipient_tier": referrer_tier,
                     "amount": commission_amount,
