@@ -1599,6 +1599,50 @@ function AdminDashboard() {
     }
   };
 
+  const exportPaymentsCSV = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const headers = { Authorization: `Bearer ${token}` };
+      
+      const params = new URLSearchParams();
+      if (paymentUserFilter) params.append('user_filter', paymentUserFilter);
+      if (paymentTierFilter) params.append('tier_filter', paymentTierFilter);
+      if (paymentStatusFilter) params.append('status_filter', paymentStatusFilter);
+      if (paymentDateFrom) params.append('date_from', paymentDateFrom);
+      if (paymentDateTo) params.append('date_to', paymentDateTo);
+      
+      const response = await axios.get(`${API_URL}/api/admin/payments/export?${params}`, { 
+        headers,
+        responseType: 'blob'
+      });
+      
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Get filename from response headers or use default
+      const contentDisposition = response.headers['content-disposition'];
+      let filename = 'payments_export.csv';
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).+?\2|[^;\n]*)/);
+        if (filenameMatch && filenameMatch[1]) {
+          filename = filenameMatch[1].replace(/['"]/g, '');
+        }
+      }
+      
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+    } catch (error) {
+      console.error('Failed to export payments:', error);
+      alert('Failed to export payments CSV');
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('adminToken');
     window.location.href = '/admin/login';
