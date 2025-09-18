@@ -1423,7 +1423,7 @@ function AdminDashboard() {
     if (activeTab === 'members') {
       fetchMembers(memberFilter, memberPage);
     }
-  }, [activeTab, memberFilter, memberPage]);
+  }, [activeTab, memberFilter, memberPage, sortField, sortDirection]);
 
   const fetchAdminData = async () => {
     try {
