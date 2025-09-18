@@ -36,7 +36,7 @@ const projectId = process.env.REACT_APP_WC_PROJECT_ID || 'af44774b87514c0aab2407
 const metadata = {
   name: 'Web3 Membership Platform',
   description: 'Multi-tier affiliate membership platform',
-  url: 'https://web3membership.com',
+  url: window.location.origin,
   icons: ['https://avatars.githubusercontent.com/u/37784886']
 };
 
