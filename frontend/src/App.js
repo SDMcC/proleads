@@ -1946,11 +1946,224 @@ function AdminDashboard() {
           </div>
         )}
 
-        {/* Payments Tab Placeholder */}
+        {/* Payments Management Tab */}
         {activeTab === 'payments' && (
-          <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
-            <h3 className="text-xl font-bold text-white mb-4">Payments Management</h3>
-            <p className="text-gray-400">Payment management interface coming soon...</p>
+          <div className="space-y-6">
+            {/* Payments Filters */}
+            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+              <div className="flex flex-col lg:flex-row gap-4 items-end">
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-white mb-4">Payments Management</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                      <label className="block text-gray-300 text-sm font-medium mb-2">User Search</label>
+                      <input
+                        type="text"
+                        value={paymentUserFilter}
+                        onChange={(e) => setPaymentUserFilter(e.target.value)}
+                        placeholder="Username or email"
+                        className="w-full px-3 py-2 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-red-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-300 text-sm font-medium mb-2">Tier</label>
+                      <select
+                        value={paymentTierFilter}
+                        onChange={(e) => setPaymentTierFilter(e.target.value)}
+                        className="w-full px-3 py-2 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-red-400"
+                      >
+                        <option value="">All Tiers</option>
+                        <option value="affiliate">Affiliate</option>
+                        <option value="bronze">Bronze</option>
+                        <option value="silver">Silver</option>
+                        <option value="gold">Gold</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-gray-300 text-sm font-medium mb-2">Status</label>
+                      <select
+                        value={paymentStatusFilter}
+                        onChange={(e) => setPaymentStatusFilter(e.target.value)}
+                        className="w-full px-3 py-2 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-red-400"
+                      >
+                        <option value="">All Status</option>
+                        <option value="waiting">Waiting</option>
+                        <option value="confirming">Confirming</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="sending">Sending</option>
+                        <option value="partially_paid">Partially Paid</option>
+                        <option value="finished">Finished</option>
+                        <option value="failed">Failed</option>
+                        <option value="refunded">Refunded</option>
+                        <option value="expired">Expired</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                      <label className="block text-gray-300 text-sm font-medium mb-2">Date From</label>
+                      <input
+                        type="date"
+                        value={paymentDateFrom}
+                        onChange={(e) => setPaymentDateFrom(e.target.value)}
+                        className="w-full px-3 py-2 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-red-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-300 text-sm font-medium mb-2">Date To</label>
+                      <input
+                        type="date"
+                        value={paymentDateTo}
+                        onChange={(e) => setPaymentDateTo(e.target.value)}
+                        className="w-full px-3 py-2 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-red-400"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      setPaymentUserFilter('');
+                      setPaymentTierFilter('');
+                      setPaymentStatusFilter('');
+                      setPaymentDateFrom('');
+                      setPaymentDateTo('');
+                      setPaymentPage(1);
+                    }}
+                    className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-all duration-300"
+                  >
+                    Clear Filters
+                  </button>
+                  <button
+                    onClick={exportPaymentsCSV}
+                    className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-300 flex items-center space-x-2"
+                  >
+                    <FileText className="h-4 w-4" />
+                    <span>Export CSV</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Payments Table */}
+            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="border-b border-gray-600">
+                      <th className="pb-3 text-gray-300 font-medium">Payment ID</th>
+                      <th className="pb-3 text-gray-300 font-medium">User</th>
+                      <th className="pb-3 text-gray-300 font-medium">Amount</th>
+                      <th className="pb-3 text-gray-300 font-medium">Tier</th>
+                      <th className="pb-3 text-gray-300 font-medium">Status</th>
+                      <th className="pb-3 text-gray-300 font-medium">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {payments.map((payment, index) => (
+                      <tr key={index} className="border-b border-gray-700 last:border-b-0">
+                        <td className="py-3">
+                          <div>
+                            <p className="text-white font-mono text-sm">{payment.id.slice(0, 8)}...{payment.id.slice(-6)}</p>
+                            {payment.nowpayments_id && (
+                              <p className="text-gray-400 text-xs">NP: {payment.nowpayments_id}</p>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-3">
+                          <div>
+                            <p className="text-white font-medium">{payment.username}</p>
+                            <p className="text-gray-400 text-sm">{payment.email}</p>
+                            <p className="text-gray-500 text-xs font-mono">{payment.user_address.slice(0, 8)}...{payment.user_address.slice(-6)}</p>
+                          </div>
+                        </td>
+                        <td className="py-3">
+                          <div>
+                            <p className="text-white font-medium">${payment.amount}</p>
+                            <p className="text-gray-400 text-sm">{payment.currency}</p>
+                          </div>
+                        </td>
+                        <td className="py-3">
+                          <span className={`px-2 py-1 rounded text-xs uppercase font-medium ${
+                            payment.tier === 'gold' ? 'bg-yellow-600 text-yellow-100' :
+                            payment.tier === 'silver' ? 'bg-gray-600 text-gray-100' :
+                            payment.tier === 'bronze' ? 'bg-orange-600 text-orange-100' :
+                            'bg-blue-600 text-blue-100'
+                          }`}>
+                            {payment.tier}
+                          </span>
+                        </td>
+                        <td className="py-3">
+                          <span className={`px-2 py-1 rounded text-xs ${
+                            payment.status === 'confirmed' || payment.status === 'finished' ? 'bg-green-600 text-green-100' :
+                            payment.status === 'waiting' || payment.status === 'confirming' ? 'bg-yellow-600 text-yellow-100' :
+                            payment.status === 'failed' || payment.status === 'expired' ? 'bg-red-600 text-red-100' :
+                            'bg-gray-600 text-gray-100'
+                          }`}>
+                            {payment.status}
+                          </span>
+                        </td>
+                        <td className="py-3 text-gray-400">
+                          {new Date(payment.created_at).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                
+                {payments.length === 0 && (
+                  <div className="text-center py-8">
+                    <p className="text-gray-400">No payments found</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Pagination Controls */}
+              {paymentTotalPages > 1 && (
+                <div className="flex justify-center items-center space-x-4 mt-6 pt-6 border-t border-gray-700">
+                  <button
+                    onClick={() => setPaymentPage(Math.max(1, paymentPage - 1))}
+                    disabled={paymentPage === 1}
+                    className="px-4 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-800 disabled:text-gray-500 text-white rounded-lg transition-all duration-300"
+                  >
+                    Previous
+                  </button>
+                  
+                  <div className="flex space-x-2">
+                    {Array.from({ length: Math.min(5, paymentTotalPages) }, (_, i) => {
+                      const page = i + Math.max(1, paymentPage - 2);
+                      if (page > paymentTotalPages) return null;
+                      
+                      return (
+                        <button
+                          key={page}
+                          onClick={() => setPaymentPage(page)}
+                          className={`px-3 py-2 rounded-lg transition-all duration-300 ${
+                            paymentPage === page
+                              ? 'bg-red-600 text-white'
+                              : 'bg-gray-600 hover:bg-gray-700 text-white'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  
+                  <button
+                    onClick={() => setPaymentPage(Math.min(paymentTotalPages, paymentPage + 1))}
+                    disabled={paymentPage === paymentTotalPages}
+                    className="px-4 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-800 disabled:text-gray-500 text-white rounded-lg transition-all duration-300"
+                  >
+                    Next
+                  </button>
+                  
+                  <span className="text-gray-400 text-sm">
+                    Page {paymentPage} of {paymentTotalPages}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
