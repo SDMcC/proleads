@@ -1223,6 +1223,384 @@ class Web3MembershipTester:
         
         print("✅ Payments Management API System Test Passed")
         return True
+    
+    def test_get_all_commissions_success(self):
+        """Test GET /api/admin/commissions with admin token"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        success, response = self.run_test("Get All Commissions (Success)", "GET", "admin/commissions", 200, headers=headers)
+        
+        if success:
+            # Verify response structure
+            required_keys = ['commissions', 'total_count', 'page', 'limit', 'total_pages']
+            missing_keys = [key for key in required_keys if key not in response]
+            
+            if not missing_keys:
+                print("✅ Commissions list contains all required pagination fields")
+                
+                # Verify commission objects structure
+                commissions = response.get('commissions', [])
+                if commissions:
+                    commission = commissions[0]
+                    required_commission_keys = ['id', 'recipient_address', 'recipient_username', 'recipient_email', 
+                                              'new_member_address', 'new_member_username', 'new_member_tier', 
+                                              'amount', 'level', 'status', 'created_at', 'updated_at', 
+                                              'payout_tx_hash', 'payout_address']
+                    missing_commission_keys = [key for key in required_commission_keys if key not in commission]
+                    
+                    if not missing_commission_keys:
+                        print("✅ Commission objects contain all required fields")
+                    else:
+                        print(f"❌ Commission objects missing required keys: {missing_commission_keys}")
+                        return False, {}
+                else:
+                    print("⚠️ No commissions found in database")
+                
+                return True, response
+            else:
+                print(f"❌ Commissions list missing required keys: {missing_keys}")
+                return False, {}
+        
+        return success, response
+    
+    def test_get_all_commissions_with_user_filter(self):
+        """Test GET /api/admin/commissions with user filtering"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        # Test with user filter (search by recipient username/email)
+        success, response = self.run_test("Get Commissions with User Filter", "GET", "admin/commissions?user_filter=test", 200, headers=headers)
+        
+        if success:
+            commissions = response.get('commissions', [])
+            print(f"✅ User filtering returned {len(commissions)} commissions")
+            return True, response
+        
+        return success, response
+    
+    def test_get_all_commissions_with_tier_filter(self):
+        """Test GET /api/admin/commissions with tier filtering"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        # Test with bronze tier filter
+        success, response = self.run_test("Get Commissions with Tier Filter", "GET", "admin/commissions?tier_filter=bronze", 200, headers=headers)
+        
+        if success:
+            commissions = response.get('commissions', [])
+            # Verify all returned commissions have bronze tier for new member
+            for commission in commissions:
+                if commission.get('new_member_tier') != 'bronze':
+                    print(f"❌ Found commission with new_member_tier {commission.get('new_member_tier')} when filtering for bronze")
+                    return False, {}
+            
+            print("✅ Tier filtering working correctly")
+            return True, response
+        
+        return success, response
+    
+    def test_get_all_commissions_with_status_filter(self):
+        """Test GET /api/admin/commissions with status filtering"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        # Test with pending status filter
+        success, response = self.run_test("Get Commissions with Status Filter", "GET", "admin/commissions?status_filter=pending", 200, headers=headers)
+        
+        if success:
+            commissions = response.get('commissions', [])
+            # Verify all returned commissions have pending status
+            for commission in commissions:
+                if commission.get('status') != 'pending':
+                    print(f"❌ Found commission with status {commission.get('status')} when filtering for pending")
+                    return False, {}
+            
+            print("✅ Status filtering working correctly")
+            return True, response
+        
+        return success, response
+    
+    def test_get_all_commissions_with_date_filter(self):
+        """Test GET /api/admin/commissions with date range filtering"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        # Test with date range filter
+        success, response = self.run_test("Get Commissions with Date Filter", "GET", "admin/commissions?date_from=2024-01-01&date_to=2024-12-31", 200, headers=headers)
+        
+        if success:
+            commissions = response.get('commissions', [])
+            print(f"✅ Date filtering returned {len(commissions)} commissions")
+            return True, response
+        
+        return success, response
+    
+    def test_get_all_commissions_unauthorized(self):
+        """Test GET /api/admin/commissions without admin token"""
+        headers = {'Content-Type': 'application/json'}
+        success, response = self.run_test("Get All Commissions (Unauthorized)", "GET", "admin/commissions", 401, headers=headers)
+        return success, response
+    
+    def test_export_commissions_csv_success(self):
+        """Test GET /api/admin/commissions/export with admin token"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        # Test CSV export
+        url = f"{self.base_url}/api/admin/commissions/export"
+        print(f"\n🔍 Testing Export Commissions CSV (Success)...")
+        print(f"   URL: {url}")
+        
+        try:
+            response = requests.get(url, headers=headers)
+            success = response.status_code == 200
+            
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                
+                # Check if response is CSV content
+                content_type = response.headers.get('content-type', '')
+                if 'text/csv' in content_type:
+                    print("✅ Response is CSV format")
+                    
+                    # Check CSV headers
+                    csv_content = response.text
+                    if csv_content:
+                        lines = csv_content.split('\n')
+                        if lines:
+                            headers_line = lines[0]
+                            expected_headers = ['Commission ID', 'Recipient Username', 'Recipient Email', 
+                                              'Recipient Wallet Address', 'New Member Username', 'New Member Tier', 
+                                              'Commission Amount', 'Level', 'Status', 'Created Date', 
+                                              'Updated Date', 'Payout TX Hash', 'Payout Address']
+                            
+                            # Check if all expected headers are present
+                            headers_present = all(header in headers_line for header in expected_headers)
+                            if headers_present:
+                                print("✅ CSV contains all required headers")
+                            else:
+                                print("❌ CSV missing some required headers")
+                                return False, {}
+                        
+                        print(f"✅ CSV export successful with {len(lines)-1} data rows")
+                    else:
+                        print("⚠️ CSV export returned empty content")
+                else:
+                    print(f"❌ Response is not CSV format: {content_type}")
+                    return False, {}
+                
+                return True, {"csv_content": csv_content[:200] + "..." if len(csv_content) > 200 else csv_content}
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                try:
+                    error_detail = response.json().get('detail', 'No detail provided')
+                    print(f"   Error: {error_detail}")
+                except:
+                    print(f"   Response: {response.text}")
+                return False, {}
+                
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False, {}
+        
+        self.tests_run += 1
+        return success, {}
+    
+    def test_export_commissions_csv_with_filters(self):
+        """Test GET /api/admin/commissions/export with various filters"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        # Test CSV export with filters
+        url = f"{self.base_url}/api/admin/commissions/export?tier_filter=bronze&status_filter=pending"
+        print(f"\n🔍 Testing Export Commissions CSV with Filters...")
+        print(f"   URL: {url}")
+        
+        try:
+            response = requests.get(url, headers=headers)
+            success = response.status_code == 200
+            
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                
+                # Check if response is CSV content
+                content_type = response.headers.get('content-type', '')
+                if 'text/csv' in content_type:
+                    print("✅ CSV export with filters successful")
+                    return True, {"message": "CSV export with filters working"}
+                else:
+                    print(f"❌ Response is not CSV format: {content_type}")
+                    return False, {}
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                return False, {}
+                
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False, {}
+        
+        self.tests_run += 1
+        return success, {}
+    
+    def test_export_commissions_csv_unauthorized(self):
+        """Test GET /api/admin/commissions/export without admin token"""
+        headers = {'Content-Type': 'application/json'}
+        
+        url = f"{self.base_url}/api/admin/commissions/export"
+        print(f"\n🔍 Testing Export Commissions CSV (Unauthorized)...")
+        print(f"   URL: {url}")
+        
+        try:
+            response = requests.get(url, headers=headers)
+            success = response.status_code == 401
+            
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                return True, {}
+            else:
+                print(f"❌ Failed - Expected 401, got {response.status_code}")
+                return False, {}
+                
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False, {}
+        
+        self.tests_run += 1
+        return success, {}
+    
+    def test_commissions_management_system(self):
+        """Test complete Commissions Management API system"""
+        print("\n💰 Testing Commissions Management API System")
+        
+        # 1. Test admin login first
+        login_success, _ = self.test_admin_login_success()
+        if not login_success:
+            print("❌ Admin login failed - cannot test commissions management")
+            return False
+        
+        # 2. Test get all commissions with admin token
+        commissions_success, commissions_response = self.test_get_all_commissions_success()
+        if not commissions_success:
+            print("❌ Get all commissions with admin token failed")
+            return False
+        
+        # 3. Test get all commissions with user filtering
+        user_filter_success, _ = self.test_get_all_commissions_with_user_filter()
+        if not user_filter_success:
+            print("❌ Get commissions with user filter failed")
+            return False
+        
+        # 4. Test get all commissions with tier filtering
+        tier_filter_success, _ = self.test_get_all_commissions_with_tier_filter()
+        if not tier_filter_success:
+            print("❌ Get commissions with tier filter failed")
+            return False
+        
+        # 5. Test get all commissions with status filtering
+        status_filter_success, _ = self.test_get_all_commissions_with_status_filter()
+        if not status_filter_success:
+            print("❌ Get commissions with status filter failed")
+            return False
+        
+        # 6. Test get all commissions with date filtering
+        date_filter_success, _ = self.test_get_all_commissions_with_date_filter()
+        if not date_filter_success:
+            print("❌ Get commissions with date filter failed")
+            return False
+        
+        # 7. Test get all commissions without admin token (should fail)
+        unauth_success, _ = self.test_get_all_commissions_unauthorized()
+        if not unauth_success:
+            print("❌ Get commissions without admin token should return 401")
+            return False
+        
+        # 8. Test CSV export with admin token
+        csv_success, _ = self.test_export_commissions_csv_success()
+        if not csv_success:
+            print("❌ CSV export with admin token failed")
+            return False
+        
+        # 9. Test CSV export with filters
+        csv_filter_success, _ = self.test_export_commissions_csv_with_filters()
+        if not csv_filter_success:
+            print("❌ CSV export with filters failed")
+            return False
+        
+        # 10. Test CSV export without admin token (should fail)
+        csv_unauth_success, _ = self.test_export_commissions_csv_unauthorized()
+        if not csv_unauth_success:
+            print("❌ CSV export without admin token should return 401")
+            return False
+        
+        print("✅ Commissions Management API System Test Passed")
+        return True
 
 def main():
     # Get the backend URL from environment or use default
