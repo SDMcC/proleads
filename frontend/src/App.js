@@ -1813,47 +1813,208 @@ function MilestonesTab() {
 }
 
 function AccountSettingsTab({ user }) {
+  const [showCancelWarning, setShowCancelWarning] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+
+  const handleCancelAccount = async () => {
+    setCancelling(true);
+    
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(`${API_URL}/api/users/cancel-account`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      alert('Account cancelled successfully. You will be logged out.');
+      
+      // Clear authentication and redirect to home
+      localStorage.removeItem('token');
+      window.location.href = '/';
+      
+    } catch (error) {
+      console.error('Failed to cancel account:', error);
+      alert('Failed to cancel account: ' + (error.response?.data?.detail || error.message));
+    } finally {
+      setCancelling(false);
+      setShowCancelWarning(false);
+    }
+  };
+
   return (
-    <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
-      <h3 className="text-xl font-bold text-white mb-4">Account Settings</h3>
-      <div className="space-y-4">
-        <div>
-          <label className="block text-gray-300 text-sm font-medium mb-2">Username</label>
-          <input
-            type="text"
-            value={user?.username || ''}
-            readOnly
-            className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white"
-          />
-        </div>
-        <div>
-          <label className="block text-gray-300 text-sm font-medium mb-2">Email</label>
-          <input
-            type="email"
-            value={user?.email || ''}
-            readOnly
-            className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white"
-          />
-        </div>
-        <div>
-          <label className="block text-gray-300 text-sm font-medium mb-2">Wallet Address</label>
-          <input
-            type="text"
-            value={user?.address || ''}
-            readOnly
-            className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white"
-          />
-        </div>
-        <div>
-          <label className="block text-gray-300 text-sm font-medium mb-2">Membership Tier</label>
-          <input
-            type="text"
-            value={user?.membership_tier?.toUpperCase() || 'AFFILIATE'}
-            readOnly
-            className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white"
-          />
+    <div className="space-y-6">
+      {/* Account Information */}
+      <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+        <h3 className="text-xl font-bold text-white mb-4">Account Information</h3>
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-gray-300 text-sm font-medium mb-2">Username</label>
+              <input
+                type="text"
+                value={user?.username || ''}
+                readOnly
+                className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-gray-300 text-sm font-medium mb-2">Email Address</label>
+              <input
+                type="email"
+                value={user?.email || ''}
+                readOnly
+                className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white"
+              />
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-gray-300 text-sm font-medium mb-2">Wallet Address</label>
+            <input
+              type="text"
+              value={user?.address || ''}
+              readOnly
+              className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white font-mono text-sm"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-gray-300 text-sm font-medium mb-2">Membership Tier</label>
+              <div className="px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg">
+                <span className={`px-3 py-1 rounded text-sm uppercase font-medium ${
+                  user?.membership_tier === 'gold' ? 'bg-yellow-600 text-yellow-100' :
+                  user?.membership_tier === 'silver' ? 'bg-gray-600 text-gray-100' :
+                  user?.membership_tier === 'bronze' ? 'bg-orange-600 text-orange-100' :
+                  'bg-blue-600 text-blue-100'
+                }`}>
+                  {user?.membership_tier || 'affiliate'}
+                </span>
+              </div>
+            </div>
+            <div>
+              <label className="block text-gray-300 text-sm font-medium mb-2">Member Since</label>
+              <input
+                type="text"
+                value={user?.created_at ? new Date(user.created_at).toLocaleDateString() : ''}
+                readOnly
+                className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-gray-300 text-sm font-medium mb-2">Referral Code</label>
+            <div className="flex items-center space-x-2">
+              <input
+                type="text"
+                value={user?.referral_code || ''}
+                readOnly
+                className="flex-1 px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white font-mono"
+              />
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(user?.referral_code || '');
+                  alert('Referral code copied!');
+                }}
+                className="px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center space-x-2 transition-all duration-300"
+              >
+                <Copy className="h-4 w-4" />
+                <span>Copy</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Danger Zone */}
+      <div className="bg-red-900 bg-opacity-20 backdrop-blur-sm rounded-xl p-6 border border-red-600">
+        <h3 className="text-xl font-bold text-red-400 mb-4">Danger Zone</h3>
+        <div className="space-y-4">
+          <div className="p-4 bg-red-600 bg-opacity-10 rounded-lg border border-red-500">
+            <h4 className="text-red-300 font-bold mb-2">Cancel Account</h4>
+            <p className="text-gray-300 text-sm mb-4">
+              Permanently cancel your account. This action cannot be undone.
+            </p>
+            
+            <div className="space-y-3 mb-4">
+              <div className="flex items-start space-x-2">
+                <div className="w-2 h-2 bg-red-400 rounded-full mt-2 flex-shrink-0"></div>
+                <p className="text-red-200 text-sm">
+                  <strong>You will lose access to your account</strong> - You won't be able to log in again
+                </p>
+              </div>
+              <div className="flex items-start space-x-2">
+                <div className="w-2 h-2 bg-red-400 rounded-full mt-2 flex-shrink-0"></div>
+                <p className="text-red-200 text-sm">
+                  <strong>All pending commissions will be forfeited</strong> - Any unpaid earnings will be lost
+                </p>
+              </div>
+              <div className="flex items-start space-x-2">
+                <div className="w-2 h-2 bg-red-400 rounded-full mt-2 flex-shrink-0"></div>
+                <p className="text-red-200 text-sm">
+                  <strong>Your referrals will transfer to your sponsor</strong> - All your downline members will be reassigned
+                </p>
+              </div>
+              <div className="flex items-start space-x-2">
+                <div className="w-2 h-2 bg-red-400 rounded-full mt-2 flex-shrink-0"></div>
+                <p className="text-red-200 text-sm">
+                  <strong>Account reinstatement is not possible</strong> - This action is permanent and irreversible
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowCancelWarning(true)}
+              className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-all duration-300"
+            >
+              Cancel My Account
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Cancel Account Warning Modal */}
+      {showCancelWarning && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
+          <div className="bg-gray-900 rounded-xl p-8 max-w-md w-full mx-4 border border-red-600">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-red-400 mb-2">Final Warning</h3>
+              <p className="text-gray-300 text-sm">
+                Are you absolutely sure you want to cancel your account? This action is permanent and cannot be undone.
+              </p>
+            </div>
+
+            <div className="space-y-3 mb-6">
+              <div className="p-3 bg-red-900 bg-opacity-30 rounded border border-red-500">
+                <p className="text-red-200 text-sm text-center">
+                  ⚠️ All your commissions, referrals, and account data will be permanently lost
+                </p>
+              </div>
+            </div>
+
+            <div className="flex space-x-4">
+              <button
+                onClick={() => setShowCancelWarning(false)}
+                className="flex-1 px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition-all duration-300"
+              >
+                Keep My Account
+              </button>
+              <button
+                onClick={handleCancelAccount}
+                disabled={cancelling}
+                className="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 disabled:bg-red-800 text-white font-semibold rounded-lg transition-all duration-300"
+              >
+                {cancelling ? 'Cancelling...' : 'Yes, Cancel Account'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
