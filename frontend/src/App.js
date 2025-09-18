@@ -734,6 +734,8 @@ function Dashboard() {
   const { user, logout } = useAuth();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('overview');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     fetchDashboardStats();
@@ -753,12 +755,15 @@ function Dashboard() {
     }
   };
 
-  const copyReferralLink = () => {
-    if (user?.referral_link) {
-      navigator.clipboard.writeText(user.referral_link);
-      alert('Referral link copied to clipboard!');
-    }
-  };
+  const sidebarItems = [
+    { id: 'overview', label: 'Overview', icon: BarChart3 },
+    { id: 'network', label: 'Network Tree', icon: Network },
+    { id: 'affiliate-tools', label: 'Affiliate Tools', icon: ExternalLink },
+    { id: 'earnings', label: 'Earnings', icon: DollarSign },
+    { id: 'payments', label: 'Payment History', icon: Activity },
+    { id: 'milestones', label: 'Milestones', icon: Award },
+    { id: 'account', label: 'Account Settings', icon: Settings }
+  ];
 
   if (loading) {
     return (
@@ -769,17 +774,26 @@ function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen">
-      {/* Navigation */}
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-pink-900">
+      {/* Top Navigation */}
       <nav className="bg-black bg-opacity-50 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="lg:hidden p-2 rounded-lg bg-white bg-opacity-10 text-white hover:bg-opacity-20 transition-all duration-300"
+              >
+                <Menu className="h-6 w-6" />
+              </button>
               <Network className="h-8 w-8 text-blue-400" />
               <span className="text-2xl font-bold text-white">Web3 Membership</span>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-gray-300">Welcome, {user?.username}</span>
+              <div className="text-right">
+                <p className="text-gray-300">Welcome back</p>
+                <p className="text-white font-medium">{user?.username}</p>
+              </div>
               <button
                 onClick={logout}
                 className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-300"
@@ -791,10 +805,57 @@ function Dashboard() {
         </div>
       </nav>
 
-      {/* Dashboard Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="flex">
+        {/* Sidebar */}
+        <div className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 transition-transform duration-300 ease-in-out lg:static absolute z-30 w-64 h-full bg-black bg-opacity-30 backdrop-blur-sm`}>
+          <div className="p-6">
+            <nav className="space-y-2">
+              {sidebarItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      setActiveTab(item.id);
+                      setSidebarOpen(false);
+                    }}
+                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-300 ${
+                      activeTab === item.id
+                        ? 'bg-blue-600 text-white'
+                        : 'text-gray-300 hover:bg-white hover:bg-opacity-10 hover:text-white'
+                    }`}
+                  >
+                    <Icon className="h-5 w-5" />
+                    <span className="font-medium">{item.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 p-6 lg:p-8">
+          {activeTab === 'overview' && <OverviewTab stats={stats} user={user} />}
+          {activeTab === 'network' && <NetworkTreeTab />}
+          {activeTab === 'affiliate-tools' && <AffiliateToolsTab user={user} />}
+          {activeTab === 'earnings' && <EarningsTab />}
+          {activeTab === 'payments' && <PaymentHistoryTab />}
+          {activeTab === 'milestones' && <MilestonesTab />}
+          {activeTab === 'account' && <AccountSettingsTab user={user} />}
+        </div>
+      </div>
+
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 z-20 bg-black bg-opacity-50"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+    </div>
+  );
+}
           <StatCard
             icon={<DollarSign className="h-8 w-8 text-green-400" />}
             title="Total Earnings"
