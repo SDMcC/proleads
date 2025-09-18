@@ -1917,6 +1917,216 @@ class Web3MembershipTester:
         
         return all_passed
 
+    def test_payment_data_discrepancy_investigation(self):
+        """Critical Bug Investigation: Payment Data Discrepancy for firstuser"""
+        print("\n🔍 CRITICAL BUG INVESTIGATION: Payment Data Discrepancy")
+        print("Issue: Admin dashboard shows 3 payments from 'firstuser' but not reflected in member dashboard")
+        
+        # Ensure we have admin token
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        print("\n1. 🔍 Investigating payment records for 'firstuser' (sdmcculloch101@gmail.com)")
+        
+        # Test 1: Get payment records with user filter for firstuser
+        success, response = self.run_test(
+            "Get Admin Payments for firstuser", 
+            "GET", 
+            "admin/payments?user_filter=firstuser", 
+            200, 
+            headers=headers
+        )
+        
+        if not success:
+            print("❌ Failed to get admin payments for firstuser")
+            return False
+        
+        admin_payments = response.get('payments', [])
+        print(f"📊 Admin view shows {len(admin_payments)} payments for firstuser")
+        
+        if len(admin_payments) == 0:
+            print("⚠️ No payments found for firstuser in admin view")
+            # Try with email filter
+            success2, response2 = self.run_test(
+                "Get Admin Payments for firstuser by email", 
+                "GET", 
+                "admin/payments?user_filter=sdmcculloch101@gmail.com", 
+                200, 
+                headers=headers
+            )
+            if success2:
+                admin_payments = response2.get('payments', [])
+                print(f"📊 Admin view shows {len(admin_payments)} payments for firstuser by email")
+        
+        # Display payment details from admin view
+        for i, payment in enumerate(admin_payments, 1):
+            print(f"   Payment {i}:")
+            print(f"     - ID: {payment.get('id')}")
+            print(f"     - User: {payment.get('username')} ({payment.get('email')})")
+            print(f"     - Amount: ${payment.get('amount')} {payment.get('currency')}")
+            print(f"     - Tier: {payment.get('tier')}")
+            print(f"     - Status: {payment.get('status')}")
+            print(f"     - Created: {payment.get('created_at')}")
+            print(f"     - User Address: {payment.get('user_address')}")
+        
+        # Test 2: Try to find firstuser in members list
+        print("\n2. 🔍 Finding firstuser in members database")
+        success, response = self.run_test(
+            "Get Members for firstuser", 
+            "GET", 
+            "admin/members?user_filter=firstuser", 
+            200, 
+            headers=headers
+        )
+        
+        firstuser_member = None
+        if success:
+            members = response.get('members', [])
+            print(f"📊 Found {len(members)} members matching 'firstuser'")
+            
+            for member in members:
+                if 'firstuser' in member.get('username', '').lower() or 'sdmcculloch101@gmail.com' in member.get('email', '').lower():
+                    firstuser_member = member
+                    print(f"✅ Found firstuser member:")
+                    print(f"     - ID: {member.get('id')}")
+                    print(f"     - Username: {member.get('username')}")
+                    print(f"     - Email: {member.get('email')}")
+                    print(f"     - Wallet: {member.get('wallet_address')}")
+                    print(f"     - Tier: {member.get('membership_tier')}")
+                    break
+        
+        if not firstuser_member:
+            print("❌ Could not find firstuser in members database")
+            # Try broader search
+            success3, response3 = self.run_test(
+                "Get All Members to search for firstuser", 
+                "GET", 
+                "admin/members", 
+                200, 
+                headers=headers
+            )
+            if success3:
+                all_members = response3.get('members', [])
+                print(f"📊 Searching through {len(all_members)} total members...")
+                for member in all_members:
+                    if ('firstuser' in member.get('username', '').lower() or 
+                        'sdmcculloch101' in member.get('email', '').lower()):
+                        firstuser_member = member
+                        print(f"✅ Found firstuser in broader search:")
+                        print(f"     - Username: {member.get('username')}")
+                        print(f"     - Email: {member.get('email')}")
+                        break
+        
+        # Test 3: Check payment-to-user address mapping
+        print("\n3. 🔍 Analyzing payment-to-user address mapping")
+        if admin_payments and firstuser_member:
+            payment_addresses = [p.get('user_address') for p in admin_payments]
+            member_address = firstuser_member.get('wallet_address')
+            
+            print(f"Member wallet address: {member_address}")
+            print(f"Payment addresses: {payment_addresses}")
+            
+            address_match = member_address in payment_addresses
+            print(f"Address mapping correct: {'✅' if address_match else '❌'}")
+            
+            if not address_match:
+                print("🚨 CRITICAL ISSUE: Payment user_address doesn't match member wallet_address")
+                print("This could be the root cause of the discrepancy!")
+        
+        # Test 4: Simulate user payment history API call
+        print("\n4. 🔍 Testing user payment history API (simulated)")
+        if firstuser_member:
+            # We can't actually authenticate as firstuser without their private key
+            # But we can check what the API structure would return
+            print("⚠️ Cannot authenticate as firstuser without private key")
+            print("⚠️ This would require GET /api/users/payments with firstuser's JWT token")
+            print("⚠️ In a real scenario, firstuser would need to sign a message to get a token")
+        
+        # Test 5: Check payment status handling
+        print("\n5. 🔍 Analyzing payment status handling")
+        waiting_payments = [p for p in admin_payments if p.get('status') == 'waiting']
+        confirmed_payments = [p for p in admin_payments if p.get('status') == 'confirmed']
+        
+        print(f"Payments with 'waiting' status: {len(waiting_payments)}")
+        print(f"Payments with 'confirmed' status: {len(confirmed_payments)}")
+        
+        if waiting_payments:
+            print("🚨 POTENTIAL ISSUE: Payments in 'waiting' status might not show in user dashboard")
+            print("User dashboard might only show 'confirmed' payments")
+        
+        # Test 6: Database consistency check
+        print("\n6. 🔍 Database consistency analysis")
+        
+        # Check if all payments have corresponding users
+        user_addresses_in_payments = set(p.get('user_address') for p in admin_payments)
+        
+        # Get all members to check address consistency
+        success, all_members_response = self.run_test(
+            "Get All Members for consistency check", 
+            "GET", 
+            "admin/members", 
+            200, 
+            headers=headers
+        )
+        
+        if success:
+            all_members = all_members_response.get('members', [])
+            member_addresses = set(m.get('wallet_address') for m in all_members)
+            
+            orphaned_payments = user_addresses_in_payments - member_addresses
+            if orphaned_payments:
+                print(f"🚨 CRITICAL: Found {len(orphaned_payments)} payments with no corresponding member:")
+                for addr in orphaned_payments:
+                    print(f"     - Orphaned address: {addr}")
+            else:
+                print("✅ All payment addresses have corresponding members")
+        
+        # Summary and conclusions
+        print("\n" + "="*60)
+        print("🔍 INVESTIGATION SUMMARY")
+        print("="*60)
+        
+        issues_found = []
+        
+        if len(admin_payments) != 3:
+            issues_found.append(f"Expected 3 payments for firstuser, found {len(admin_payments)}")
+        
+        if not firstuser_member:
+            issues_found.append("Could not locate firstuser in members database")
+        
+        if admin_payments and firstuser_member:
+            payment_addresses = [p.get('user_address') for p in admin_payments]
+            member_address = firstuser_member.get('wallet_address')
+            if member_address not in payment_addresses:
+                issues_found.append("Payment user_address doesn't match member wallet_address")
+        
+        if waiting_payments:
+            issues_found.append(f"{len(waiting_payments)} payments in 'waiting' status - may not show in user dashboard")
+        
+        if issues_found:
+            print("🚨 ISSUES IDENTIFIED:")
+            for i, issue in enumerate(issues_found, 1):
+                print(f"   {i}. {issue}")
+        else:
+            print("✅ No obvious data inconsistencies found")
+        
+        print("\n📋 RECOMMENDATIONS:")
+        print("   1. Verify payment status filtering in user dashboard")
+        print("   2. Check user authentication and token validation")
+        print("   3. Ensure user payment API filters by correct address")
+        print("   4. Consider if 'waiting' status payments should be visible to users")
+        
+        return len(issues_found) == 0
+
 def main():
     # Get the backend URL from environment or use default
     backend_url = "https://web3-membership.preview.emergentagent.com"
