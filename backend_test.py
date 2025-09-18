@@ -2412,6 +2412,15 @@ def main():
     else:
         print("\n✅ Critical bug investigation completed - no issues found")
     
+    # COMPREHENSIVE REVIEW REQUEST TESTING
+    print("\n🎯 RUNNING COMPREHENSIVE REVIEW REQUEST TESTING")
+    print("=" * 50)
+    comprehensive_success = tester.test_comprehensive_review_request_features()
+    if not comprehensive_success:
+        print("\n⚠️ Comprehensive review request testing found issues")
+    else:
+        print("\n✅ Comprehensive review request testing completed successfully")
+    
     # Print results
     print("\n================================")
     print(f"📊 Tests passed: {tester.tests_passed}/{tester.tests_run}")
