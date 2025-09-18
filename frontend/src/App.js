@@ -1517,6 +1517,7 @@ function AdminDashboard() {
       fetchMembers(memberFilter, memberPage);
       setShowMemberModal(false);
       setEditingMember(null);
+      setSelectedMember(null);
       alert('Member updated successfully');
       
     } catch (error) {
@@ -1539,11 +1540,27 @@ function AdminDashboard() {
       // Refresh members list
       fetchMembers(memberFilter, memberPage);
       setShowMemberModal(false);
+      setSelectedMember(null);
       alert('Member suspended successfully');
       
     } catch (error) {
       console.error('Failed to suspend member:', error);
       alert('Failed to suspend member: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const handleEditMember = (member) => {
+    setEditingMember(member);
+    setSelectedMember(member);
+    setShowMemberModal(true);
+  };
+
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('desc');
     }
   };
 
