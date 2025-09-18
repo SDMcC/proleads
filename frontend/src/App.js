@@ -1409,8 +1409,11 @@ function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
   const [memberFilter, setMemberFilter] = useState('');
   const [memberPage, setMemberPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [editingMember, setEditingMember] = useState(null);
+  const [sortField, setSortField] = useState('created_at');
+  const [sortDirection, setSortDirection] = useState('desc');
 
   useEffect(() => {
     fetchAdminData();
