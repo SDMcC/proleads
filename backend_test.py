@@ -2185,6 +2185,15 @@ def main():
     # Test commission calculation
     tester.test_commission_calculation()
     
+    # CRITICAL BUG INVESTIGATION
+    print("\n🚨 RUNNING CRITICAL BUG INVESTIGATION")
+    print("=" * 50)
+    investigation_success = tester.test_payment_data_discrepancy_investigation()
+    if not investigation_success:
+        print("\n⚠️ Critical bug investigation found issues")
+    else:
+        print("\n✅ Critical bug investigation completed - no issues found")
+    
     # Print results
     print("\n================================")
     print(f"📊 Tests passed: {tester.tests_passed}/{tester.tests_run}")
