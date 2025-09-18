@@ -3877,6 +3877,215 @@ function AdminDashboard() {
   );
 }
 
+// Leads Management Tab Component for Admin
+function LeadsManagementTab() {
+  const [distributions, setDistributions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [csvFile, setCsvFile] = useState(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  useEffect(() => {
+    fetchDistributions();
+  }, [page]);
+
+  const fetchDistributions = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await axios.get(`${API_URL}/api/admin/leads/distributions?page=${page}&limit=10`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setDistributions(response.data.distributions || []);
+      setTotalPages(response.data.total_pages || 1);
+    } catch (error) {
+      console.error('Failed to fetch distributions:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFileUpload = async (e) => {
+    e.preventDefault();
+    if (!csvFile) {
+      alert('Please select a CSV file');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const token = localStorage.getItem('adminToken');
+      const formData = new FormData();
+      formData.append('csv_file', csvFile);
+
+      const response = await axios.post(`${API_URL}/api/admin/leads/upload`, formData, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      alert(`Successfully uploaded ${response.data.total_leads} leads! Estimated distribution time: ${response.data.estimated_weeks} weeks`);
+      setCsvFile(null);
+      fetchDistributions();
+    } catch (error) {
+      console.error('Failed to upload CSV:', error);
+      alert('Failed to upload CSV file: ' + (error.response?.data?.detail || error.message));
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const triggerDistribution = async (distributionId) => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      await axios.post(`${API_URL}/api/admin/leads/distribute/${distributionId}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      alert('Lead distribution started successfully!');
+      fetchDistributions();
+    } catch (error) {
+      console.error('Failed to trigger distribution:', error);
+      alert('Failed to trigger distribution: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'completed': return 'bg-green-600 text-green-100';
+      case 'processing': return 'bg-yellow-600 text-yellow-100';
+      case 'queued': return 'bg-blue-600 text-blue-100';
+      case 'failed': return 'bg-red-600 text-red-100';
+      default: return 'bg-gray-600 text-gray-100';
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Upload CSV Section */}
+      <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+        <h3 className="text-xl font-bold text-white mb-4">Upload Lead CSV</h3>
+        <form onSubmit={handleFileUpload} className="space-y-4">
+          <div>
+            <label className="block text-gray-300 text-sm font-medium mb-2">
+              CSV File (must contain: Name, Email, Address columns)
+            </label>
+            <input
+              type="file"
+              accept=".csv"
+              onChange={(e) => setCsvFile(e.target.files[0])}
+              className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={uploading}
+            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white font-semibold rounded-lg transition-all duration-300"
+          >
+            {uploading ? 'Uploading...' : 'Upload CSV'}
+          </button>
+        </form>
+      </div>
+
+      {/* Distributions List */}
+      <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+        <h3 className="text-xl font-bold text-white mb-4">Lead Distributions</h3>
+        
+        {loading ? (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto"></div>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-gray-600">
+                  <th className="pb-3 text-gray-300 font-medium">Filename</th>
+                  <th className="pb-3 text-gray-300 font-medium">Total Leads</th>
+                  <th className="pb-3 text-gray-300 font-medium">Distributed</th>
+                  <th className="pb-3 text-gray-300 font-medium">Remaining</th>
+                  <th className="pb-3 text-gray-300 font-medium">Status</th>
+                  <th className="pb-3 text-gray-300 font-medium">Uploaded</th>
+                  <th className="pb-3 text-gray-300 font-medium">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {distributions.map((dist, index) => (
+                  <tr key={index} className="border-b border-gray-700 last:border-b-0">
+                    <td className="py-3">
+                      <p className="text-white font-medium">{dist.filename}</p>
+                      <p className="text-gray-400 text-sm">Uploaded by {dist.uploaded_by}</p>
+                    </td>
+                    <td className="py-3 text-white">{dist.total_leads}</td>
+                    <td className="py-3 text-green-400">{dist.distributed_count}</td>
+                    <td className="py-3 text-orange-400">{dist.remaining_leads}</td>
+                    <td className="py-3">
+                      <span className={`px-2 py-1 rounded text-xs ${getStatusColor(dist.status)}`}>
+                        {dist.status}
+                      </span>
+                    </td>
+                    <td className="py-3 text-gray-400">
+                      {new Date(dist.uploaded_at).toLocaleDateString()}
+                    </td>
+                    <td className="py-3">
+                      {(dist.status === 'queued' || dist.status === 'failed') && (
+                        <button
+                          onClick={() => triggerDistribution(dist.distribution_id)}
+                          className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded transition-all duration-300"
+                        >
+                          {dist.status === 'failed' ? 'Retry' : 'Distribute'}
+                        </button>
+                      )}
+                      {dist.status === 'processing' && (
+                        <span className="text-yellow-400 text-sm">Processing...</span>
+                      )}
+                      {dist.status === 'completed' && (
+                        <span className="text-green-400 text-sm">✓ Complete</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {distributions.length === 0 && (
+              <div className="text-center py-8">
+                <p className="text-gray-400">No lead distributions found</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center space-x-4 mt-6 pt-6 border-t border-gray-700">
+            <button
+              onClick={() => setPage(Math.max(1, page - 1))}
+              disabled={page === 1}
+              className="px-4 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-800 disabled:text-gray-500 text-white rounded-lg transition-all duration-300"
+            >
+              Previous
+            </button>
+            
+            <span className="text-gray-400">Page {page} of {totalPages}</span>
+            
+            <button
+              onClick={() => setPage(Math.min(totalPages, page + 1))}
+              disabled={page === totalPages}
+              className="px-4 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-800 disabled:text-gray-500 text-white rounded-lg transition-all duration-300"
+            >
+              Next
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // Member Modal Component
 function MemberModal({ member, editingMember, onClose, onUpdate, onSuspend, onEdit }) {
   const [formData, setFormData] = useState({
