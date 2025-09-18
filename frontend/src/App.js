@@ -3874,6 +3874,218 @@ function AdminDashboard() {
   );
 }
 
+// User Leads Tab Component
+function LeadsTab() {
+  const [leads, setLeads] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  useEffect(() => {
+    fetchLeads();
+  }, [page]);
+
+  const fetchLeads = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API_URL}/api/users/leads?page=${page}&limit=50`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setLeads(response.data.leads || []);
+      setTotalPages(response.data.total_pages || 1);
+    } catch (error) {
+      console.error('Failed to fetch leads:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const downloadLeadsCSV = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API_URL}/api/users/leads/download`, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob'
+      });
+
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Get filename from response headers
+      const contentDisposition = response.headers['content-disposition'];
+      let filename = 'my_leads.csv';
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).+?\2|[^;\n]*)/);
+        if (filenameMatch && filenameMatch[1]) {
+          filename = filenameMatch[1].replace(/['"]/g, '');
+        }
+      }
+      
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      // Refresh leads to update download status
+      fetchLeads();
+    } catch (error) {
+      console.error('Failed to download leads:', error);
+      alert('Failed to download leads CSV');
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header Section */}
+      <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h3 className="text-xl font-bold text-white mb-2">My Leads</h3>
+            <p className="text-gray-300">
+              Download and manage your assigned leads. Leads are distributed based on your membership tier.
+            </p>
+          </div>
+          <button
+            onClick={downloadLeadsCSV}
+            className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg flex items-center space-x-2 transition-all duration-300"
+          >
+            <FileText className="h-4 w-4" />
+            <span>Download All CSV</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Leads Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 bg-blue-600 bg-opacity-20 rounded-lg flex items-center justify-center">
+              <FileText className="h-6 w-6 text-blue-400" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-white">{leads.length}</p>
+              <p className="text-gray-400">Total Leads</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 bg-green-600 bg-opacity-20 rounded-lg flex items-center justify-center">
+              <Activity className="h-6 w-6 text-green-400" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-white">
+                {leads.filter(lead => lead.downloaded).length}
+              </p>
+              <p className="text-gray-400">Downloaded</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 bg-orange-600 bg-opacity-20 rounded-lg flex items-center justify-center">
+              <Clock className="h-6 w-6 text-orange-400" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-white">
+                {leads.filter(lead => !lead.downloaded).length}
+              </p>
+              <p className="text-gray-400">Pending</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Leads Table */}
+      <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+        <h4 className="text-lg font-bold text-white mb-4">Lead Details</h4>
+        
+        {loading ? (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto"></div>
+          </div>
+        ) : leads.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-gray-600">
+                  <th className="pb-3 text-gray-300 font-medium">Name</th>
+                  <th className="pb-3 text-gray-300 font-medium">Email</th>
+                  <th className="pb-3 text-gray-300 font-medium">Address</th>
+                  <th className="pb-3 text-gray-300 font-medium">Assigned Date</th>
+                  <th className="pb-3 text-gray-300 font-medium">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {leads.map((lead, index) => (
+                  <tr key={index} className="border-b border-gray-700 last:border-b-0">
+                    <td className="py-3 text-white font-medium">{lead.lead_name}</td>
+                    <td className="py-3 text-white">{lead.lead_email}</td>
+                    <td className="py-3 text-gray-300">{lead.lead_address}</td>
+                    <td className="py-3 text-gray-400">
+                      {new Date(lead.assigned_at).toLocaleDateString()}
+                    </td>
+                    <td className="py-3">
+                      {lead.downloaded ? (
+                        <span className="px-2 py-1 bg-green-600 text-green-100 rounded text-xs">
+                          Downloaded
+                        </span>
+                      ) : (
+                        <span className="px-2 py-1 bg-orange-600 text-orange-100 rounded text-xs">
+                          Pending
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-400 text-lg">No leads assigned yet</p>
+            <p className="text-gray-500 text-sm mt-2">
+              Leads are distributed automatically based on your membership tier.
+              <br />
+              Upgrade your membership to receive more leads per distribution.
+            </p>
+          </div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center space-x-4 mt-6 pt-6 border-t border-gray-700">
+            <button
+              onClick={() => setPage(Math.max(1, page - 1))}
+              disabled={page === 1}
+              className="px-4 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-800 disabled:text-gray-500 text-white rounded-lg transition-all duration-300"
+            >
+              Previous
+            </button>
+            
+            <span className="text-gray-400">Page {page} of {totalPages}</span>
+            
+            <button
+              onClick={() => setPage(Math.min(totalPages, page + 1))}
+              disabled={page === totalPages}
+              className="px-4 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-800 disabled:text-gray-500 text-white rounded-lg transition-all duration-300"
+            >
+              Next
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // Leads Management Tab Component for Admin
 function LeadsManagementTab() {
   const [distributions, setDistributions] = useState([]);
