@@ -843,6 +843,7 @@ function Dashboard() {
           {activeTab === 'earnings' && <EarningsTab />}
           {activeTab === 'payments' && <PaymentHistoryTab />}
           {activeTab === 'milestones' && <MilestonesTab />}
+          {activeTab === 'leads' && <LeadsTab />}
           {activeTab === 'account' && <AccountSettingsTab user={user} />}
 
           {/* Leads Management Tab */}
