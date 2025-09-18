@@ -1888,6 +1888,7 @@ function AdminDashboard() {
           }}
           onUpdate={updateMember}
           onSuspend={suspendMember}
+          onEdit={handleEditMember}
         />
       )}
     </div>
