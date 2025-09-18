@@ -1538,6 +1538,29 @@ function AdminDashboard() {
     }
   };
 
+  const fetchCommissions = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const headers = { Authorization: `Bearer ${token}` };
+      
+      const params = new URLSearchParams();
+      if (commissionUserFilter) params.append('user', commissionUserFilter);
+      if (commissionTierFilter) params.append('tier', commissionTierFilter);
+      if (commissionStatusFilter) params.append('status', commissionStatusFilter);
+      if (commissionDateFrom) params.append('date_from', commissionDateFrom);
+      if (commissionDateTo) params.append('date_to', commissionDateTo);
+      params.append('page', commissionPage.toString());
+      params.append('limit', '10');
+      
+      const response = await axios.get(`${API_URL}/api/admin/commissions?${params}`, { headers });
+      setCommissions(response.data.commissions || []);
+      setCommissionTotalPages(response.data.total_pages || 1);
+      
+    } catch (error) {
+      console.error('Failed to fetch commissions:', error);
+    }
+  };
+
   const fetchMemberDetails = async (memberId) => {
     try {
       const token = localStorage.getItem('adminToken');
