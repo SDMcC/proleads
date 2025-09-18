@@ -847,6 +847,382 @@ class Web3MembershipTester:
         
         print("✅ Members Management API System Test Passed")
         return True
+    
+    def test_get_all_payments_success(self):
+        """Test GET /api/admin/payments with admin token"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        success, response = self.run_test("Get All Payments (Success)", "GET", "admin/payments", 200, headers=headers)
+        
+        if success:
+            # Verify response structure
+            required_keys = ['payments', 'total_count', 'page', 'limit', 'total_pages']
+            missing_keys = [key for key in required_keys if key not in response]
+            
+            if not missing_keys:
+                print("✅ Payments list contains all required pagination fields")
+                
+                # Verify payment objects structure
+                payments = response.get('payments', [])
+                if payments:
+                    payment = payments[0]
+                    required_payment_keys = ['id', 'user_address', 'username', 'email', 'amount', 'currency', 
+                                           'tier', 'status', 'payment_url', 'created_at', 'updated_at', 
+                                           'nowpayments_id', 'invoice_id']
+                    missing_payment_keys = [key for key in required_payment_keys if key not in payment]
+                    
+                    if not missing_payment_keys:
+                        print("✅ Payment objects contain all required fields")
+                    else:
+                        print(f"❌ Payment objects missing required keys: {missing_payment_keys}")
+                        return False, {}
+                else:
+                    print("⚠️ No payments found in database")
+                
+                return True, response
+            else:
+                print(f"❌ Payments list missing required keys: {missing_keys}")
+                return False, {}
+        
+        return success, response
+    
+    def test_get_all_payments_with_user_filter(self):
+        """Test GET /api/admin/payments with user filtering"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        # Test with user filter (search by username/email)
+        success, response = self.run_test("Get Payments with User Filter", "GET", "admin/payments?user_filter=test", 200, headers=headers)
+        
+        if success:
+            payments = response.get('payments', [])
+            print(f"✅ User filtering returned {len(payments)} payments")
+            return True, response
+        
+        return success, response
+    
+    def test_get_all_payments_with_tier_filter(self):
+        """Test GET /api/admin/payments with tier filtering"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        # Test with bronze tier filter
+        success, response = self.run_test("Get Payments with Tier Filter", "GET", "admin/payments?tier_filter=bronze", 200, headers=headers)
+        
+        if success:
+            payments = response.get('payments', [])
+            # Verify all returned payments have bronze tier
+            for payment in payments:
+                if payment.get('tier') != 'bronze':
+                    print(f"❌ Found payment with tier {payment.get('tier')} when filtering for bronze")
+                    return False, {}
+            
+            print("✅ Tier filtering working correctly")
+            return True, response
+        
+        return success, response
+    
+    def test_get_all_payments_with_status_filter(self):
+        """Test GET /api/admin/payments with status filtering"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        # Test with waiting status filter
+        success, response = self.run_test("Get Payments with Status Filter", "GET", "admin/payments?status_filter=waiting", 200, headers=headers)
+        
+        if success:
+            payments = response.get('payments', [])
+            # Verify all returned payments have waiting status
+            for payment in payments:
+                if payment.get('status') != 'waiting':
+                    print(f"❌ Found payment with status {payment.get('status')} when filtering for waiting")
+                    return False, {}
+            
+            print("✅ Status filtering working correctly")
+            return True, response
+        
+        return success, response
+    
+    def test_get_all_payments_with_date_filter(self):
+        """Test GET /api/admin/payments with date range filtering"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        # Test with date range filter
+        success, response = self.run_test("Get Payments with Date Filter", "GET", "admin/payments?date_from=2024-01-01&date_to=2024-12-31", 200, headers=headers)
+        
+        if success:
+            payments = response.get('payments', [])
+            print(f"✅ Date filtering returned {len(payments)} payments")
+            return True, response
+        
+        return success, response
+    
+    def test_get_all_payments_unauthorized(self):
+        """Test GET /api/admin/payments without admin token"""
+        headers = {'Content-Type': 'application/json'}
+        success, response = self.run_test("Get All Payments (Unauthorized)", "GET", "admin/payments", 401, headers=headers)
+        return success, response
+    
+    def test_export_payments_csv_success(self):
+        """Test GET /api/admin/payments/export with admin token"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        # Test CSV export
+        url = f"{self.base_url}/api/admin/payments/export"
+        print(f"\n🔍 Testing Export Payments CSV (Success)...")
+        print(f"   URL: {url}")
+        
+        try:
+            response = requests.get(url, headers=headers)
+            success = response.status_code == 200
+            
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                
+                # Check if response is CSV content
+                content_type = response.headers.get('content-type', '')
+                if 'text/csv' in content_type:
+                    print("✅ Response is CSV format")
+                    
+                    # Check CSV headers
+                    csv_content = response.text
+                    if csv_content:
+                        lines = csv_content.split('\n')
+                        if lines:
+                            headers_line = lines[0]
+                            expected_headers = ['Payment ID', 'Username', 'Email', 'Wallet Address', 'Amount', 
+                                              'Currency', 'Membership Tier', 'Status', 'Created Date', 
+                                              'Updated Date', 'NOWPayments ID', 'Invoice ID']
+                            
+                            # Check if all expected headers are present
+                            headers_present = all(header in headers_line for header in expected_headers)
+                            if headers_present:
+                                print("✅ CSV contains all required headers")
+                            else:
+                                print("❌ CSV missing some required headers")
+                                return False, {}
+                        
+                        print(f"✅ CSV export successful with {len(lines)-1} data rows")
+                    else:
+                        print("⚠️ CSV export returned empty content")
+                else:
+                    print(f"❌ Response is not CSV format: {content_type}")
+                    return False, {}
+                
+                return True, {"csv_content": csv_content[:200] + "..." if len(csv_content) > 200 else csv_content}
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                try:
+                    error_detail = response.json().get('detail', 'No detail provided')
+                    print(f"   Error: {error_detail}")
+                except:
+                    print(f"   Response: {response.text}")
+                return False, {}
+                
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False, {}
+        
+        self.tests_run += 1
+        return success, {}
+    
+    def test_export_payments_csv_with_filters(self):
+        """Test GET /api/admin/payments/export with various filters"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        # Test CSV export with filters
+        url = f"{self.base_url}/api/admin/payments/export?tier_filter=bronze&status_filter=waiting"
+        print(f"\n🔍 Testing Export Payments CSV with Filters...")
+        print(f"   URL: {url}")
+        
+        try:
+            response = requests.get(url, headers=headers)
+            success = response.status_code == 200
+            
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                
+                # Check if response is CSV content
+                content_type = response.headers.get('content-type', '')
+                if 'text/csv' in content_type:
+                    print("✅ CSV export with filters successful")
+                    return True, {"message": "CSV export with filters working"}
+                else:
+                    print(f"❌ Response is not CSV format: {content_type}")
+                    return False, {}
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                return False, {}
+                
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False, {}
+        
+        self.tests_run += 1
+        return success, {}
+    
+    def test_export_payments_csv_unauthorized(self):
+        """Test GET /api/admin/payments/export without admin token"""
+        headers = {'Content-Type': 'application/json'}
+        
+        url = f"{self.base_url}/api/admin/payments/export"
+        print(f"\n🔍 Testing Export Payments CSV (Unauthorized)...")
+        print(f"   URL: {url}")
+        
+        try:
+            response = requests.get(url, headers=headers)
+            success = response.status_code == 401
+            
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                return True, {}
+            else:
+                print(f"❌ Failed - Expected 401, got {response.status_code}")
+                return False, {}
+                
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False, {}
+        
+        self.tests_run += 1
+        return success, {}
+    
+    def test_payments_management_system(self):
+        """Test complete Payments Management API system"""
+        print("\n💳 Testing Payments Management API System")
+        
+        # 1. Test admin login first
+        login_success, _ = self.test_admin_login_success()
+        if not login_success:
+            print("❌ Admin login failed - cannot test payments management")
+            return False
+        
+        # 2. Test get all payments with admin token
+        payments_success, payments_response = self.test_get_all_payments_success()
+        if not payments_success:
+            print("❌ Get all payments with admin token failed")
+            return False
+        
+        # 3. Test get all payments with user filtering
+        user_filter_success, _ = self.test_get_all_payments_with_user_filter()
+        if not user_filter_success:
+            print("❌ Get payments with user filter failed")
+            return False
+        
+        # 4. Test get all payments with tier filtering
+        tier_filter_success, _ = self.test_get_all_payments_with_tier_filter()
+        if not tier_filter_success:
+            print("❌ Get payments with tier filter failed")
+            return False
+        
+        # 5. Test get all payments with status filtering
+        status_filter_success, _ = self.test_get_all_payments_with_status_filter()
+        if not status_filter_success:
+            print("❌ Get payments with status filter failed")
+            return False
+        
+        # 6. Test get all payments with date filtering
+        date_filter_success, _ = self.test_get_all_payments_with_date_filter()
+        if not date_filter_success:
+            print("❌ Get payments with date filter failed")
+            return False
+        
+        # 7. Test get all payments without admin token (should fail)
+        unauth_success, _ = self.test_get_all_payments_unauthorized()
+        if not unauth_success:
+            print("❌ Get payments without admin token should return 401")
+            return False
+        
+        # 8. Test CSV export with admin token
+        csv_success, _ = self.test_export_payments_csv_success()
+        if not csv_success:
+            print("❌ CSV export with admin token failed")
+            return False
+        
+        # 9. Test CSV export with filters
+        csv_filter_success, _ = self.test_export_payments_csv_with_filters()
+        if not csv_filter_success:
+            print("❌ CSV export with filters failed")
+            return False
+        
+        # 10. Test CSV export without admin token (should fail)
+        csv_unauth_success, _ = self.test_export_payments_csv_unauthorized()
+        if not csv_unauth_success:
+            print("❌ CSV export without admin token should return 401")
+            return False
+        
+        print("✅ Payments Management API System Test Passed")
+        return True
 
 def main():
     # Get the backend URL from environment or use default
