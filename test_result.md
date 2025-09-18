@@ -228,7 +228,7 @@ backend:
     working: true
     file: "server.py"
     stuck_count: 0
-    priority: "medium"
+    priority: "high"
     needs_retesting: false
     status_history:
       - working: "NA"
@@ -237,6 +237,69 @@ backend:
       - working: true
         agent: "testing"
         comment: "✅ TESTED: User Payment History API with CSV Export fully implemented and working. GET /api/users/payments endpoint exists with proper authentication (returns 401 without valid token). Supports comprehensive filtering: status_filter, tier_filter, date_from, date_to for payment history filtering. GET /api/users/payments/export CSV export endpoint also implemented and requires authentication. Both endpoints accessible at correct URLs and properly secured."
+      - working: true
+        agent: "testing"
+        comment: "✅ PAYMENT HISTORY FIX VERIFIED: Comprehensive testing confirms the payment history fix is working correctly. The /api/users/payments endpoint properly includes ALL payment statuses including 'waiting' payments. Critical bug investigation revealed that admin dashboard shows 3 payments for firstuser (all in 'waiting' status), and the user payment API correctly includes these waiting payments. The fix ensures users can now see their waiting payments, resolving the discrepancy where admin dashboard showed payments that weren't visible to users."
+
+  - task: "Leads Distribution System - CSV Upload"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "New feature: CSV upload system for lead distribution"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Leads Distribution CSV Upload system fully implemented and working. POST /api/admin/leads/upload endpoint properly validates CSV file requirements (Name, Email, Address headers), handles file upload with proper error handling (returns 400 when no file provided), creates distribution records with unique IDs, stores individual leads with distribution tracking, calculates eligible members and estimated timeline. Admin authentication properly enforced."
+
+  - task: "Leads Distribution System - Management & Distribution"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "New feature: Lead distribution management and triggering system"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Leads Distribution Management system fully implemented and working. GET /api/admin/leads/distributions returns paginated list of distributions with status tracking (queued, processing, completed), shows distribution progress and remaining leads count. POST /api/admin/leads/distribute/{distribution_id} enables manual distribution triggering with proper status management. Distribution logic correctly assigns leads based on membership tiers (Bronze=5, Silver=8, Gold=12 leads per member) with maximum 10 distributions per lead."
+
+  - task: "Leads Distribution System - User Access"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "New feature: User access to assigned leads with CSV download"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: User Leads Access system fully implemented and working. GET /api/users/leads returns paginated list of leads assigned to authenticated user with proper filtering and sorting. GET /api/users/leads/download provides CSV export of assigned leads with download tracking (marks leads as downloaded with timestamp). Both endpoints require proper user authentication and handle cases where no leads are assigned (404 response). CSV format includes Name, Email, Address, Assigned Date, Downloaded status."
+
+  - task: "Admin Dashboard Integration - Leads Statistics"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Update admin dashboard to include leads statistics"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Admin Dashboard Leads Integration fully implemented and working. GET /api/admin/dashboard/overview now includes comprehensive leads statistics section with: total distributions count from lead_distributions collection, distributed leads count from member_leads collection, pending distributions count (queued/processing status). Statistics are real-time and properly integrated into existing dashboard structure alongside members, payments, commissions data."
 
   - task: "Milestones System API"
     implemented: true
