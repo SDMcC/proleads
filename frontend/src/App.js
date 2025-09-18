@@ -1404,6 +1404,7 @@ function AdminLoginPage() {
 function AdminDashboard() {
   const [stats, setStats] = useState(null);
   const [members, setMembers] = useState([]);
+  const [payments, setPayments] = useState([]);
   const [selectedMember, setSelectedMember] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
@@ -1414,6 +1415,15 @@ function AdminDashboard() {
   const [editingMember, setEditingMember] = useState(null);
   const [sortField, setSortField] = useState('created_at');
   const [sortDirection, setSortDirection] = useState('desc');
+  
+  // Payments management state
+  const [paymentUserFilter, setPaymentUserFilter] = useState('');
+  const [paymentTierFilter, setPaymentTierFilter] = useState('');
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState('');
+  const [paymentDateFrom, setPaymentDateFrom] = useState('');
+  const [paymentDateTo, setPaymentDateTo] = useState('');
+  const [paymentPage, setPaymentPage] = useState(1);
+  const [paymentTotalPages, setPaymentTotalPages] = useState(1);
 
   useEffect(() => {
     fetchAdminData();
