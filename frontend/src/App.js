@@ -856,97 +856,231 @@ function Dashboard() {
     </div>
   );
 }
-          <StatCard
-            icon={<DollarSign className="h-8 w-8 text-green-400" />}
-            title="Total Earnings"
-            value={`$${stats?.total_earnings?.toFixed(2) || '0.00'} USDC`}
-            subtitle="Completed payments"
-          />
-          <StatCard
-            icon={<Activity className="h-8 w-8 text-yellow-400" />}
-            title="Pending Earnings"
-            value={`$${stats?.pending_earnings?.toFixed(2) || '0.00'} USDC`}
-            subtitle="Processing payouts"
-          />
-          <StatCard
-            icon={<Users className="h-8 w-8 text-blue-400" />}
-            title="Total Referrals"
-            value={stats?.total_referrals || 0}
-            subtitle="All levels"
-          />
-          <StatCard
-            icon={<Award className="h-8 w-8 text-purple-400" />}
-            title="Membership Tier"
-            value={user?.membership_tier?.toUpperCase() || 'AFFILIATE'}
-            subtitle={`${user?.membership_tier === 'affiliate' ? 'Free' : '$' + (user?.membership_tier === 'bronze' ? '20' : user?.membership_tier === 'silver' ? '50' : '100')}/month`}
-            action={
-              <button
-                onClick={() => window.location.href = '/payment'}
-                className="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-all duration-300"
-              >
-                Upgrade
-              </button>
-            }
-          />
-        </div>
 
-        {/* Recent Payments */}
-        <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6 mb-8">
-          <h3 className="text-xl font-bold text-white mb-4">Recent Payments</h3>
-          <RecentPayments />
-        </div>
+// Dashboard Tab Components
+function OverviewTab({ stats, user }) {
+  const copyReferralLink = () => {
+    if (user?.referral_link) {
+      navigator.clipboard.writeText(user.referral_link);
+      alert('Referral link copied to clipboard!');
+    }
+  };
 
-        {/* Referral Link */}
-        <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6 mb-8">
-          <h3 className="text-xl font-bold text-white mb-4">Your Referral Link</h3>
-          <div className="flex items-center space-x-4">
-            <input
-              type="text"
-              value={user?.referral_link || ''}
-              readOnly
-              className="flex-1 px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white"
-            />
+  return (
+    <div>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <StatCard
+          icon={<DollarSign className="h-8 w-8 text-green-400" />}
+          title="Total Earnings"
+          value={`$${stats?.total_earnings?.toFixed(2) || '0.00'} USDC`}
+          subtitle="Completed payments"
+        />
+        <StatCard
+          icon={<Activity className="h-8 w-8 text-yellow-400" />}
+          title="Pending Earnings"
+          value={`$${stats?.pending_earnings?.toFixed(2) || '0.00'} USDC`}
+          subtitle="Processing payouts"
+        />
+        <StatCard
+          icon={<Users className="h-8 w-8 text-blue-400" />}
+          title="Total Referrals"
+          value={stats?.total_referrals || 0}
+          subtitle="All levels"
+        />
+        <StatCard
+          icon={<Award className="h-8 w-8 text-purple-400" />}
+          title="Membership Tier"
+          value={user?.membership_tier?.toUpperCase() || 'AFFILIATE'}
+          subtitle={`${user?.membership_tier === 'affiliate' ? 'Free' : '$' + (user?.membership_tier === 'bronze' ? '20' : user?.membership_tier === 'silver' ? '50' : '100')}/month`}
+          action={
             <button
-              onClick={copyReferralLink}
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center space-x-2 transition-all duration-300"
+              onClick={() => window.location.href = '/payment'}
+              className="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-all duration-300"
             >
-              <Copy className="h-4 w-4" />
-              <span>Copy</span>
+              Upgrade
             </button>
-          </div>
-        </div>
+          }
+        />
+      </div>
 
-        {/* Recent Activity */}
-        <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
-          <h3 className="text-xl font-bold text-white mb-4">Recent Commission Activity</h3>
-          <div className="space-y-4">
-            {stats?.recent_commissions?.length > 0 ? (
-              stats.recent_commissions.map((commission, index) => (
-                <div key={index} className="flex justify-between items-center py-3 border-b border-gray-600 last:border-b-0">
-                  <div>
-                    <p className="text-white font-medium">${commission.amount?.toFixed(2)} USDC</p>
-                    <p className="text-gray-400 text-sm">
-                      Level {commission.level} • {commission.new_member_tier} member • {Math.round((commission.commission_rate || 0) * 100)}%
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      commission.status === 'completed' ? 'bg-green-600 text-green-100' :
-                      commission.status === 'processing' ? 'bg-yellow-600 text-yellow-100' :
-                      'bg-gray-600 text-gray-100'
-                    }`}>
-                      {commission.status}
-                    </span>
-                    <p className="text-gray-400 text-xs mt-1">
-                      {new Date(commission.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
+      {/* Recent Payments */}
+      <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6 mb-8">
+        <h3 className="text-xl font-bold text-white mb-4">Recent Payments</h3>
+        <RecentPayments />
+      </div>
+
+      {/* Referral Link */}
+      <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6 mb-8">
+        <h3 className="text-xl font-bold text-white mb-4">Your Referral Link</h3>
+        <div className="flex items-center space-x-4">
+          <input
+            type="text"
+            value={user?.referral_link || ''}
+            readOnly
+            className="flex-1 px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white"
+          />
+          <button
+            onClick={copyReferralLink}
+            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center space-x-2 transition-all duration-300"
+          >
+            <Copy className="h-4 w-4" />
+            <span>Copy</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Recent Activity */}
+      <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+        <h3 className="text-xl font-bold text-white mb-4">Recent Commission Activity</h3>
+        <div className="space-y-4">
+          {stats?.recent_commissions?.length > 0 ? (
+            stats.recent_commissions.map((commission, index) => (
+              <div key={index} className="flex justify-between items-center py-3 border-b border-gray-600 last:border-b-0">
+                <div>
+                  <p className="text-white font-medium">${commission.amount?.toFixed(2)} USDC</p>
+                  <p className="text-gray-400 text-sm">
+                    Level {commission.level} • {commission.new_member_tier} member • {Math.round((commission.commission_rate || 0) * 100)}%
+                  </p>
                 </div>
-              ))
-            ) : (
-              <p className="text-gray-400 text-center py-8">No commission activity yet. Start referring to earn!</p>
-            )}
-          </div>
+                <div className="text-right">
+                  <span className={`px-2 py-1 rounded text-xs ${
+                    commission.status === 'completed' ? 'bg-green-600 text-green-100' :
+                    commission.status === 'processing' ? 'bg-yellow-600 text-yellow-100' :
+                    'bg-gray-600 text-gray-100'
+                  }`}>
+                    {commission.status}
+                  </span>
+                  <p className="text-gray-400 text-xs mt-1">
+                    {new Date(commission.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="text-gray-400 text-center py-8">No commission activity yet. Start referring to earn!</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function NetworkTreeTab() {
+  return (
+    <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+      <h3 className="text-xl font-bold text-white mb-4">Network Tree</h3>
+      <p className="text-gray-400 text-center py-8">Network tree visualization coming soon!</p>
+    </div>
+  );
+}
+
+function AffiliateToolsTab({ user }) {
+  const copyReferralLink = () => {
+    if (user?.referral_link) {
+      navigator.clipboard.writeText(user.referral_link);
+      alert('Referral link copied to clipboard!');
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Referral Link */}
+      <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+        <h3 className="text-xl font-bold text-white mb-4">Your Referral Link</h3>
+        <div className="flex items-center space-x-4">
+          <input
+            type="text"
+            value={user?.referral_link || ''}
+            readOnly
+            className="flex-1 px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white"
+          />
+          <button
+            onClick={copyReferralLink}
+            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center space-x-2 transition-all duration-300"
+          >
+            <Copy className="h-4 w-4" />
+            <span>Copy</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Marketing Materials */}
+      <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+        <h3 className="text-xl font-bold text-white mb-4">Marketing Materials</h3>
+        <p className="text-gray-400 text-center py-8">Marketing materials and banners coming soon!</p>
+      </div>
+    </div>
+  );
+}
+
+function EarningsTab() {
+  return (
+    <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+      <h3 className="text-xl font-bold text-white mb-4">Earnings Details</h3>
+      <p className="text-gray-400 text-center py-8">Detailed earnings breakdown coming soon!</p>
+    </div>
+  );
+}
+
+function PaymentHistoryTab() {
+  return (
+    <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+      <h3 className="text-xl font-bold text-white mb-4">Payment History</h3>
+      <RecentPayments />
+    </div>
+  );
+}
+
+function MilestonesTab() {
+  return (
+    <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+      <h3 className="text-xl font-bold text-white mb-4">Milestones & Achievements</h3>
+      <p className="text-gray-400 text-center py-8">Milestone tracking coming soon!</p>
+    </div>
+  );
+}
+
+function AccountSettingsTab({ user }) {
+  return (
+    <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+      <h3 className="text-xl font-bold text-white mb-4">Account Settings</h3>
+      <div className="space-y-4">
+        <div>
+          <label className="block text-gray-300 text-sm font-medium mb-2">Username</label>
+          <input
+            type="text"
+            value={user?.username || ''}
+            readOnly
+            className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white"
+          />
+        </div>
+        <div>
+          <label className="block text-gray-300 text-sm font-medium mb-2">Email</label>
+          <input
+            type="email"
+            value={user?.email || ''}
+            readOnly
+            className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white"
+          />
+        </div>
+        <div>
+          <label className="block text-gray-300 text-sm font-medium mb-2">Wallet Address</label>
+          <input
+            type="text"
+            value={user?.address || ''}
+            readOnly
+            className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white"
+          />
+        </div>
+        <div>
+          <label className="block text-gray-300 text-sm font-medium mb-2">Membership Tier</label>
+          <input
+            type="text"
+            value={user?.membership_tier?.toUpperCase() || 'AFFILIATE'}
+            readOnly
+            className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white"
+          />
         </div>
       </div>
     </div>
