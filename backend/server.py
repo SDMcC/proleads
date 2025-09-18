@@ -1258,6 +1258,216 @@ async def export_payments_csv(
         logger.error(f"Failed to export payments: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to export payments")
 
+# Admin commissions management endpoints
+@app.get("/api/admin/commissions")
+async def get_all_commissions(
+    user_filter: Optional[str] = None,
+    tier_filter: Optional[str] = None,
+    status_filter: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    page: int = 1,
+    limit: int = 50,
+    admin: dict = Depends(get_admin_user)
+):
+    """Get all commissions with optional filtering and pagination"""
+    try:
+        skip = (page - 1) * limit
+        
+        # Build filter query
+        filter_query = {}
+        
+        if user_filter:
+            # Search by recipient username or email
+            users = await db.users.find({
+                "$or": [
+                    {"username": {"$regex": user_filter, "$options": "i"}},
+                    {"email": {"$regex": user_filter, "$options": "i"}}
+                ]
+            }).to_list(None)
+            user_addresses = [user["address"] for user in users]
+            if user_addresses:
+                filter_query["recipient_address"] = {"$in": user_addresses}
+            else:
+                # No users found matching the filter
+                return {
+                    "commissions": [],
+                    "total_count": 0,
+                    "page": page,
+                    "limit": limit,
+                    "total_pages": 0
+                }
+        
+        if tier_filter:
+            filter_query["new_member_tier"] = tier_filter
+            
+        if status_filter:
+            filter_query["status"] = status_filter
+            
+        if date_from:
+            date_from_obj = datetime.fromisoformat(date_from.replace("Z", "+00:00"))
+            filter_query["created_at"] = {"$gte": date_from_obj}
+            
+        if date_to:
+            date_to_obj = datetime.fromisoformat(date_to.replace("Z", "+00:00"))
+            if "created_at" in filter_query:
+                filter_query["created_at"]["$lte"] = date_to_obj
+            else:
+                filter_query["created_at"] = {"$lte": date_to_obj}
+        
+        # Get total count
+        total_count = await db.commissions.count_documents(filter_query)
+        
+        # Get commissions with pagination
+        commissions_cursor = db.commissions.find(filter_query).skip(skip).limit(limit).sort("created_at", -1)
+        commissions = await commissions_cursor.to_list(length=None)
+        
+        # Enrich commission data with user information
+        enriched_commissions = []
+        for commission in commissions:
+            # Get recipient user info
+            recipient = await db.users.find_one({"address": commission["recipient_address"]})
+            
+            # Get new member info
+            new_member = await db.users.find_one({"address": commission.get("new_member_address", "")})
+            
+            enriched_commission = {
+                "id": commission["commission_id"],
+                "recipient_address": commission["recipient_address"],
+                "recipient_username": recipient["username"] if recipient else "Unknown",
+                "recipient_email": recipient["email"] if recipient else "Unknown",
+                "new_member_address": commission.get("new_member_address", ""),
+                "new_member_username": new_member["username"] if new_member else "Unknown",
+                "new_member_tier": commission.get("new_member_tier", ""),
+                "amount": commission["amount"],
+                "level": commission.get("level", 1),
+                "status": commission["status"],
+                "created_at": commission["created_at"],
+                "updated_at": commission.get("updated_at"),
+                "payout_tx_hash": commission.get("payout_tx_hash"),
+                "payout_address": commission.get("payout_address")
+            }
+            enriched_commissions.append(enriched_commission)
+        
+        return {
+            "commissions": enriched_commissions,
+            "total_count": total_count,
+            "page": page,
+            "limit": limit,
+            "total_pages": (total_count + limit - 1) // limit
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to fetch commissions: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch commissions")
+
+@app.get("/api/admin/commissions/export")
+async def export_commissions_csv(
+    user_filter: Optional[str] = None,
+    tier_filter: Optional[str] = None,
+    status_filter: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    admin: dict = Depends(get_admin_user)
+):
+    """Export commissions to CSV file"""
+    try:
+        # Use the same filter logic as get_all_commissions but without pagination
+        filter_query = {}
+        
+        if user_filter:
+            users = await db.users.find({
+                "$or": [
+                    {"username": {"$regex": user_filter, "$options": "i"}},
+                    {"email": {"$regex": user_filter, "$options": "i"}}
+                ]
+            }).to_list(None)
+            user_addresses = [user["address"] for user in users]
+            if user_addresses:
+                filter_query["recipient_address"] = {"$in": user_addresses}
+            else:
+                filter_query["recipient_address"] = {"$in": []}  # No matches
+        
+        if tier_filter:
+            filter_query["new_member_tier"] = tier_filter
+            
+        if status_filter:
+            filter_query["status"] = status_filter
+            
+        if date_from:
+            date_from_obj = datetime.fromisoformat(date_from.replace("Z", "+00:00"))
+            filter_query["created_at"] = {"$gte": date_from_obj}
+            
+        if date_to:
+            date_to_obj = datetime.fromisoformat(date_to.replace("Z", "+00:00"))
+            if "created_at" in filter_query:
+                filter_query["created_at"]["$lte"] = date_to_obj
+            else:
+                filter_query["created_at"] = {"$lte": date_to_obj}
+        
+        # Get all commissions matching the filter
+        commissions_cursor = db.commissions.find(filter_query).sort("created_at", -1)
+        commissions = await commissions_cursor.to_list(length=None)
+        
+        # Create CSV content
+        output = io.StringIO()
+        writer = csv.writer(output)
+        
+        # Write header
+        writer.writerow([
+            'Commission ID',
+            'Recipient Username',
+            'Recipient Email',
+            'Recipient Wallet Address',
+            'New Member Username',
+            'New Member Tier',
+            'Commission Amount',
+            'Level',
+            'Status',
+            'Created Date',
+            'Updated Date',
+            'Payout TX Hash',
+            'Payout Address'
+        ])
+        
+        # Write data rows
+        for commission in commissions:
+            recipient = await db.users.find_one({"address": commission["recipient_address"]})
+            new_member = await db.users.find_one({"address": commission.get("new_member_address", "")})
+            
+            writer.writerow([
+                commission["commission_id"],
+                recipient["username"] if recipient else "Unknown",
+                recipient["email"] if recipient else "Unknown",
+                commission["recipient_address"],
+                new_member["username"] if new_member else "Unknown",
+                commission.get("new_member_tier", ""),
+                commission["amount"],
+                commission.get("level", 1),
+                commission["status"],
+                commission["created_at"].strftime("%Y-%m-%d %H:%M:%S") if commission["created_at"] else "",
+                commission.get("updated_at").strftime("%Y-%m-%d %H:%M:%S") if commission.get("updated_at") else "",
+                commission.get("payout_tx_hash", ""),
+                commission.get("payout_address", "")
+            ])
+        
+        # Prepare the CSV for download
+        output.seek(0)
+        
+        # Generate filename with timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"commissions_export_{timestamp}.csv"
+        
+        return StreamingResponse(
+            io.BytesIO(output.getvalue().encode('utf-8')),
+            media_type="text/csv",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+        
+    except Exception as e:
+        logger.error(f"Failed to export commissions: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to export commissions")
+
 # WebSocket endpoint
 @app.websocket("/ws/updates")
 async def websocket_endpoint(websocket: WebSocket):
