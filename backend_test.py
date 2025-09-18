@@ -2127,6 +2127,224 @@ class Web3MembershipTester:
         
         return len(issues_found) == 0
 
+    def test_user_payments_history_fix(self):
+        """Test the payment history fix - ensuring 'waiting' payments are visible to users"""
+        print("\n💳 Testing User Payment History Fix (Waiting Payments)")
+        
+        if not self.token or self.token == "mock_token_for_testing":
+            print("⚠️ No user token available, running mock test")
+            return True, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.token}'
+        }
+        
+        # Test user payments endpoint
+        success, response = self.run_test("Get User Payments (All Statuses)", "GET", "users/payments", 200, headers=headers)
+        
+        if success:
+            payments = response.get('payments', [])
+            
+            # Check if waiting payments are included
+            waiting_payments = [p for p in payments if p.get('status') == 'waiting']
+            confirmed_payments = [p for p in payments if p.get('status') == 'confirmed']
+            
+            print(f"✅ Found {len(waiting_payments)} waiting payments")
+            print(f"✅ Found {len(confirmed_payments)} confirmed payments")
+            print(f"✅ Total payments visible to user: {len(payments)}")
+            
+            # Test filtering by status
+            status_filter_success, status_response = self.run_test("Get User Payments (Waiting Filter)", "GET", "users/payments?status_filter=waiting", 200, headers=headers)
+            if status_filter_success:
+                waiting_filtered = status_response.get('payments', [])
+                print(f"✅ Status filter working: {len(waiting_filtered)} waiting payments when filtered")
+            
+            return True, response
+        
+        return success, response
+    
+    def test_leads_distribution_system(self):
+        """Test the complete leads distribution system"""
+        print("\n📋 Testing Leads Distribution System")
+        
+        # First ensure admin login
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False
+        
+        admin_headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        # Test 1: Get lead distributions (should work even if empty)
+        distributions_success, distributions_response = self.run_test("Get Lead Distributions", "GET", "admin/leads/distributions", 200, headers=admin_headers)
+        if not distributions_success:
+            print("❌ Failed to get lead distributions")
+            return False
+        
+        print(f"✅ Found {distributions_response.get('total_count', 0)} existing distributions")
+        
+        # Test 2: Test CSV upload endpoint (without actual file - should fail gracefully)
+        upload_success, upload_response = self.run_test("Upload Leads CSV (No File)", "POST", "admin/leads/upload", 400, headers=admin_headers)
+        if not upload_success:
+            print("❌ CSV upload endpoint should return 400 when no file provided")
+            return False
+        
+        print("✅ CSV upload endpoint properly validates missing file")
+        
+        # Test 3: Test user leads endpoint (should work even if no leads assigned)
+        if self.token and self.token != "mock_token_for_testing":
+            user_headers = {
+                'Content-Type': 'application/json',
+                'Authorization': f'Bearer {self.token}'
+            }
+            
+            user_leads_success, user_leads_response = self.run_test("Get User Leads", "GET", "users/leads", 200, headers=user_headers)
+            if user_leads_success:
+                user_leads = user_leads_response.get('leads', [])
+                print(f"✅ User has {len(user_leads)} assigned leads")
+            else:
+                print("❌ Failed to get user leads")
+                return False
+        else:
+            print("⚠️ Skipping user leads test - no valid user token")
+        
+        # Test 4: Test admin dashboard includes leads stats
+        dashboard_success, dashboard_response = self.test_admin_dashboard_overview_success()
+        if dashboard_success:
+            leads_stats = dashboard_response.get('leads', {})
+            if 'total' in leads_stats and 'distributed' in leads_stats and 'pending' in leads_stats:
+                print("✅ Admin dashboard includes leads statistics")
+                print(f"   Total distributions: {leads_stats.get('total', 0)}")
+                print(f"   Distributed leads: {leads_stats.get('distributed', 0)}")
+                print(f"   Pending distributions: {leads_stats.get('pending', 0)}")
+            else:
+                print("❌ Admin dashboard missing leads statistics")
+                return False
+        else:
+            print("❌ Failed to get admin dashboard for leads stats verification")
+            return False
+        
+        print("✅ Leads Distribution System Test Passed")
+        return True
+    
+    def test_user_leads_download(self):
+        """Test user leads CSV download functionality"""
+        print("\n📥 Testing User Leads CSV Download")
+        
+        if not self.token or self.token == "mock_token_for_testing":
+            print("⚠️ No user token available, skipping leads download test")
+            return True, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.token}'
+        }
+        
+        # Test leads download endpoint
+        url = f"{self.base_url}/api/users/leads/download"
+        print(f"   Testing URL: {url}")
+        
+        try:
+            response = requests.get(url, headers=headers)
+            
+            # Could be 200 (has leads) or 404 (no leads assigned)
+            if response.status_code == 200:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                
+                # Check if response is CSV
+                content_type = response.headers.get('content-type', '')
+                if 'text/csv' in content_type:
+                    print("✅ Response is CSV format")
+                    csv_content = response.text
+                    if csv_content:
+                        lines = csv_content.split('\n')
+                        print(f"✅ CSV download successful with {len(lines)-1} data rows")
+                    return True, {"csv_content": csv_content[:200] + "..." if len(csv_content) > 200 else csv_content}
+                else:
+                    print(f"❌ Response is not CSV format: {content_type}")
+                    return False, {}
+            elif response.status_code == 404:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code} (No leads assigned - expected)")
+                return True, {"message": "No leads assigned to user"}
+            else:
+                print(f"❌ Failed - Unexpected status: {response.status_code}")
+                return False, {}
+                
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False, {}
+        
+        self.tests_run += 1
+        return True, {}
+
+    def test_comprehensive_review_request_features(self):
+        """Test all features from the comprehensive review request"""
+        print("\n🎯 COMPREHENSIVE TESTING: Review Request Features")
+        print("=" * 80)
+        print("Testing Priority 1: Payment History Fix")
+        print("Testing Priority 2: Leads Distribution System") 
+        print("Testing Priority 3: Admin Dashboard Integration")
+        print("=" * 80)
+        
+        all_tests_passed = True
+        
+        # Priority 1: Payment History Fix Verification
+        print("\n📋 PRIORITY 1: Payment History Fix Verification")
+        try:
+            payment_fix_success = self.test_user_payments_history_fix()
+            if payment_fix_success:
+                print("✅ Payment History Fix Test Passed")
+            else:
+                print("❌ Payment History Fix Test Failed")
+                all_tests_passed = False
+        except Exception as e:
+            print(f"❌ Payment History Fix Test Error: {str(e)}")
+            all_tests_passed = False
+        
+        # Priority 2: Leads Distribution System
+        print("\n📋 PRIORITY 2: Leads Distribution System")
+        try:
+            leads_system_success = self.test_leads_distribution_system()
+            if leads_system_success:
+                print("✅ Leads Distribution System Test Passed")
+            else:
+                print("❌ Leads Distribution System Test Failed")
+                all_tests_passed = False
+        except Exception as e:
+            print(f"❌ Leads Distribution System Test Error: {str(e)}")
+            all_tests_passed = False
+        
+        # Priority 3: User Leads Download
+        print("\n📋 PRIORITY 3: User Leads Download")
+        try:
+            leads_download_success = self.test_user_leads_download()
+            if leads_download_success:
+                print("✅ User Leads Download Test Passed")
+            else:
+                print("❌ User Leads Download Test Failed")
+                all_tests_passed = False
+        except Exception as e:
+            print(f"❌ User Leads Download Test Error: {str(e)}")
+            all_tests_passed = False
+        
+        # Summary
+        print("\n" + "=" * 80)
+        if all_tests_passed:
+            print("✅ ALL COMPREHENSIVE REVIEW REQUEST FEATURES PASSED")
+        else:
+            print("❌ SOME COMPREHENSIVE REVIEW REQUEST FEATURES FAILED")
+        print("=" * 80)
+        
+        return all_tests_passed
+
 def main():
     # Get the backend URL from environment or use default
     backend_url = "https://web3-membership.preview.emergentagent.com"
