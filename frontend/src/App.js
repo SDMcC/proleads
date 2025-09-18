@@ -1405,6 +1405,7 @@ function AdminDashboard() {
   const [stats, setStats] = useState(null);
   const [members, setMembers] = useState([]);
   const [payments, setPayments] = useState([]);
+  const [commissions, setCommissions] = useState([]);
   const [selectedMember, setSelectedMember] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
@@ -1424,6 +1425,15 @@ function AdminDashboard() {
   const [paymentDateTo, setPaymentDateTo] = useState('');
   const [paymentPage, setPaymentPage] = useState(1);
   const [paymentTotalPages, setPaymentTotalPages] = useState(1);
+  
+  // Commissions management state
+  const [commissionUserFilter, setCommissionUserFilter] = useState('');
+  const [commissionTierFilter, setCommissionTierFilter] = useState('');
+  const [commissionStatusFilter, setCommissionStatusFilter] = useState('');
+  const [commissionDateFrom, setCommissionDateFrom] = useState('');
+  const [commissionDateTo, setCommissionDateTo] = useState('');
+  const [commissionPage, setCommissionPage] = useState(1);
+  const [commissionTotalPages, setCommissionTotalPages] = useState(1);
 
   useEffect(() => {
     fetchAdminData();
