@@ -1468,6 +1468,316 @@ async def export_commissions_csv(
         logger.error(f"Failed to export commissions: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to export commissions")
 
+# User earnings and payment history endpoints
+@app.get("/api/users/earnings")
+async def get_user_earnings(
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    status_filter: Optional[str] = None,
+    page: int = 1,
+    limit: int = 50,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get user's commission earnings history with filtering"""
+    try:
+        skip = (page - 1) * limit
+        user_address = current_user["address"]
+        
+        # Build filter query
+        filter_query = {"recipient_address": user_address}
+        
+        if status_filter:
+            filter_query["status"] = status_filter
+            
+        if date_from:
+            date_from_obj = datetime.fromisoformat(date_from.replace("Z", "+00:00"))
+            filter_query["created_at"] = {"$gte": date_from_obj}
+            
+        if date_to:
+            date_to_obj = datetime.fromisoformat(date_to.replace("Z", "+00:00"))
+            if "created_at" in filter_query:
+                filter_query["created_at"]["$lte"] = date_to_obj
+            else:
+                filter_query["created_at"] = {"$lte": date_to_obj}
+        
+        # Get total count
+        total_count = await db.commissions.count_documents(filter_query)
+        
+        # Get earnings with pagination
+        earnings_cursor = db.commissions.find(filter_query).skip(skip).limit(limit).sort("created_at", -1)
+        earnings = await earnings_cursor.to_list(length=None)
+        
+        # Enrich earnings data
+        enriched_earnings = []
+        for earning in earnings:
+            # Get new member info
+            new_member = await db.users.find_one({"address": earning.get("new_member_address", "")})
+            
+            enriched_earning = {
+                "id": earning["commission_id"],
+                "amount": earning["amount"],
+                "level": earning.get("level", 1),
+                "status": earning["status"],
+                "new_member_username": new_member["username"] if new_member else "Unknown",
+                "new_member_tier": earning.get("new_member_tier", ""),
+                "created_at": earning["created_at"],
+                "updated_at": earning.get("updated_at"),
+                "payout_tx_hash": earning.get("payout_tx_hash"),
+                "payout_address": earning.get("payout_address")
+            }
+            enriched_earnings.append(enriched_earning)
+        
+        return {
+            "earnings": enriched_earnings,
+            "total_count": total_count,
+            "page": page,
+            "limit": limit,
+            "total_pages": (total_count + limit - 1) // limit
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to fetch user earnings: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch user earnings")
+
+@app.get("/api/users/earnings/export")
+async def export_user_earnings_csv(
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    status_filter: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Export user's earnings to CSV file"""
+    try:
+        user_address = current_user["address"]
+        
+        # Build filter query
+        filter_query = {"recipient_address": user_address}
+        
+        if status_filter:
+            filter_query["status"] = status_filter
+            
+        if date_from:
+            date_from_obj = datetime.fromisoformat(date_from.replace("Z", "+00:00"))
+            filter_query["created_at"] = {"$gte": date_from_obj}
+            
+        if date_to:
+            date_to_obj = datetime.fromisoformat(date_to.replace("Z", "+00:00"))
+            if "created_at" in filter_query:
+                filter_query["created_at"]["$lte"] = date_to_obj
+            else:
+                filter_query["created_at"] = {"$lte": date_to_obj}
+        
+        # Get all earnings matching the filter
+        earnings_cursor = db.commissions.find(filter_query).sort("created_at", -1)
+        earnings = await earnings_cursor.to_list(length=None)
+        
+        # Create CSV content
+        output = io.StringIO()
+        writer = csv.writer(output)
+        
+        # Write header
+        writer.writerow([
+            'Commission ID',
+            'Amount',
+            'Level',
+            'Status',
+            'New Member Username',
+            'New Member Tier',
+            'Earned Date',
+            'Updated Date',
+            'Payout TX Hash',
+            'Payout Address'
+        ])
+        
+        # Write data rows
+        for earning in earnings:
+            new_member = await db.users.find_one({"address": earning.get("new_member_address", "")})
+            
+            writer.writerow([
+                earning["commission_id"],
+                earning["amount"],
+                earning.get("level", 1),
+                earning["status"],
+                new_member["username"] if new_member else "Unknown",
+                earning.get("new_member_tier", ""),
+                earning["created_at"].strftime("%Y-%m-%d %H:%M:%S") if earning["created_at"] else "",
+                earning.get("updated_at").strftime("%Y-%m-%d %H:%M:%S") if earning.get("updated_at") else "",
+                earning.get("payout_tx_hash", ""),
+                earning.get("payout_address", "")
+            ])
+        
+        # Prepare the CSV for download
+        output.seek(0)
+        
+        # Generate filename with timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"earnings_export_{timestamp}.csv"
+        
+        return StreamingResponse(
+            io.BytesIO(output.getvalue().encode('utf-8')),
+            media_type="text/csv",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+        
+    except Exception as e:
+        logger.error(f"Failed to export user earnings: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to export user earnings")
+
+@app.get("/api/users/payments")
+async def get_user_payments(
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    status_filter: Optional[str] = None,
+    tier_filter: Optional[str] = None,
+    page: int = 1,
+    limit: int = 50,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get user's payment history with filtering"""
+    try:
+        skip = (page - 1) * limit
+        user_address = current_user["address"]
+        
+        # Build filter query
+        filter_query = {"user_address": user_address}
+        
+        if status_filter:
+            filter_query["status"] = status_filter
+            
+        if tier_filter:
+            filter_query["tier"] = tier_filter
+            
+        if date_from:
+            date_from_obj = datetime.fromisoformat(date_from.replace("Z", "+00:00"))
+            filter_query["created_at"] = {"$gte": date_from_obj}
+            
+        if date_to:
+            date_to_obj = datetime.fromisoformat(date_to.replace("Z", "+00:00"))
+            if "created_at" in filter_query:
+                filter_query["created_at"]["$lte"] = date_to_obj
+            else:
+                filter_query["created_at"] = {"$lte": date_to_obj}
+        
+        # Get total count
+        total_count = await db.payments.count_documents(filter_query)
+        
+        # Get payments with pagination
+        payments_cursor = db.payments.find(filter_query).skip(skip).limit(limit).sort("created_at", -1)
+        payments = await payments_cursor.to_list(length=None)
+        
+        # Format payment data
+        formatted_payments = []
+        for payment in payments:
+            formatted_payment = {
+                "id": payment["payment_id"],
+                "amount": payment["amount"],
+                "currency": payment.get("currency", "ETH"),
+                "tier": payment["tier"],
+                "status": payment["status"],
+                "payment_url": payment.get("payment_url"),
+                "created_at": payment["created_at"],
+                "updated_at": payment.get("updated_at"),
+                "nowpayments_id": payment.get("nowpayments_payment_id"),
+                "invoice_id": payment.get("invoice_id")
+            }
+            formatted_payments.append(formatted_payment)
+        
+        return {
+            "payments": formatted_payments,
+            "total_count": total_count,
+            "page": page,
+            "limit": limit,
+            "total_pages": (total_count + limit - 1) // limit
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to fetch user payments: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch user payments")
+
+@app.get("/api/users/payments/export")
+async def export_user_payments_csv(
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    status_filter: Optional[str] = None,
+    tier_filter: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Export user's payments to CSV file"""
+    try:
+        user_address = current_user["address"]
+        
+        # Build filter query
+        filter_query = {"user_address": user_address}
+        
+        if status_filter:
+            filter_query["status"] = status_filter
+            
+        if tier_filter:
+            filter_query["tier"] = tier_filter
+            
+        if date_from:
+            date_from_obj = datetime.fromisoformat(date_from.replace("Z", "+00:00"))
+            filter_query["created_at"] = {"$gte": date_from_obj}
+            
+        if date_to:
+            date_to_obj = datetime.fromisoformat(date_to.replace("Z", "+00:00"))
+            if "created_at" in filter_query:
+                filter_query["created_at"]["$lte"] = date_to_obj
+            else:
+                filter_query["created_at"] = {"$lte": date_to_obj}
+        
+        # Get all payments matching the filter
+        payments_cursor = db.payments.find(filter_query).sort("created_at", -1)
+        payments = await payments_cursor.to_list(length=None)
+        
+        # Create CSV content
+        output = io.StringIO()
+        writer = csv.writer(output)
+        
+        # Write header
+        writer.writerow([
+            'Payment ID',
+            'Amount',
+            'Currency',
+            'Membership Tier',
+            'Status',
+            'Payment Date',
+            'Updated Date',
+            'NOWPayments ID',
+            'Invoice ID'
+        ])
+        
+        # Write data rows
+        for payment in payments:
+            writer.writerow([
+                payment["payment_id"],
+                payment["amount"],
+                payment.get("currency", "ETH"),
+                payment["tier"],
+                payment["status"],
+                payment["created_at"].strftime("%Y-%m-%d %H:%M:%S") if payment["created_at"] else "",
+                payment.get("updated_at").strftime("%Y-%m-%d %H:%M:%S") if payment.get("updated_at") else "",
+                payment.get("nowpayments_payment_id", ""),
+                payment.get("invoice_id", "")
+            ])
+        
+        # Prepare the CSV for download
+        output.seek(0)
+        
+        # Generate filename with timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"payments_export_{timestamp}.csv"
+        
+        return StreamingResponse(
+            io.BytesIO(output.getvalue().encode('utf-8')),
+            media_type="text/csv",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+        
+    except Exception as e:
+        logger.error(f"Failed to export user payments: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to export user payments")
+
 # WebSocket endpoint
 @app.websocket("/ws/updates")
 async def websocket_endpoint(websocket: WebSocket):
