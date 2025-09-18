@@ -1896,33 +1896,33 @@ function MemberModal({ member, editingMember, onClose, onUpdate, onSuspend, onEd
                 <div className="space-y-3">
                   <div>
                     <span className="text-gray-400">Username:</span>
-                    <span className="text-white ml-2">{member.username}</span>
+                    <span className="text-white ml-2">{memberData.username}</span>
                   </div>
                   <div>
                     <span className="text-gray-400">Email:</span>
-                    <span className="text-white ml-2">{member.email}</span>
+                    <span className="text-white ml-2">{memberData.email}</span>
                   </div>
                   <div>
                     <span className="text-gray-400">Wallet:</span>
                     <span className="text-white ml-2 font-mono text-sm">
-                      {member.wallet_address}
+                      {memberData.wallet_address || memberData.id}
                     </span>
                   </div>
                   <div>
                     <span className="text-gray-400">Tier:</span>
                     <span className={`ml-2 px-2 py-1 rounded text-xs uppercase font-medium ${
-                      member.membership_tier === 'gold' ? 'bg-yellow-600 text-yellow-100' :
-                      member.membership_tier === 'silver' ? 'bg-gray-600 text-gray-100' :
-                      member.membership_tier === 'bronze' ? 'bg-orange-600 text-orange-100' :
+                      memberData.membership_tier === 'gold' ? 'bg-yellow-600 text-yellow-100' :
+                      memberData.membership_tier === 'silver' ? 'bg-gray-600 text-gray-100' :
+                      memberData.membership_tier === 'bronze' ? 'bg-orange-600 text-orange-100' :
                       'bg-blue-600 text-blue-100'
                     }`}>
-                      {member.membership_tier}
+                      {memberData.membership_tier}
                     </span>
                   </div>
                   <div>
                     <span className="text-gray-400">Joined:</span>
                     <span className="text-white ml-2">
-                      {new Date(member.created_at).toLocaleDateString()}
+                      {new Date(memberData.created_at).toLocaleDateString()}
                     </span>
                   </div>
                 </div>
