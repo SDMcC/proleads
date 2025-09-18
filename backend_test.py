@@ -1251,6 +1251,13 @@ def main():
     else:
         print("\n✅ Members Management API system test passed")
     
+    # Test Payments Management API system (Priority 1c)
+    payments_success = tester.test_payments_management_system()
+    if not payments_success:
+        print("\n⚠️ Payments Management API system test failed")
+    else:
+        print("\n✅ Payments Management API system test passed")
+    
     # Test complete registration flow
     flow_success = tester.test_complete_registration_flow()
     if not flow_success:
