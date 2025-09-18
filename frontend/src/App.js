@@ -2245,6 +2245,225 @@ function AdminDashboard() {
             </div>
           </div>
         )}
+
+        {/* Commissions Management Tab */}
+        {activeTab === 'commissions' && (
+          <div className="space-y-6">
+            {/* Commissions Filters */}
+            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+              <div className="flex flex-col lg:flex-row gap-4 items-end">
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-white mb-4">Commissions Management</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                      <label className="block text-gray-300 text-sm font-medium mb-2">Recipient Search</label>
+                      <input
+                        type="text"
+                        value={commissionUserFilter}
+                        onChange={(e) => setCommissionUserFilter(e.target.value)}
+                        placeholder="Username or email"
+                        className="w-full px-3 py-2 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-red-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-300 text-sm font-medium mb-2">New Member Tier</label>
+                      <select
+                        value={commissionTierFilter}
+                        onChange={(e) => setCommissionTierFilter(e.target.value)}
+                        className="w-full px-3 py-2 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-red-400"
+                      >
+                        <option value="">All Tiers</option>
+                        <option value="affiliate">Affiliate</option>
+                        <option value="bronze">Bronze</option>
+                        <option value="silver">Silver</option>
+                        <option value="gold">Gold</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-gray-300 text-sm font-medium mb-2">Status</label>
+                      <select
+                        value={commissionStatusFilter}
+                        onChange={(e) => setCommissionStatusFilter(e.target.value)}
+                        className="w-full px-3 py-2 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-red-400"
+                      >
+                        <option value="">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="processing">Processing</option>
+                        <option value="completed">Completed</option>
+                        <option value="failed">Failed</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                      <label className="block text-gray-300 text-sm font-medium mb-2">Date From</label>
+                      <input
+                        type="date"
+                        value={commissionDateFrom}
+                        onChange={(e) => setCommissionDateFrom(e.target.value)}
+                        className="w-full px-3 py-2 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-red-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-300 text-sm font-medium mb-2">Date To</label>
+                      <input
+                        type="date"
+                        value={commissionDateTo}
+                        onChange={(e) => setCommissionDateTo(e.target.value)}
+                        className="w-full px-3 py-2 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-red-400"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      setCommissionUserFilter('');
+                      setCommissionTierFilter('');
+                      setCommissionStatusFilter('');
+                      setCommissionDateFrom('');
+                      setCommissionDateTo('');
+                      setCommissionPage(1);
+                    }}
+                    className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-all duration-300"
+                  >
+                    Clear Filters
+                  </button>
+                  <button
+                    onClick={exportCommissionsCSV}
+                    className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-300 flex items-center space-x-2"
+                  >
+                    <FileText className="h-4 w-4" />
+                    <span>Export CSV</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Commissions Table */}
+            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="border-b border-gray-600">
+                      <th className="pb-3 text-gray-300 font-medium">Commission ID</th>
+                      <th className="pb-3 text-gray-300 font-medium">Recipient</th>
+                      <th className="pb-3 text-gray-300 font-medium">New Member</th>
+                      <th className="pb-3 text-gray-300 font-medium">Amount</th>
+                      <th className="pb-3 text-gray-300 font-medium">Level</th>
+                      <th className="pb-3 text-gray-300 font-medium">Status</th>
+                      <th className="pb-3 text-gray-300 font-medium">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {commissions.map((commission, index) => (
+                      <tr key={index} className="border-b border-gray-700 last:border-b-0">
+                        <td className="py-3">
+                          <div>
+                            <p className="text-white font-mono text-sm">{commission.id.slice(0, 8)}...{commission.id.slice(-6)}</p>
+                          </div>
+                        </td>
+                        <td className="py-3">
+                          <div>
+                            <p className="text-white font-medium">{commission.recipient_username}</p>
+                            <p className="text-gray-400 text-sm">{commission.recipient_email}</p>
+                            <p className="text-gray-500 text-xs font-mono">{commission.recipient_address.slice(0, 8)}...{commission.recipient_address.slice(-6)}</p>
+                          </div>
+                        </td>
+                        <td className="py-3">
+                          <div>
+                            <p className="text-white font-medium">{commission.new_member_username}</p>
+                            <span className={`inline-block px-2 py-1 rounded text-xs uppercase font-medium mt-1 ${
+                              commission.new_member_tier === 'gold' ? 'bg-yellow-600 text-yellow-100' :
+                              commission.new_member_tier === 'silver' ? 'bg-gray-600 text-gray-100' :
+                              commission.new_member_tier === 'bronze' ? 'bg-orange-600 text-orange-100' :
+                              'bg-blue-600 text-blue-100'
+                            }`}>
+                              {commission.new_member_tier}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-3">
+                          <p className="text-white font-medium">${commission.amount}</p>
+                        </td>
+                        <td className="py-3">
+                          <span className="px-2 py-1 bg-purple-600 text-purple-100 rounded text-xs font-medium">
+                            Level {commission.level}
+                          </span>
+                        </td>
+                        <td className="py-3">
+                          <span className={`px-2 py-1 rounded text-xs ${
+                            commission.status === 'completed' ? 'bg-green-600 text-green-100' :
+                            commission.status === 'processing' ? 'bg-yellow-600 text-yellow-100' :
+                            commission.status === 'pending' ? 'bg-blue-600 text-blue-100' :
+                            'bg-red-600 text-red-100'
+                          }`}>
+                            {commission.status}
+                          </span>
+                        </td>
+                        <td className="py-3 text-gray-400">
+                          {new Date(commission.created_at).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                
+                {commissions.length === 0 && (
+                  <div className="text-center py-8">
+                    <p className="text-gray-400">No commissions found</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Pagination Controls */}
+              {commissionTotalPages > 1 && (
+                <div className="flex justify-center items-center space-x-4 mt-6 pt-6 border-t border-gray-700">
+                  <button
+                    onClick={() => setCommissionPage(Math.max(1, commissionPage - 1))}
+                    disabled={commissionPage === 1}
+                    className="px-4 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-800 disabled:text-gray-500 text-white rounded-lg transition-all duration-300"
+                  >
+                    Previous
+                  </button>
+                  
+                  <div className="flex space-x-2">
+                    {Array.from({ length: Math.min(5, commissionTotalPages) }, (_, i) => {
+                      const page = i + Math.max(1, commissionPage - 2);
+                      if (page > commissionTotalPages) return null;
+                      
+                      return (
+                        <button
+                          key={page}
+                          onClick={() => setCommissionPage(page)}
+                          className={`px-3 py-2 rounded-lg transition-all duration-300 ${
+                            commissionPage === page
+                              ? 'bg-red-600 text-white'
+                              : 'bg-gray-600 hover:bg-gray-700 text-white'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  
+                  <button
+                    onClick={() => setCommissionPage(Math.min(commissionTotalPages, commissionPage + 1))}
+                    disabled={commissionPage === commissionTotalPages}
+                    className="px-4 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-800 disabled:text-gray-500 text-white rounded-lg transition-all duration-300"
+                  >
+                    Next
+                  </button>
+                  
+                  <span className="text-gray-400 text-sm">
+                    Page {commissionPage} of {commissionTotalPages}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Member Details/Edit Modal */}
