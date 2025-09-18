@@ -1432,8 +1432,10 @@ function AdminDashboard() {
   useEffect(() => {
     if (activeTab === 'members') {
       fetchMembers(memberFilter, memberPage);
+    } else if (activeTab === 'payments') {
+      fetchPayments();
     }
-  }, [activeTab, memberFilter, memberPage, sortField, sortDirection]);
+  }, [activeTab, memberFilter, memberPage, sortField, sortDirection, paymentUserFilter, paymentTierFilter, paymentStatusFilter, paymentDateFrom, paymentDateTo, paymentPage]);
 
   const fetchAdminData = async () => {
     try {
