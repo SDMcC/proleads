@@ -1444,8 +1444,10 @@ function AdminDashboard() {
       fetchMembers(memberFilter, memberPage);
     } else if (activeTab === 'payments') {
       fetchPayments();
+    } else if (activeTab === 'commissions') {
+      fetchCommissions();
     }
-  }, [activeTab, memberFilter, memberPage, sortField, sortDirection, paymentUserFilter, paymentTierFilter, paymentStatusFilter, paymentDateFrom, paymentDateTo, paymentPage]);
+  }, [activeTab, memberFilter, memberPage, sortField, sortDirection, paymentUserFilter, paymentTierFilter, paymentStatusFilter, paymentDateFrom, paymentDateTo, paymentPage, commissionUserFilter, commissionTierFilter, commissionStatusFilter, commissionDateFrom, commissionDateTo, commissionPage]);
 
   const fetchAdminData = async () => {
     try {
