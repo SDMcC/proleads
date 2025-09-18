@@ -1716,11 +1716,36 @@ function AdminDashboard() {
                 <table className="w-full text-left">
                   <thead>
                     <tr className="border-b border-gray-600">
-                      <th className="pb-3 text-gray-300 font-medium">Member</th>
-                      <th className="pb-3 text-gray-300 font-medium">Tier</th>
-                      <th className="pb-3 text-gray-300 font-medium">Referrals</th>
-                      <th className="pb-3 text-gray-300 font-medium">Earnings</th>
-                      <th className="pb-3 text-gray-300 font-medium">Joined</th>
+                      <th 
+                        className="pb-3 text-gray-300 font-medium cursor-pointer hover:text-white"
+                        onClick={() => handleSort('username')}
+                      >
+                        Member {sortField === 'username' && (sortDirection === 'asc' ? '↑' : '↓')}
+                      </th>
+                      <th 
+                        className="pb-3 text-gray-300 font-medium cursor-pointer hover:text-white"
+                        onClick={() => handleSort('membership_tier')}
+                      >
+                        Tier {sortField === 'membership_tier' && (sortDirection === 'asc' ? '↑' : '↓')}
+                      </th>
+                      <th 
+                        className="pb-3 text-gray-300 font-medium cursor-pointer hover:text-white"
+                        onClick={() => handleSort('total_referrals')}
+                      >
+                        Referrals {sortField === 'total_referrals' && (sortDirection === 'asc' ? '↑' : '↓')}
+                      </th>
+                      <th 
+                        className="pb-3 text-gray-300 font-medium cursor-pointer hover:text-white"
+                        onClick={() => handleSort('total_earnings')}
+                      >
+                        Earnings {sortField === 'total_earnings' && (sortDirection === 'asc' ? '↑' : '↓')}
+                      </th>
+                      <th 
+                        className="pb-3 text-gray-300 font-medium cursor-pointer hover:text-white"
+                        onClick={() => handleSort('created_at')}
+                      >
+                        Joined {sortField === 'created_at' && (sortDirection === 'asc' ? '↑' : '↓')}
+                      </th>
                       <th className="pb-3 text-gray-300 font-medium">Status</th>
                       <th className="pb-3 text-gray-300 font-medium">Actions</th>
                     </tr>
