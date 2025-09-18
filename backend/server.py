@@ -2082,6 +2082,408 @@ async def get_referral_info(referral_code: str):
         "referral_code": referral_code
     }
 
+# Leads Distribution System
+@app.post("/api/admin/leads/upload")
+async def upload_leads_csv(request: Request, admin: dict = Depends(get_admin_user)):
+    """Upload CSV file for lead distribution"""
+    try:
+        form = await request.form()
+        csv_file = form.get("csv_file")
+        
+        if not csv_file:
+            raise HTTPException(status_code=400, detail="CSV file is required")
+        
+        # Read CSV content
+        contents = await csv_file.read()
+        csv_content = contents.decode('utf-8')
+        
+        # Parse CSV to validate structure and count rows
+        csv_reader = csv.DictReader(io.StringIO(csv_content))
+        leads_data = []
+        required_headers = ['name', 'email', 'address']
+        
+        # Validate headers
+        if not all(header.lower() in [h.lower() for h in csv_reader.fieldnames] for header in required_headers):
+            raise HTTPException(
+                status_code=400, 
+                detail=f"CSV must contain headers: {', '.join(required_headers)}"
+            )
+        
+        # Process and validate CSV rows
+        for row_num, row in enumerate(csv_reader, start=2):
+            if not all(row.get(header) for header in required_headers):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Missing required data in row {row_num}"
+                )
+            
+            lead_data = {
+                "lead_id": str(uuid.uuid4()),
+                "name": row.get("name") or row.get("Name"),
+                "email": row.get("email") or row.get("Email"),
+                "address": row.get("address") or row.get("Address"),
+                "distribution_count": 0,
+                "created_at": datetime.utcnow()
+            }
+            leads_data.append(lead_data)
+        
+        if len(leads_data) == 0:
+            raise HTTPException(status_code=400, detail="CSV file is empty")
+        
+        # Create lead distribution record
+        distribution_id = str(uuid.uuid4())
+        distribution_doc = {
+            "distribution_id": distribution_id,
+            "filename": csv_file.filename,
+            "total_leads": len(leads_data),
+            "status": "queued",
+            "uploaded_by": admin["username"],
+            "uploaded_at": datetime.utcnow(),
+            "processing_started_at": None,
+            "processing_completed_at": None
+        }
+        
+        # Store distribution record
+        await db.lead_distributions.insert_one(distribution_doc)
+        
+        # Store individual leads
+        for lead in leads_data:
+            lead["distribution_id"] = distribution_id
+        await db.leads.insert_many(leads_data)
+        
+        # Calculate eligible members for distribution
+        eligible_members = await db.users.count_documents({
+            "membership_tier": {"$in": ["bronze", "silver", "gold"]},
+            "suspended": {"$ne": True}
+        })
+        
+        # Estimate distribution timeline (assuming weekly distribution)
+        max_leads_per_member = 10  # Each lead can go to max 10 members
+        total_distributions_possible = len(leads_data) * max_leads_per_member
+        leads_per_week = eligible_members * 5  # Assume 5 leads per member per week
+        estimated_weeks = max(1, total_distributions_possible // leads_per_week) if leads_per_week > 0 else 0
+        
+        # Update distribution with estimates
+        await db.lead_distributions.update_one(
+            {"distribution_id": distribution_id},
+            {"$set": {
+                "eligible_members": eligible_members,
+                "estimated_weeks": estimated_weeks
+            }}
+        )
+        
+        return {
+            "distribution_id": distribution_id,
+            "total_leads": len(leads_data),
+            "eligible_members": eligible_members,
+            "estimated_weeks": estimated_weeks,
+            "status": "queued"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to upload leads CSV: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to process CSV file")
+
+@app.get("/api/admin/leads/distributions")
+async def get_lead_distributions(
+    page: int = 1,
+    limit: int = 20,
+    admin: dict = Depends(get_admin_user)
+):
+    """Get all lead distributions with status"""
+    try:
+        skip = (page - 1) * limit
+        
+        # Get total count
+        total_count = await db.lead_distributions.count_documents({})
+        
+        # Get distributions with pagination
+        distributions_cursor = db.lead_distributions.find({}).skip(skip).limit(limit).sort("uploaded_at", -1)
+        distributions = await distributions_cursor.to_list(length=None)
+        
+        # Enrich with current status data
+        enriched_distributions = []
+        for dist in distributions:
+            # Get current distribution progress
+            distributed_count = await db.member_leads.count_documents({
+                "distribution_id": dist["distribution_id"]
+            })
+            
+            # Get leads remaining
+            total_leads = dist.get("total_leads", 0)
+            remaining_leads = await db.leads.count_documents({
+                "distribution_id": dist["distribution_id"],
+                "distribution_count": {"$lt": 10}  # Less than max distribution count
+            })
+            
+            enriched_dist = {
+                "distribution_id": dist["distribution_id"],
+                "filename": dist["filename"],
+                "total_leads": total_leads,
+                "distributed_count": distributed_count,
+                "remaining_leads": remaining_leads,
+                "status": dist["status"],
+                "eligible_members": dist.get("eligible_members", 0),
+                "estimated_weeks": dist.get("estimated_weeks", 0),
+                "uploaded_by": dist["uploaded_by"],
+                "uploaded_at": dist["uploaded_at"],
+                "processing_started_at": dist.get("processing_started_at"),
+                "processing_completed_at": dist.get("processing_completed_at")
+            }
+            enriched_distributions.append(enriched_dist)
+        
+        return {
+            "distributions": enriched_distributions,
+            "total_count": total_count,
+            "page": page,
+            "limit": limit,
+            "total_pages": (total_count + limit - 1) // limit
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to fetch lead distributions: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch distributions")
+
+@app.post("/api/admin/leads/distribute/{distribution_id}")
+async def manually_distribute_leads(
+    distribution_id: str,
+    admin: dict = Depends(get_admin_user)
+):
+    """Manually trigger lead distribution for a specific distribution"""
+    try:
+        # Find the distribution
+        distribution = await db.lead_distributions.find_one({"distribution_id": distribution_id})
+        if not distribution:
+            raise HTTPException(status_code=404, detail="Distribution not found")
+        
+        if distribution["status"] == "processing":
+            raise HTTPException(status_code=400, detail="Distribution is already processing")
+        
+        # Mark as processing
+        await db.lead_distributions.update_one(
+            {"distribution_id": distribution_id},
+            {"$set": {
+                "status": "processing",
+                "processing_started_at": datetime.utcnow()
+            }}
+        )
+        
+        # Perform distribution
+        await perform_lead_distribution(distribution_id)
+        
+        return {"message": "Lead distribution completed successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to distribute leads: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to distribute leads")
+
+async def perform_lead_distribution(distribution_id: str):
+    """Perform the actual lead distribution logic"""
+    try:
+        # Get eligible members (bronze, silver, gold - not suspended)
+        eligible_members = await db.users.find({
+            "membership_tier": {"$in": ["bronze", "silver", "gold"]},
+            "suspended": {"$ne": True}
+        }).to_list(None)
+        
+        if not eligible_members:
+            logger.warning("No eligible members for lead distribution")
+            return
+        
+        # Get leads that haven't reached max distribution count
+        available_leads = await db.leads.find({
+            "distribution_id": distribution_id,
+            "distribution_count": {"$lt": 10}
+        }).to_list(None)
+        
+        if not available_leads:
+            logger.info("No available leads for distribution")
+            return
+        
+        # Distribution logic: assign leads based on membership tier
+        leads_per_member = {
+            "bronze": 5,
+            "silver": 8,
+            "gold": 12
+        }
+        
+        distributions_made = 0
+        
+        for member in eligible_members:
+            member_tier = member.get("membership_tier", "bronze")
+            max_leads_for_member = leads_per_member.get(member_tier, 5)
+            
+            # Get leads this member hasn't received yet
+            existing_member_leads = await db.member_leads.find({
+                "member_address": member["address"],
+                "distribution_id": distribution_id
+            }).to_list(None)
+            
+            existing_lead_ids = {ml["lead_id"] for ml in existing_member_leads}
+            
+            # Filter available leads excluding ones already assigned to this member
+            member_available_leads = [
+                lead for lead in available_leads 
+                if lead["lead_id"] not in existing_lead_ids
+            ]
+            
+            # Assign leads up to the member's limit
+            leads_to_assign = member_available_leads[:max_leads_for_member]
+            
+            for lead in leads_to_assign:
+                # Create member lead assignment
+                member_lead_doc = {
+                    "assignment_id": str(uuid.uuid4()),
+                    "member_address": member["address"],
+                    "member_username": member["username"],
+                    "member_tier": member_tier,
+                    "lead_id": lead["lead_id"],
+                    "distribution_id": distribution_id,
+                    "lead_name": lead["name"],
+                    "lead_email": lead["email"],
+                    "lead_address": lead["address"],
+                    "assigned_at": datetime.utcnow(),
+                    "downloaded": False,
+                    "downloaded_at": None
+                }
+                
+                await db.member_leads.insert_one(member_lead_doc)
+                
+                # Increment distribution count for the lead
+                await db.leads.update_one(
+                    {"lead_id": lead["lead_id"]},
+                    {"$inc": {"distribution_count": 1}}
+                )
+                
+                distributions_made += 1
+        
+        # Mark distribution as completed
+        await db.lead_distributions.update_one(
+            {"distribution_id": distribution_id},
+            {"$set": {
+                "status": "completed",
+                "processing_completed_at": datetime.utcnow(),
+                "distributions_made": distributions_made
+            }}
+        )
+        
+        logger.info(f"Lead distribution completed: {distributions_made} assignments made")
+        
+    except Exception as e:
+        logger.error(f"Error in lead distribution: {str(e)}")
+        # Mark distribution as failed
+        await db.lead_distributions.update_one(
+            {"distribution_id": distribution_id},
+            {"$set": {
+                "status": "failed",
+                "error_message": str(e)
+            }}
+        )
+        raise
+
+# User endpoints for leads
+@app.get("/api/users/leads")
+async def get_user_leads(
+    page: int = 1,
+    limit: int = 50,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get leads assigned to the current user"""
+    try:
+        skip = (page - 1) * limit
+        user_address = current_user["address"]
+        
+        # Get total count of user's leads
+        total_count = await db.member_leads.count_documents({"member_address": user_address})
+        
+        # Get user's leads with pagination
+        leads_cursor = db.member_leads.find({"member_address": user_address}).skip(skip).limit(limit).sort("assigned_at", -1)
+        user_leads = await leads_cursor.to_list(length=None)
+        
+        # Format lead data
+        formatted_leads = []
+        for lead_assignment in user_leads:
+            formatted_lead = {
+                "assignment_id": lead_assignment["assignment_id"],
+                "lead_name": lead_assignment["lead_name"],
+                "lead_email": lead_assignment["lead_email"],
+                "lead_address": lead_assignment["lead_address"],
+                "assigned_at": lead_assignment["assigned_at"],
+                "downloaded": lead_assignment.get("downloaded", False),
+                "downloaded_at": lead_assignment.get("downloaded_at")
+            }
+            formatted_leads.append(formatted_lead)
+        
+        return {
+            "leads": formatted_leads,
+            "total_count": total_count,
+            "page": page,
+            "limit": limit,
+            "total_pages": (total_count + limit - 1) // limit
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to fetch user leads: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch leads")
+
+@app.get("/api/users/leads/download")
+async def download_user_leads_csv(current_user: dict = Depends(get_current_user)):
+    """Download all assigned leads as CSV"""
+    try:
+        user_address = current_user["address"]
+        
+        # Get all user's leads
+        user_leads = await db.member_leads.find({"member_address": user_address}).to_list(None)
+        
+        if not user_leads:
+            raise HTTPException(status_code=404, detail="No leads assigned to you")
+        
+        # Create CSV content
+        output = io.StringIO()
+        writer = csv.writer(output)
+        
+        # Write headers
+        writer.writerow(['Name', 'Email', 'Address', 'Assigned Date', 'Downloaded'])
+        
+        # Write lead data
+        for lead_assignment in user_leads:
+            writer.writerow([
+                lead_assignment["lead_name"],
+                lead_assignment["lead_email"],
+                lead_assignment["lead_address"],
+                lead_assignment["assigned_at"].strftime("%Y-%m-%d %H:%M:%S"),
+                "Yes" if lead_assignment.get("downloaded", False) else "No"
+            ])
+        
+        # Mark all leads as downloaded
+        await db.member_leads.update_many(
+            {"member_address": user_address, "downloaded": False},
+            {"$set": {
+                "downloaded": True,
+                "downloaded_at": datetime.utcnow()
+            }}
+        )
+        
+        csv_content = output.getvalue()
+        output.close()
+        
+        # Return CSV as streaming response
+        return StreamingResponse(
+            io.StringIO(csv_content),
+            media_type="text/csv",
+            headers={"Content-Disposition": f"attachment; filename=my_leads_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.csv"}
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to download user leads: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to download leads")
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
