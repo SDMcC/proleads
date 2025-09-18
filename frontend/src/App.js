@@ -1933,15 +1933,15 @@ function MemberModal({ member, editingMember, onClose, onUpdate, onSuspend, onEd
                 <div className="space-y-3">
                   <div>
                     <span className="text-gray-400">Total Referrals:</span>
-                    <span className="text-white ml-2">{member.total_referrals || 0}</span>
+                    <span className="text-white ml-2">{member?.stats?.total_referrals || memberData.total_referrals || 0}</span>
                   </div>
                   <div>
                     <span className="text-gray-400">Total Earnings:</span>
-                    <span className="text-white ml-2">${member.total_earnings?.toFixed(2) || '0.00'}</span>
+                    <span className="text-white ml-2">${(member?.stats?.total_earnings || memberData.total_earnings || 0).toFixed(2)}</span>
                   </div>
                   <div>
                     <span className="text-gray-400">Referral Code:</span>
-                    <span className="text-white ml-2 font-mono text-sm">{member.referral_code}</span>
+                    <span className="text-white ml-2 font-mono text-sm">{memberData.referral_code}</span>
                   </div>
                 </div>
               </div>
@@ -1949,7 +1949,7 @@ function MemberModal({ member, editingMember, onClose, onUpdate, onSuspend, onEd
 
             <div className="flex space-x-4 pt-6 border-t border-gray-700">
               <button
-                onClick={() => window.location.href = `/admin/dashboard?edit=${member.id}`}
+                onClick={handleEditClick}
                 className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all duration-300"
               >
                 Edit Member
