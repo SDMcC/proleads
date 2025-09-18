@@ -967,10 +967,153 @@ function OverviewTab({ stats, user }) {
 }
 
 function NetworkTreeTab() {
+  const [networkData, setNetworkData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [depth, setDepth] = useState(3);
+
+  useEffect(() => {
+    fetchNetworkTree();
+  }, [depth]);
+
+  const fetchNetworkTree = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API_URL}/api/users/network-tree?depth=${depth}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setNetworkData(response.data);
+    } catch (error) {
+      console.error('Failed to fetch network tree:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderTreeNode = (node, level = 0) => {
+    const marginLeft = level * 20;
+    
+    return (
+      <div key={node.address} className="mb-2">
+        <div 
+          className="bg-white bg-opacity-5 rounded-lg p-3 border-l-4 border-blue-400"
+          style={{ marginLeft: `${marginLeft}px` }}
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="text-white font-medium">{node.username}</h4>
+              <p className="text-gray-400 text-sm">{node.email}</p>
+              <div className="flex items-center space-x-4 mt-1">
+                <span className={`px-2 py-1 rounded text-xs uppercase font-medium ${
+                  node.membership_tier === 'gold' ? 'bg-yellow-600 text-yellow-100' :
+                  node.membership_tier === 'silver' ? 'bg-gray-600 text-gray-100' :
+                  node.membership_tier === 'bronze' ? 'bg-orange-600 text-orange-100' :
+                  'bg-blue-600 text-blue-100'
+                }`}>
+                  {node.membership_tier}
+                </span>
+                <span className="text-gray-400 text-xs">Level {node.level}</span>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-white font-medium">{node.total_referrals} referrals</p>
+              <p className="text-green-400 text-sm">${node.total_earnings?.toFixed(2) || '0.00'}</p>
+              {node.suspended && (
+                <span className="px-2 py-1 bg-red-600 text-red-100 rounded text-xs">Suspended</span>
+              )}
+            </div>
+          </div>
+        </div>
+        {node.children && node.children.map(child => renderTreeNode(child, level + 1))}
+      </div>
+    );
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
-      <h3 className="text-xl font-bold text-white mb-4">Network Tree</h3>
-      <p className="text-gray-400 text-center py-8">Network tree visualization coming soon!</p>
+    <div>
+      {/* Controls */}
+      <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6 mb-6">
+        <div className="flex items-center justify-between">
+          <h3 className="text-xl font-bold text-white">Network Tree</h3>
+          <div className="flex items-center space-x-4">
+            <label className="text-gray-300">Depth:</label>
+            <select
+              value={depth}
+              onChange={(e) => setDepth(parseInt(e.target.value))}
+              className="px-3 py-2 bg-black bg-opacity-30 border border-gray-600 rounded text-white"
+            >
+              <option value={1}>1 Level</option>
+              <option value={2}>2 Levels</option>
+              <option value={3}>3 Levels</option>
+              <option value={4}>4 Levels</option>
+              <option value={5}>5 Levels</option>
+            </select>
+          </div>
+        </div>
+        
+        {networkData?.network_stats && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-blue-400">{networkData.network_stats.direct_referrals}</p>
+              <p className="text-gray-400">Direct Referrals</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-green-400">{networkData.network_stats.total_network_size}</p>
+              <p className="text-gray-400">Total Network</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-purple-400">{depth}</p>
+              <p className="text-gray-400">Levels Shown</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Network Tree */}
+      <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+        <h4 className="text-lg font-bold text-white mb-4">Your Network</h4>
+        {networkData?.network_tree ? (
+          <div className="space-y-4">
+            {/* Root Node (Current User) */}
+            <div className="bg-blue-600 bg-opacity-20 rounded-lg p-4 border-2 border-blue-400">
+              <div className="text-center">
+                <h4 className="text-white font-bold text-lg">YOU</h4>
+                <p className="text-blue-200">{networkData.network_tree.root.username}</p>
+                <span className={`inline-block px-3 py-1 rounded text-sm uppercase font-medium mt-2 ${
+                  networkData.network_tree.root.membership_tier === 'gold' ? 'bg-yellow-600 text-yellow-100' :
+                  networkData.network_tree.root.membership_tier === 'silver' ? 'bg-gray-600 text-gray-100' :
+                  networkData.network_tree.root.membership_tier === 'bronze' ? 'bg-orange-600 text-orange-100' :
+                  'bg-blue-600 text-blue-100'
+                }`}>
+                  {networkData.network_tree.root.membership_tier}
+                </span>
+              </div>
+            </div>
+            
+            {/* Children Nodes */}
+            {networkData.network_tree.children && networkData.network_tree.children.length > 0 ? (
+              <div className="mt-6">
+                {networkData.network_tree.children.map(child => renderTreeNode(child, 1))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-400">No referrals yet. Share your referral link to build your network!</p>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-gray-400">Unable to load network tree</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
