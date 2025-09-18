@@ -96,6 +96,15 @@ class UserUpdate(BaseModel):
     wallet_address: Optional[str] = None
     suspended: Optional[bool] = None
 
+class LeadsUpload(BaseModel):
+    filename: str
+    
+class LeadDistribution(BaseModel):
+    distribution_id: str
+    status: str
+    eligible_members: int
+    estimated_weeks: int
+
 # WebSocket connection manager
 class ConnectionManager:
     def __init__(self):
