@@ -626,7 +626,7 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
     formatted_commissions = []
     for commission in recent_commissions:
         formatted_commissions.append({
-            "id": commission.get("id"),
+            "id": commission.get("commission_id"),
             "amount": commission.get("amount", 0),
             "commission_rate": commission.get("commission_rate", 0),
             "level": commission.get("level"),
