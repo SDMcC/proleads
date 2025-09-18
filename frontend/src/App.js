@@ -1119,27 +1119,57 @@ function NetworkTreeTab() {
 }
 
 function AffiliateToolsTab({ user }) {
+  const [editableText, setEditableText] = useState('🚀 Join the Web3 revolution! Earn up to 30% commission with our 4-tier affiliate system. Connect your wallet and start earning instant crypto payouts in USDC!');
+  const [isEditingText, setIsEditingText] = useState(false);
+
   const copyReferralLink = () => {
-    if (user?.referral_link) {
-      navigator.clipboard.writeText(user.referral_link);
-      alert('Referral link copied to clipboard!');
-    }
+    const shortLink = getShortenedLink();
+    navigator.clipboard.writeText(shortLink);
+    alert('Referral link copied to clipboard!');
+  };
+
+  const getShortenedLink = () => {
+    if (!user?.referral_code) return user?.referral_link || '';
+    // Create a shortened version using referral code
+    const baseUrl = window.location.origin;
+    return `${baseUrl}/r/${user.referral_code}`;
   };
 
   const generateQRCode = () => {
-    // Simple QR code generation using Google Charts API
-    const qrData = encodeURIComponent(user?.referral_link || '');
-    return `https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=${qrData}`;
+    // Use QR Server API which is more reliable than Google Charts
+    const qrData = encodeURIComponent(getShortenedLink());
+    return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${qrData}&bgcolor=FFFFFF&color=000000`;
+  };
+
+  const downloadQRCode = async () => {
+    try {
+      const qrUrl = generateQRCode();
+      const response = await fetch(qrUrl);
+      const blob = await response.blob();
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `referral-qr-code-${user?.username || 'user'}.png`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to download QR code:', error);
+      alert('Failed to download QR code');
+    }
   };
 
   const shareToSocial = (platform) => {
-    const referralLink = user?.referral_link || '';
-    const text = `Join me on Web3 Membership and start earning crypto commissions! 💰 Up to 30% commission rates with our 4-tier affiliate system. `;
+    const referralLink = getShortenedLink();
+    const text = editableText + ' ';
     
     let shareUrl = '';
     
     switch (platform) {
-      case 'twitter':
+      case 'x':
         shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(referralLink)}`;
         break;
       case 'facebook':
@@ -1161,6 +1191,17 @@ function AffiliateToolsTab({ user }) {
     window.open(shareUrl, '_blank', 'width=600,height=400');
   };
 
+  const copyPromotionalText = () => {
+    const textWithLink = `${editableText} ${getShortenedLink()}`;
+    navigator.clipboard.writeText(textWithLink);
+    alert('Promotional text with link copied!');
+  };
+
+  const saveEditableText = () => {
+    setIsEditingText(false);
+    // Here you could save to backend if needed
+  };
+
   return (
     <div className="space-y-6">
       {/* Referral Link */}
@@ -1169,7 +1210,7 @@ function AffiliateToolsTab({ user }) {
         <div className="flex items-center space-x-4 mb-4">
           <input
             type="text"
-            value={user?.referral_link || ''}
+            value={getShortenedLink()}
             readOnly
             className="flex-1 px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white"
           />
@@ -1185,14 +1226,25 @@ function AffiliateToolsTab({ user }) {
         {/* QR Code */}
         <div className="text-center">
           <h4 className="text-white font-medium mb-3">QR Code</h4>
-          <div className="inline-block p-4 bg-white rounded-lg">
+          <div className="inline-block p-4 bg-white rounded-lg mb-3">
             <img 
               src={generateQRCode()} 
               alt="Referral QR Code" 
               className="w-48 h-48"
+              onError={(e) => {
+                e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' fill='%23999'%3E%3Crect width='192' height='192' fill='%23f3f3f3'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' font-family='Arial' font-size='14'%3EQR Code%3C/text%3E%3C/svg%3E";
+              }}
             />
           </div>
-          <p className="text-gray-400 text-sm mt-2">Scan to visit your referral link</p>
+          <div className="space-x-2">
+            <p className="text-gray-400 text-sm mb-2">Scan to visit your referral link</p>
+            <button
+              onClick={downloadQRCode}
+              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition-all duration-300"
+            >
+              Download QR Code
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1201,15 +1253,15 @@ function AffiliateToolsTab({ user }) {
         <h3 className="text-xl font-bold text-white mb-4">Share on Social Media</h3>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           <button
-            onClick={() => shareToSocial('twitter')}
-            className="flex flex-col items-center p-4 bg-blue-500 hover:bg-blue-600 rounded-lg transition-all duration-300"
+            onClick={() => shareToSocial('x')}
+            className="flex flex-col items-center p-4 bg-black hover:bg-gray-800 rounded-lg transition-all duration-300"
           >
             <div className="w-8 h-8 mb-2">
               <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full text-white">
-                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/>
               </svg>
             </div>
-            <span className="text-white text-sm font-medium">Twitter</span>
+            <span className="text-white text-sm font-medium">X</span>
           </button>
 
           <button
@@ -1267,19 +1319,59 @@ function AffiliateToolsTab({ user }) {
         <h3 className="text-xl font-bold text-white mb-4">Marketing Materials</h3>
         <div className="space-y-4">
           <div className="p-4 bg-black bg-opacity-20 rounded-lg">
-            <h4 className="text-white font-medium mb-2">Promotional Text</h4>
-            <p className="text-gray-300 text-sm mb-3">
-              "🚀 Join the Web3 revolution! Earn up to 30% commission with our 4-tier affiliate system. Connect your wallet and start earning instant crypto payouts in USDC!"
-            </p>
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText("🚀 Join the Web3 revolution! Earn up to 30% commission with our 4-tier affiliate system. Connect your wallet and start earning instant crypto payouts in USDC!");
-                alert('Promotional text copied!');
-              }}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded transition-all duration-300"
-            >
-              Copy Text
-            </button>
+            <div className="flex justify-between items-center mb-2">
+              <h4 className="text-white font-medium">Promotional Text</h4>
+              <button
+                onClick={() => setIsEditingText(!isEditingText)}
+                className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded transition-all duration-300"
+              >
+                {isEditingText ? 'Save' : 'Edit'}
+              </button>
+            </div>
+            
+            {isEditingText ? (
+              <div className="space-y-3">
+                <textarea
+                  value={editableText}
+                  onChange={(e) => setEditableText(e.target.value)}
+                  className="w-full px-3 py-2 bg-black bg-opacity-30 border border-gray-600 rounded text-white text-sm"
+                  rows={4}
+                  placeholder="Enter your promotional text..."
+                />
+                <div className="flex space-x-2">
+                  <button
+                    onClick={saveEditableText}
+                    className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded transition-all duration-300"
+                  >
+                    Save Changes
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsEditingText(false);
+                      setEditableText('🚀 Join the Web3 revolution! Earn up to 30% commission with our 4-tier affiliate system. Connect your wallet and start earning instant crypto payouts in USDC!');
+                    }}
+                    className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded transition-all duration-300"
+                  >
+                    Reset to Default
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <p className="text-gray-300 text-sm mb-3">
+                  "{editableText}"
+                </p>
+                <p className="text-blue-400 text-sm mb-3 break-all">
+                  Link: {getShortenedLink()}
+                </p>
+                <button
+                  onClick={copyPromotionalText}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded transition-all duration-300"
+                >
+                  Copy Text + Link
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="p-4 bg-black bg-opacity-20 rounded-lg">
