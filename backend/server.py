@@ -1778,6 +1778,251 @@ async def export_user_payments_csv(
         logger.error(f"Failed to export user payments: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to export user payments")
 
+# Milestones system
+MILESTONE_BONUSES = {
+    25: 25.0,
+    100: 100.0,
+    250: 250.0,
+    1000: 1000.0,
+    5000: 2500.0,
+    10000: 5000.0
+}
+
+@app.get("/api/users/milestones")
+async def get_user_milestones(current_user: dict = Depends(get_current_user)):
+    """Get user's milestone progress and achieved milestones"""
+    try:
+        user_address = current_user["address"]
+        
+        # Count paid downlines (members with active/non-expired memberships who were referred by this user)
+        paid_downlines = await db.users.count_documents({
+            "referrer_address": user_address,
+            "membership_tier": {"$ne": "affiliate"},  # Not free tier
+            "suspended": {"$ne": True}  # Not suspended/cancelled
+        })
+        
+        # Get achieved milestones
+        achieved_milestones = []
+        pending_milestones = []
+        
+        for milestone_count, bonus_amount in MILESTONE_BONUSES.items():
+            if paid_downlines >= milestone_count:
+                # Check if milestone bonus was already paid
+                existing_milestone = await db.milestones.find_one({
+                    "user_address": user_address,
+                    "milestone_count": milestone_count
+                })
+                
+                if existing_milestone:
+                    achieved_milestones.append({
+                        "milestone_count": milestone_count,
+                        "bonus_amount": bonus_amount,
+                        "achieved_date": existing_milestone["achieved_date"],
+                        "status": existing_milestone["status"]
+                    })
+                else:
+                    # Milestone achieved but not yet recorded - create it
+                    milestone_doc = {
+                        "milestone_id": str(uuid.uuid4()),
+                        "user_address": user_address,
+                        "milestone_count": milestone_count,
+                        "bonus_amount": bonus_amount,
+                        "achieved_date": datetime.utcnow(),
+                        "status": "pending",
+                        "created_at": datetime.utcnow()
+                    }
+                    
+                    await db.milestones.insert_one(milestone_doc)
+                    
+                    achieved_milestones.append({
+                        "milestone_count": milestone_count,
+                        "bonus_amount": bonus_amount,
+                        "achieved_date": milestone_doc["achieved_date"],
+                        "status": "pending"
+                    })
+                    
+                    # Send notification to admin
+                    logger.info(f"MILESTONE ACHIEVED: User {current_user['username']} ({user_address}) reached {milestone_count} paid downlines. Bonus: ${bonus_amount}")
+            else:
+                # Calculate progress to next milestone
+                progress = paid_downlines
+                pending_milestones.append({
+                    "milestone_count": milestone_count,
+                    "bonus_amount": bonus_amount,
+                    "progress": progress,
+                    "remaining": milestone_count - progress
+                })
+        
+        # Get next milestone
+        next_milestone = None
+        for milestone_count in sorted(MILESTONE_BONUSES.keys()):
+            if paid_downlines < milestone_count:
+                next_milestone = {
+                    "milestone_count": milestone_count,
+                    "bonus_amount": MILESTONE_BONUSES[milestone_count],
+                    "progress": paid_downlines,
+                    "remaining": milestone_count - paid_downlines
+                }
+                break
+        
+        return {
+            "paid_downlines": paid_downlines,
+            "achieved_milestones": achieved_milestones,
+            "next_milestone": next_milestone,
+            "all_milestones": [
+                {
+                    "milestone_count": count,
+                    "bonus_amount": amount,
+                    "achieved": paid_downlines >= count
+                }
+                for count, amount in MILESTONE_BONUSES.items()
+            ]
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to fetch user milestones: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch user milestones")
+
+# Account cancellation
+@app.post("/api/users/cancel-account")
+async def cancel_user_account(current_user: dict = Depends(get_current_user)):
+    """Cancel user account and transfer downline to sponsor"""
+    try:
+        user_address = current_user["address"]
+        
+        # Check if user has a sponsor (referrer)
+        sponsor_address = current_user.get("referrer_address")
+        if not sponsor_address:
+            raise HTTPException(status_code=400, detail="Cannot cancel account - no sponsor found")
+        
+        # Get all users referred by the cancelling user
+        downline_users = await db.users.find({"referrer_address": user_address}).to_list(None)
+        
+        # Transfer downline to sponsor
+        for downline_user in downline_users:
+            await db.users.update_one(
+                {"address": downline_user["address"]},
+                {"$set": {"referrer_address": sponsor_address}}
+            )
+        
+        # Update commissions - transfer pending commissions to sponsor
+        await db.commissions.update_many(
+            {"recipient_address": user_address, "status": {"$in": ["pending", "processing"]}},
+            {"$set": {"recipient_address": sponsor_address, "transferred_from": user_address}}
+        )
+        
+        # Mark user as cancelled/suspended
+        cancellation_doc = {
+            "cancelled_at": datetime.utcnow(),
+            "suspended": True,
+            "account_status": "cancelled",
+            "downline_transferred_to": sponsor_address,
+            "downline_count_transferred": len(downline_users)
+        }
+        
+        await db.users.update_one(
+            {"address": user_address},
+            {"$set": cancellation_doc}
+        )
+        
+        # Log the cancellation
+        logger.info(f"ACCOUNT CANCELLED: User {current_user['username']} ({user_address}) cancelled account. {len(downline_users)} downline members transferred to sponsor {sponsor_address}")
+        
+        return {
+            "message": "Account cancelled successfully",
+            "downline_transferred": len(downline_users),
+            "sponsor_address": sponsor_address,
+            "cancelled_at": cancellation_doc["cancelled_at"]
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to cancel user account: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to cancel account")
+
+# Network genealogy tree
+@app.get("/api/users/network-tree")
+async def get_network_tree(
+    depth: int = 3,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get user's referral network tree"""
+    try:
+        user_address = current_user["address"]
+        
+        async def build_tree(parent_address: str, current_depth: int, max_depth: int):
+            if current_depth >= max_depth:
+                return []
+            
+            # Get direct referrals
+            referrals = await db.users.find({"referrer_address": parent_address}).to_list(None)
+            
+            tree_nodes = []
+            for referral in referrals:
+                # Get referral stats
+                referral_count = await db.users.count_documents({"referrer_address": referral["address"]})
+                
+                # Get earnings
+                earnings_pipeline = [
+                    {"$match": {"recipient_address": referral["address"], "status": "completed"}},
+                    {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+                ]
+                earnings_result = await db.commissions.aggregate(earnings_pipeline).to_list(1)
+                total_earnings = earnings_result[0]["total"] if earnings_result else 0.0
+                
+                node = {
+                    "address": referral["address"],
+                    "username": referral["username"],
+                    "email": referral["email"],
+                    "membership_tier": referral["membership_tier"],
+                    "total_referrals": referral_count,
+                    "total_earnings": total_earnings,
+                    "joined_date": referral["created_at"],
+                    "suspended": referral.get("suspended", False),
+                    "level": current_depth + 1,
+                    "children": await build_tree(referral["address"], current_depth + 1, max_depth)
+                }
+                tree_nodes.append(node)
+            
+            return tree_nodes
+        
+        # Build the tree starting from current user
+        network_tree = {
+            "root": {
+                "address": user_address,
+                "username": current_user["username"],
+                "email": current_user["email"],
+                "membership_tier": current_user["membership_tier"],
+                "level": 0
+            },
+            "children": await build_tree(user_address, 0, depth)
+        }
+        
+        # Calculate network stats
+        total_network_size = 0
+        
+        def count_network_size(nodes):
+            count = len(nodes)
+            for node in nodes:
+                count += count_network_size(node["children"])
+            return count
+        
+        total_network_size = count_network_size(network_tree["children"])
+        
+        return {
+            "network_tree": network_tree,
+            "network_stats": {
+                "total_network_size": total_network_size,
+                "direct_referrals": len(network_tree["children"]),
+                "max_depth_shown": depth
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to fetch network tree: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch network tree")
+
 # WebSocket endpoint
 @app.websocket("/ws/updates")
 async def websocket_endpoint(websocket: WebSocket):
