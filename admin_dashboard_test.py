@@ -255,7 +255,7 @@ class AdminDashboardTester:
             return False
 
 def main():
-    backend_url = "https://web3-affiliate.preview.emergentagent.com"
+    backend_url = "https://web3-membership.preview.emergentagent.com"
     
     print("🚀 Admin Dashboard User Registration Tracking Test")
     print("=" * 55)
