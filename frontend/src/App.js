@@ -1503,6 +1503,29 @@ function AdminDashboard() {
     }
   };
 
+  const fetchPayments = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const headers = { Authorization: `Bearer ${token}` };
+      
+      const params = new URLSearchParams();
+      if (paymentUserFilter) params.append('user', paymentUserFilter);
+      if (paymentTierFilter) params.append('tier', paymentTierFilter);
+      if (paymentStatusFilter) params.append('status', paymentStatusFilter);
+      if (paymentDateFrom) params.append('date_from', paymentDateFrom);
+      if (paymentDateTo) params.append('date_to', paymentDateTo);
+      params.append('page', paymentPage.toString());
+      params.append('limit', '10');
+      
+      const response = await axios.get(`${API_URL}/api/admin/payments?${params}`, { headers });
+      setPayments(response.data.payments || []);
+      setPaymentTotalPages(response.data.total_pages || 1);
+      
+    } catch (error) {
+      console.error('Failed to fetch payments:', error);
+    }
+  };
+
   const fetchMemberDetails = async (memberId) => {
     try {
       const token = localStorage.getItem('adminToken');
