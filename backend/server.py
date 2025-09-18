@@ -1055,6 +1055,209 @@ async def suspend_member(member_id: str, admin: dict = Depends(get_admin_user)):
         logger.error(f"Failed to suspend member: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to suspend member")
 
+# Admin payments management endpoints
+@app.get("/api/admin/payments")
+async def get_all_payments(
+    user_filter: Optional[str] = None,
+    tier_filter: Optional[str] = None,
+    status_filter: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    page: int = 1,
+    limit: int = 50,
+    admin: dict = Depends(get_admin_user)
+):
+    """Get all payments with optional filtering and pagination"""
+    try:
+        skip = (page - 1) * limit
+        
+        # Build filter query
+        filter_query = {}
+        
+        if user_filter:
+            # Search by username or email
+            users = await db.users.find({
+                "$or": [
+                    {"username": {"$regex": user_filter, "$options": "i"}},
+                    {"email": {"$regex": user_filter, "$options": "i"}}
+                ]
+            }).to_list(None)
+            user_addresses = [user["address"] for user in users]
+            if user_addresses:
+                filter_query["user_address"] = {"$in": user_addresses}
+            else:
+                # No users found matching the filter
+                return {
+                    "payments": [],
+                    "total_count": 0,
+                    "page": page,
+                    "limit": limit,
+                    "total_pages": 0
+                }
+        
+        if tier_filter:
+            filter_query["tier"] = tier_filter
+            
+        if status_filter:
+            filter_query["status"] = status_filter
+            
+        if date_from:
+            date_from_obj = datetime.fromisoformat(date_from.replace("Z", "+00:00"))
+            filter_query["created_at"] = {"$gte": date_from_obj}
+            
+        if date_to:
+            date_to_obj = datetime.fromisoformat(date_to.replace("Z", "+00:00"))
+            if "created_at" in filter_query:
+                filter_query["created_at"]["$lte"] = date_to_obj
+            else:
+                filter_query["created_at"] = {"$lte": date_to_obj}
+        
+        # Get total count
+        total_count = await db.payments.count_documents(filter_query)
+        
+        # Get payments with pagination
+        payments_cursor = db.payments.find(filter_query).skip(skip).limit(limit).sort("created_at", -1)
+        payments = await payments_cursor.to_list(length=None)
+        
+        # Enrich payment data with user information
+        enriched_payments = []
+        for payment in payments:
+            # Get user info
+            user = await db.users.find_one({"address": payment["user_address"]})
+            
+            enriched_payment = {
+                "id": payment["payment_id"],
+                "user_address": payment["user_address"],
+                "username": user["username"] if user else "Unknown",
+                "email": user["email"] if user else "Unknown",
+                "amount": payment["amount"],
+                "currency": payment.get("currency", "ETH"),
+                "tier": payment["tier"],
+                "status": payment["status"],
+                "payment_url": payment.get("payment_url"),
+                "created_at": payment["created_at"],
+                "updated_at": payment.get("updated_at"),
+                "nowpayments_id": payment.get("nowpayments_payment_id"),
+                "invoice_id": payment.get("invoice_id")
+            }
+            enriched_payments.append(enriched_payment)
+        
+        return {
+            "payments": enriched_payments,
+            "total_count": total_count,
+            "page": page,
+            "limit": limit,
+            "total_pages": (total_count + limit - 1) // limit
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to fetch payments: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch payments")
+
+@app.get("/api/admin/payments/export")
+async def export_payments_csv(
+    user_filter: Optional[str] = None,
+    tier_filter: Optional[str] = None,
+    status_filter: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    admin: dict = Depends(get_admin_user)
+):
+    """Export payments to CSV file"""
+    try:
+        # Use the same filter logic as get_all_payments but without pagination
+        filter_query = {}
+        
+        if user_filter:
+            users = await db.users.find({
+                "$or": [
+                    {"username": {"$regex": user_filter, "$options": "i"}},
+                    {"email": {"$regex": user_filter, "$options": "i"}}
+                ]
+            }).to_list(None)
+            user_addresses = [user["address"] for user in users]
+            if user_addresses:
+                filter_query["user_address"] = {"$in": user_addresses}
+            else:
+                filter_query["user_address"] = {"$in": []}  # No matches
+        
+        if tier_filter:
+            filter_query["tier"] = tier_filter
+            
+        if status_filter:
+            filter_query["status"] = status_filter
+            
+        if date_from:
+            date_from_obj = datetime.fromisoformat(date_from.replace("Z", "+00:00"))
+            filter_query["created_at"] = {"$gte": date_from_obj}
+            
+        if date_to:
+            date_to_obj = datetime.fromisoformat(date_to.replace("Z", "+00:00"))
+            if "created_at" in filter_query:
+                filter_query["created_at"]["$lte"] = date_to_obj
+            else:
+                filter_query["created_at"] = {"$lte": date_to_obj}
+        
+        # Get all payments matching the filter
+        payments_cursor = db.payments.find(filter_query).sort("created_at", -1)
+        payments = await payments_cursor.to_list(length=None)
+        
+        # Create CSV content
+        output = io.StringIO()
+        writer = csv.writer(output)
+        
+        # Write header
+        writer.writerow([
+            'Payment ID',
+            'Username',
+            'Email', 
+            'Wallet Address',
+            'Amount',
+            'Currency',
+            'Membership Tier',
+            'Status',
+            'Created Date',
+            'Updated Date',
+            'NOWPayments ID',
+            'Invoice ID'
+        ])
+        
+        # Write data rows
+        for payment in payments:
+            user = await db.users.find_one({"address": payment["user_address"]})
+            
+            writer.writerow([
+                payment["payment_id"],
+                user["username"] if user else "Unknown",
+                user["email"] if user else "Unknown",
+                payment["user_address"],
+                payment["amount"],
+                payment.get("currency", "ETH"),
+                payment["tier"],
+                payment["status"],
+                payment["created_at"].strftime("%Y-%m-%d %H:%M:%S") if payment["created_at"] else "",
+                payment.get("updated_at").strftime("%Y-%m-%d %H:%M:%S") if payment.get("updated_at") else "",
+                payment.get("nowpayments_payment_id", ""),
+                payment.get("invoice_id", "")
+            ])
+        
+        # Prepare the CSV for download
+        output.seek(0)
+        
+        # Generate filename with timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"payments_export_{timestamp}.csv"
+        
+        return StreamingResponse(
+            io.BytesIO(output.getvalue().encode('utf-8')),
+            media_type="text/csv",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+        
+    except Exception as e:
+        logger.error(f"Failed to export payments: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to export payments")
+
 # WebSocket endpoint
 @app.websocket("/ws/updates")
 async def websocket_endpoint(websocket: WebSocket):
