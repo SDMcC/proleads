@@ -1780,37 +1780,44 @@ function AdminDashboard() {
 }
 
 // Member Modal Component
-function MemberModal({ member, editingMember, onClose, onUpdate, onSuspend }) {
+function MemberModal({ member, editingMember, onClose, onUpdate, onSuspend, onEdit }) {
   const [formData, setFormData] = useState({
-    username: member?.username || '',
-    email: member?.email || '',
-    membership_tier: member?.membership_tier || 'affiliate'
+    username: '',
+    email: '',
+    membership_tier: 'affiliate'
   });
 
+  // Get the actual member data (handle both detailed and list member objects)
+  const memberData = member?.member || member;
+
   useEffect(() => {
-    if (member) {
+    if (memberData) {
       setFormData({
-        username: member.username || '',
-        email: member.email || '',
-        membership_tier: member.membership_tier || 'affiliate'
+        username: memberData.username || '',
+        email: memberData.email || '',
+        membership_tier: memberData.membership_tier || 'affiliate'
       });
     }
-  }, [member]);
+  }, [memberData]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (member) {
-      onUpdate(member.id, formData);
+    if (memberData) {
+      onUpdate(memberData.id || memberData.wallet_address, formData);
     }
   };
 
   const handleSuspend = () => {
-    if (member) {
-      onSuspend(member.id);
+    if (memberData) {
+      onSuspend(memberData.id || memberData.wallet_address);
     }
   };
 
-  if (!member) return null;
+  const handleEditClick = () => {
+    onEdit(memberData);
+  };
+
+  if (!memberData) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
