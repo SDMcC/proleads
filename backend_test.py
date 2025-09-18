@@ -1958,6 +1958,13 @@ def main():
     else:
         print("\n✅ Commissions Management API system test passed")
     
+    # Test Priority 2: User Experience APIs
+    priority2_success = tester.test_priority2_user_experience_apis()
+    if not priority2_success:
+        print("\n⚠️ Priority 2: User Experience APIs test failed")
+    else:
+        print("\n✅ Priority 2: User Experience APIs test passed")
+    
     # Test complete registration flow
     flow_success = tester.test_complete_registration_flow()
     if not flow_success:
