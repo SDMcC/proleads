@@ -1454,10 +1454,37 @@ function AdminDashboard() {
       const params = new URLSearchParams();
       if (tier) params.append('tier', tier);
       params.append('page', page.toString());
-      params.append('limit', '20');
+      params.append('limit', '10');
       
       const response = await axios.get(`${API_URL}/api/admin/members?${params}`, { headers });
-      setMembers(response.data.members || []);
+      
+      // Sort members on the frontend (since backend doesn't support sorting yet)
+      let sortedMembers = response.data.members || [];
+      sortedMembers.sort((a, b) => {
+        const aValue = a[sortField];
+        const bValue = b[sortField];
+        
+        if (sortField === 'created_at') {
+          const aDate = new Date(aValue);
+          const bDate = new Date(bValue);
+          return sortDirection === 'desc' ? bDate - aDate : aDate - bDate;
+        } else if (sortField === 'total_earnings' || sortField === 'total_referrals') {
+          const aNum = Number(aValue) || 0;
+          const bNum = Number(bValue) || 0;
+          return sortDirection === 'desc' ? bNum - aNum : aNum - bNum;
+        } else {
+          const aStr = String(aValue).toLowerCase();
+          const bStr = String(bValue).toLowerCase();
+          if (sortDirection === 'desc') {
+            return bStr.localeCompare(aStr);
+          } else {
+            return aStr.localeCompare(bStr);
+          }
+        }
+      });
+      
+      setMembers(sortedMembers);
+      setTotalPages(response.data.total_pages || 1);
       
     } catch (error) {
       console.error('Failed to fetch members:', error);
