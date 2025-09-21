@@ -150,6 +150,29 @@ const useAuth = () => {
   return context;
 };
 
+// Referral Redirect Component
+function ReferralRedirect() {
+  const { code } = useParams();
+  
+  useEffect(() => {
+    // Redirect to registration page with referral code
+    window.location.href = `/register?ref=${code}`;
+  }, [code]);
+
+  // Show loading while redirecting
+  return (
+    <div className="min-h-screen flex items-center justify-center" style={{
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+    }}>
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
+        <p className="text-white text-lg">Redirecting to registration...</p>
+        <p className="text-gray-200 text-sm mt-2">Using referral code: {code}</p>
+      </div>
+    </div>
+  );
+}
+
 // Protected Route Component
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
