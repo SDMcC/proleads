@@ -590,10 +590,9 @@ function CommissionStructure() {
 
 // Register Page Component
 function RegisterPage() {
-  const { address, isConnected } = useAccount();
-  const { login, user } = useAuth();
-  const { signMessageAsync } = useSignMessage();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
+    address: '',
     username: '',
     email: ''
   });
@@ -622,43 +621,37 @@ function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!address) return;
+    if (!formData.address || !formData.username || !formData.email) {
+      alert('Please fill in all fields');
+      return;
+    }
+
+    // Basic wallet address validation
+    if (!formData.address.startsWith('0x') || formData.address.length !== 42) {
+      alert('Please enter a valid Ethereum wallet address (starts with 0x and is 42 characters long)');
+      return;
+    }
 
     setLoading(true);
     try {
       // Step 1: Register user
-      console.log('Attempting registration for:', address.toLowerCase());
+      console.log('Attempting registration for:', formData.address.toLowerCase());
       const registerResponse = await axios.post(`${API_URL}/api/users/register`, {
-        address: address.toLowerCase(),
+        address: formData.address.toLowerCase(),
         username: formData.username,
         email: formData.email,
         referrer_code: referralCode || undefined
       });
       console.log('Registration successful:', registerResponse.data);
 
-      // Step 2: Get nonce for authentication
-      console.log('Getting nonce for authentication...');
-      const nonceResponse = await axios.post(`${API_URL}/api/auth/nonce`, { 
-        address: address.toLowerCase() 
-      });
-      const { nonce } = nonceResponse.data;
-      console.log('Nonce received:', nonce);
-      
-      // Step 3: Sign message
-      console.log('Requesting signature from wallet...');
-      const message = `Sign this message to authenticate: ${nonce}`;
-      const signature = await signMessageAsync({ message });
-      console.log('Signature received');
-      
-      // Step 4: Verify signature and get token
-      console.log('Verifying signature...');
-      const verifyResponse = await axios.post(`${API_URL}/api/auth/verify`, {
-        address: address.toLowerCase(),
-        signature
+      // Step 2: Simple login with wallet address (no signature required)
+      const loginResponse = await axios.post(`${API_URL}/api/auth/simple-login`, {
+        address: formData.address.toLowerCase(),
+        username: formData.username
       });
       
-      const { token } = verifyResponse.data;
-      console.log('Authentication successful, redirecting to dashboard...');
+      const { token } = loginResponse.data;
+      console.log('Login successful, redirecting to dashboard...');
       login(token);
 
       window.location.href = '/dashboard';
@@ -671,13 +664,7 @@ function RegisterPage() {
       let errorMessage = 'Registration failed. Please try again.';
       if (error.response?.data?.detail) {
         if (error.response.data.detail === "User already registered") {
-          errorMessage = 'This wallet address is already registered. Please use the login page or connect a different wallet.';
-          // Optionally redirect to login
-          setTimeout(() => {
-            if (window.confirm('This wallet is already registered. Would you like to go to the login page?')) {
-              window.location.href = '/';
-            }
-          }, 2000);
+          errorMessage = 'This wallet address is already registered. Please use the login page or try a different wallet address.';
         } else {
           errorMessage = `Registration failed: ${error.response.data.detail}`;
         }
@@ -685,10 +672,6 @@ function RegisterPage() {
         errorMessage = 'Registration failed: Invalid data provided or user already exists.';
       } else if (error.response?.status === 500) {
         errorMessage = 'Registration failed: Server error. Please try again later.';
-      } else if (error.code === 'ACTION_REJECTED') {
-        errorMessage = 'Registration cancelled: You rejected the signature request. Please try again and approve the signature.';
-      } else if (error.message?.includes('User rejected')) {
-        errorMessage = 'Registration cancelled: You rejected the signature request. Please try again and approve the signature.';
       }
       
       alert(errorMessage);
@@ -697,37 +680,49 @@ function RegisterPage() {
     }
   };
 
-  if (!isConnected) {
-    return (
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <div className="max-w-md w-full text-center">
-          <Network className="h-16 w-16 text-blue-400 mx-auto mb-6" />
-          <h1 className="text-3xl font-bold text-white mb-4">Connect Your Wallet</h1>
-          <p className="text-gray-300 mb-8">Please connect your Web3 wallet to continue with registration</p>
-          <w3m-button />
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="max-w-lg w-full">
-        <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-8">
-          <h1 className="text-3xl font-bold text-white mb-6 text-center">Join Web3 Membership</h1>
-          
-          {referrerInfo && (
-            <div className="bg-blue-900 bg-opacity-50 border border-blue-400 rounded-lg p-4 mb-6">
-              <p className="text-blue-300 text-sm">
-                🎉 Invited by: <span className="font-bold text-blue-200">{referrerInfo.referrer_username}</span>
-                <span className="ml-2 px-2 py-1 bg-blue-700 rounded text-xs">{referrerInfo.referrer_tier}</span>
-              </p>
-            </div>
-          )}
+    <div className="min-h-screen flex items-center justify-center px-4" style={{
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+    }}>
+      <div className="max-w-md w-full">
+        <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-2xl p-8 shadow-2xl border border-white border-opacity-20">
+          <div className="text-center mb-8">
+            <Network className="h-16 w-16 text-white mx-auto mb-4" />
+            <h2 className="text-3xl font-bold text-white mb-2">Join Our Network</h2>
+            <p className="text-gray-200">Create your membership account</p>
+            
+            {referrerInfo && (
+              <div className="mt-4 p-4 bg-blue-600 bg-opacity-30 rounded-lg border border-blue-400 border-opacity-50">
+                <p className="text-blue-100 text-sm">
+                  🎉 You're joining through <strong>{referrerInfo.referrer_username}</strong>'s network!
+                </p>
+                <p className="text-blue-200 text-xs mt-1">
+                  Tier: {referrerInfo.referrer_tier.toUpperCase()}
+                </p>
+              </div>
+            )}
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-gray-300 text-sm font-medium mb-2">Username</label>
+              <label className="block text-white text-sm font-medium mb-2">
+                Wallet Address *
+              </label>
+              <input
+                type="text"
+                value={formData.address}
+                onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
+                placeholder="0x1234567890123456789012345678901234567890"
+                required
+              />
+              <p className="text-gray-400 text-xs mt-1">Enter your Ethereum wallet address</p>
+            </div>
+            
+            <div>
+              <label className="block text-white text-sm font-medium mb-2">
+                Username *
+              </label>
               <input
                 type="text"
                 value={formData.username}
@@ -739,7 +734,9 @@ function RegisterPage() {
             </div>
 
             <div>
-              <label className="block text-gray-300 text-sm font-medium mb-2">Email</label>
+              <label className="block text-white text-sm font-medium mb-2">
+                Email Address *
+              </label>
               <input
                 type="email"
                 value={formData.email}
@@ -750,24 +747,23 @@ function RegisterPage() {
               />
             </div>
 
-            <div>
-              <label className="block text-gray-300 text-sm font-medium mb-2">Wallet Address</label>
-              <input
-                type="text"
-                value={address}
-                disabled
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-gray-400"
-              />
-            </div>
-
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white font-semibold rounded-lg transition-all duration-300"
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
             >
               {loading ? 'Creating Account...' : 'Create Account'}
             </button>
           </form>
+
+          <div className="mt-6 text-center">
+            <p className="text-gray-300 text-sm">
+              Already have an account?{' '}
+              <a href="/" className="text-blue-400 hover:text-blue-300 font-medium">
+                Sign In
+              </a>
+            </p>
+          </div>
         </div>
       </div>
     </div>
