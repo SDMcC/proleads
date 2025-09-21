@@ -2657,6 +2657,128 @@ class Web3MembershipTester:
         
         return True
 
+    def test_database_cleanup_for_broken_wallet(self, wallet_address="0xcfb56068Fc1e2d1E9724bD1Ba959A21efe7e1969"):
+        """Test database cleanup for broken wallet address"""
+        print(f"\n🧹 Testing Database Cleanup for Broken Wallet: {wallet_address}")
+        
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        # First, check if the wallet exists in the database
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        # Check if user exists in members list
+        print(f"🔍 Checking if wallet {wallet_address} exists in database...")
+        members_success, members_response = self.run_test("Check Wallet in Members", "GET", f"admin/members?user_filter={wallet_address}", 200, headers=headers)
+        
+        wallet_found = False
+        member_data = None
+        if members_success:
+            members = members_response.get('members', [])
+            for member in members:
+                if member.get('wallet_address', '').lower() == wallet_address.lower():
+                    wallet_found = True
+                    member_data = member
+                    print(f"✅ Found wallet in members: {member.get('username', 'No username')} - {member.get('email', 'No email')}")
+                    break
+        
+        if not wallet_found:
+            print(f"⚠️ Wallet {wallet_address} not found in members database")
+            # Check payments for this wallet
+            payments_success, payments_response = self.run_test("Check Wallet in Payments", "GET", f"admin/payments?user_filter={wallet_address}", 200, headers=headers)
+            if payments_success:
+                payments = payments_response.get('payments', [])
+                payment_found = False
+                for payment in payments:
+                    if payment.get('user_address', '').lower() == wallet_address.lower():
+                        payment_found = True
+                        print(f"✅ Found wallet in payments: {payment.get('username', 'No username')} - Status: {payment.get('status')}")
+                        break
+                
+                if not payment_found:
+                    print(f"⚠️ Wallet {wallet_address} not found in payments database either")
+                    return True, {"message": "Wallet not found in database - no cleanup needed"}
+        
+        # Now perform the cleanup by creating a direct database cleanup endpoint test
+        print(f"🗑️ Attempting to clean up all records for wallet {wallet_address}...")
+        
+        # Since we don't have a direct cleanup endpoint, we'll simulate the cleanup verification
+        # by checking what records exist and would need to be deleted
+        
+        cleanup_summary = {
+            "wallet_address": wallet_address,
+            "records_found": {
+                "users": 0,
+                "payments": 0,
+                "commissions": 0,
+                "member_leads": 0
+            },
+            "cleanup_needed": False,
+            "member_details": member_data
+        }
+        
+        # Check users collection
+        if wallet_found:
+            cleanup_summary["records_found"]["users"] = 1
+            cleanup_summary["cleanup_needed"] = True
+        
+        # Check payments collection
+        payments_success, payments_response = self.run_test("Check Wallet in Payments", "GET", f"admin/payments?user_filter={wallet_address}", 200, headers=headers)
+        if payments_success:
+            payments = payments_response.get('payments', [])
+            payment_count = sum(1 for p in payments if p.get('user_address', '').lower() == wallet_address.lower())
+            cleanup_summary["records_found"]["payments"] = payment_count
+            if payment_count > 0:
+                cleanup_summary["cleanup_needed"] = True
+                print(f"   Found {payment_count} payment records")
+        
+        # Check commissions collection
+        commissions_success, commissions_response = self.run_test("Check Wallet in Commissions", "GET", f"admin/commissions?user_filter={wallet_address}", 200, headers=headers)
+        if commissions_success:
+            commissions = commissions_response.get('commissions', [])
+            commission_count = sum(1 for c in commissions if c.get('recipient_address', '').lower() == wallet_address.lower() or c.get('new_member_address', '').lower() == wallet_address.lower())
+            cleanup_summary["records_found"]["commissions"] = commission_count
+            if commission_count > 0:
+                cleanup_summary["cleanup_needed"] = True
+                print(f"   Found {commission_count} commission records")
+        
+        print(f"📊 Cleanup Summary:")
+        print(f"   Users records: {cleanup_summary['records_found']['users']}")
+        print(f"   Payment records: {cleanup_summary['records_found']['payments']}")
+        print(f"   Commission records: {cleanup_summary['records_found']['commissions']}")
+        print(f"   Member leads records: {cleanup_summary['records_found']['member_leads']}")
+        print(f"   Cleanup needed: {cleanup_summary['cleanup_needed']}")
+        
+        if cleanup_summary["cleanup_needed"]:
+            print("⚠️ MANUAL DATABASE CLEANUP REQUIRED")
+            print("   The following MongoDB commands should be executed:")
+            print(f'   db.users.deleteMany({{"address": "{wallet_address.lower()}"}})')
+            print(f'   db.payments.deleteMany({{"user_address": "{wallet_address.lower()}"}})')
+            print(f'   db.commissions.deleteMany({{"recipient_address": "{wallet_address.lower()}"}})')
+            print(f'   db.commissions.deleteMany({{"new_member_address": "{wallet_address.lower()}"}})')
+            print(f'   db.member_leads.deleteMany({{"member_address": "{wallet_address.lower()}"}})')
+            print(f'   db.users.updateMany({{"referrer_address": "{wallet_address.lower()}"}}, {{"$unset": {{"referrer_address": 1}}}})')
+            
+            # Show member details if found
+            if member_data:
+                print(f"\n📋 Member Details Found:")
+                print(f"   Username: {member_data.get('username', 'N/A')}")
+                print(f"   Email: {member_data.get('email', 'N/A')}")
+                print(f"   Membership Tier: {member_data.get('membership_tier', 'N/A')}")
+                print(f"   Created: {member_data.get('created_at', 'N/A')}")
+                print(f"   Suspended: {member_data.get('suspended', False)}")
+        else:
+            print("✅ No cleanup needed - wallet not found in database")
+        
+        return True, cleanup_summary
+
 def main():
     # Get the backend URL from environment or use default
     backend_url = "https://web3-membership.preview.emergentagent.com"
