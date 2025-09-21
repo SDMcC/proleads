@@ -441,7 +441,8 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Referral Relationship Verification - firstuser/seconduser"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
