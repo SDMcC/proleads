@@ -4050,6 +4050,11 @@ function AdminDashboard() {
         {activeTab === 'leads' && (
           <LeadsManagementTab />
         )}
+
+        {/* Configuration Tab */}
+        {activeTab === 'configuration' && (
+          <ConfigurationTab />
+        )}
       </div>
 
       {/* Member Details/Edit Modal */}
