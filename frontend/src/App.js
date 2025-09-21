@@ -305,19 +305,6 @@ function LandingPage() {
               <form onSubmit={handleSimpleLogin} className="space-y-4">
                 <div>
                   <label className="block text-white text-sm font-medium mb-2">
-                    Wallet Address
-                  </label>
-                  <input
-                    type="text"
-                    value={loginData.address}
-                    onChange={(e) => setLoginData(prev => ({ ...prev, address: e.target.value }))}
-                    className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
-                    placeholder="0x1234567890123456789012345678901234567890"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-white text-sm font-medium mb-2">
                     Username
                   </label>
                   <input
@@ -326,6 +313,19 @@ function LandingPage() {
                     onChange={(e) => setLoginData(prev => ({ ...prev, username: e.target.value }))}
                     className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
                     placeholder="Enter your username"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-white text-sm font-medium mb-2">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    value={loginData.password}
+                    onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
+                    className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
+                    placeholder="Enter your password"
                     required
                   />
                 </div>
