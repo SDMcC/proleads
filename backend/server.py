@@ -327,6 +327,126 @@ async def simple_login(request: SimpleLoginRequest):
         logger.error(f"Simple login failed: {str(e)}")
         raise HTTPException(status_code=500, detail="Login failed")
 
+@app.post("/api/auth/login")
+async def login_user(login_data: UserLogin):
+    """Login user with username and password"""
+    try:
+        # Find user by username
+        user = await db.users.find_one({"username": login_data.username})
+        if not user:
+            raise HTTPException(status_code=401, detail="Invalid username or password")
+        
+        # Check if user is suspended
+        if user.get("suspended", False):
+            raise HTTPException(status_code=403, detail="Account is suspended")
+        
+        # Verify password
+        password_hash = user.get("password_hash")
+        if not password_hash or not bcrypt.checkpw(login_data.password.encode('utf-8'), password_hash.encode('utf-8')):
+            raise HTTPException(status_code=401, detail="Invalid username or password")
+        
+        # Generate JWT token
+        token_data = {
+            "address": user["address"],
+            "username": user["username"],
+            "email": user["email"],
+            "membership_tier": user.get("membership_tier", "affiliate"),
+            "referral_code": user.get("referral_code"),
+            "exp": datetime.utcnow() + timedelta(hours=24)
+        }
+        
+        token = jwt.encode(token_data, JWT_SECRET, algorithm=JWT_ALGORITHM)
+        
+        # Update last active
+        await db.users.update_one(
+            {"username": login_data.username},
+            {"$set": {"last_active": datetime.utcnow()}}
+        )
+        
+        return {"token": token, "user": token_data}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Login failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Login failed")
+
+@app.put("/api/users/profile")
+async def update_profile(profile_data: UpdateProfile, current_user: dict = Depends(get_current_user)):
+    """Update user profile including wallet address"""
+    try:
+        update_fields = {}
+        
+        # Update email if provided
+        if profile_data.email:
+            # Check if email is already taken by another user
+            existing_email = await db.users.find_one({
+                "email": profile_data.email,
+                "username": {"$ne": current_user["username"]}
+            })
+            if existing_email:
+                raise HTTPException(status_code=400, detail="Email already registered")
+            update_fields["email"] = profile_data.email
+        
+        # Update wallet address if provided
+        if profile_data.wallet_address:
+            # Check if wallet address is already taken by another user
+            existing_wallet = await db.users.find_one({
+                "address": profile_data.wallet_address.lower(),
+                "username": {"$ne": current_user["username"]}
+            })
+            if existing_wallet:
+                raise HTTPException(status_code=400, detail="Wallet address already registered")
+            update_fields["address"] = profile_data.wallet_address.lower()
+        
+        # Update password if provided
+        if profile_data.new_password:
+            if not profile_data.current_password:
+                raise HTTPException(status_code=400, detail="Current password required to change password")
+            
+            # Verify current password
+            user = await db.users.find_one({"username": current_user["username"]})
+            current_hash = user.get("password_hash")
+            if not current_hash or not bcrypt.checkpw(profile_data.current_password.encode('utf-8'), current_hash.encode('utf-8')):
+                raise HTTPException(status_code=400, detail="Current password is incorrect")
+            
+            # Hash new password
+            new_password_hash = bcrypt.hashpw(profile_data.new_password.encode('utf-8'), bcrypt.gensalt())
+            update_fields["password_hash"] = new_password_hash.decode('utf-8')
+        
+        if not update_fields:
+            raise HTTPException(status_code=400, detail="No fields to update")
+        
+        update_fields["updated_at"] = datetime.utcnow()
+        
+        # Update user
+        result = await db.users.update_one(
+            {"username": current_user["username"]},
+            {"$set": update_fields}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Get updated user data
+        updated_user = await db.users.find_one({"username": current_user["username"]})
+        
+        return {
+            "message": "Profile updated successfully",
+            "user": {
+                "username": updated_user["username"],
+                "email": updated_user["email"],
+                "address": updated_user["address"],
+                "membership_tier": updated_user["membership_tier"]
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Profile update failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Profile update failed")
+
 # Original nonce-based auth endpoints (keeping for backward compatibility)
 @app.post("/api/auth/nonce")
 async def generate_nonce(request: NonceRequest):
