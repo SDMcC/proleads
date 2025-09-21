@@ -63,7 +63,25 @@ MEMBERSHIP_TIERS = {
     "gold": {"price": 100, "commissions": [0.30, 0.15, 0.10, 0.05]}
 }
 
+import bcrypt
+
 # Pydantic models
+class UserRegistration(BaseModel):
+    username: str
+    email: str
+    password: str
+    wallet_address: str
+    referrer_code: Optional[str] = None
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+class UpdateProfile(BaseModel):
+    email: Optional[str] = None
+    wallet_address: Optional[str] = None
+    current_password: Optional[str] = None
+    new_password: Optional[str] = None
 class UserRegistration(BaseModel):
     address: str
     username: str
