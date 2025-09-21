@@ -1787,6 +1787,75 @@ async def export_user_payments_csv(
         logger.error(f"Failed to export user payments: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to export user payments")
 
+# Admin database cleanup endpoint
+@app.delete("/api/admin/cleanup/wallet/{wallet_address}")
+async def cleanup_wallet_records(wallet_address: str, admin: dict = Depends(get_admin_user)):
+    """Clean up all database records for a specific wallet address"""
+    try:
+        wallet_address = wallet_address.lower()
+        logger.info(f"Admin cleanup requested for wallet: {wallet_address}")
+        
+        cleanup_results = {
+            "wallet_address": wallet_address,
+            "deleted_records": {
+                "users": 0,
+                "payments": 0,
+                "commissions": 0,
+                "member_leads": 0,
+                "referral_updates": 0
+            },
+            "success": True,
+            "message": "Cleanup completed successfully"
+        }
+        
+        # 1. Delete from users collection
+        users_result = await db.users.delete_many({"address": wallet_address})
+        cleanup_results["deleted_records"]["users"] = users_result.deleted_count
+        logger.info(f"Deleted {users_result.deleted_count} user records")
+        
+        # 2. Delete from payments collection
+        payments_result = await db.payments.delete_many({"user_address": wallet_address})
+        cleanup_results["deleted_records"]["payments"] = payments_result.deleted_count
+        logger.info(f"Deleted {payments_result.deleted_count} payment records")
+        
+        # 3. Delete from commissions collection (as recipient)
+        commissions_recipient_result = await db.commissions.delete_many({"recipient_address": wallet_address})
+        
+        # 4. Delete from commissions collection (as new member)
+        commissions_member_result = await db.commissions.delete_many({"new_member_address": wallet_address})
+        
+        total_commissions = commissions_recipient_result.deleted_count + commissions_member_result.deleted_count
+        cleanup_results["deleted_records"]["commissions"] = total_commissions
+        logger.info(f"Deleted {total_commissions} commission records")
+        
+        # 5. Delete from member_leads collection
+        member_leads_result = await db.member_leads.delete_many({"member_address": wallet_address})
+        cleanup_results["deleted_records"]["member_leads"] = member_leads_result.deleted_count
+        logger.info(f"Deleted {member_leads_result.deleted_count} member leads records")
+        
+        # 6. Update referral relationships (remove referrer_address references)
+        referral_update_result = await db.users.update_many(
+            {"referrer_address": wallet_address},
+            {"$unset": {"referrer_address": 1}}
+        )
+        cleanup_results["deleted_records"]["referral_updates"] = referral_update_result.modified_count
+        logger.info(f"Updated {referral_update_result.modified_count} referral relationships")
+        
+        total_deleted = sum(cleanup_results["deleted_records"].values())
+        
+        if total_deleted == 0:
+            cleanup_results["message"] = "No records found for cleanup"
+        else:
+            cleanup_results["message"] = f"Successfully cleaned up {total_deleted} records"
+        
+        logger.info(f"Cleanup completed for {wallet_address}: {cleanup_results}")
+        
+        return cleanup_results
+        
+    except Exception as e:
+        logger.error(f"Failed to cleanup wallet records: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to cleanup wallet records: {str(e)}")
+
 # Milestones system
 MILESTONE_BONUSES = {
     25: 25.0,
