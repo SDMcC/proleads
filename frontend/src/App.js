@@ -652,7 +652,17 @@ function RegisterPage() {
       
       let errorMessage = 'Registration failed. Please try again.';
       if (error.response?.data?.detail) {
-        errorMessage = `Registration failed: ${error.response.data.detail}`;
+        if (error.response.data.detail === "User already registered") {
+          errorMessage = 'This wallet address is already registered. Please use the login page or connect a different wallet.';
+          // Optionally redirect to login
+          setTimeout(() => {
+            if (window.confirm('This wallet is already registered. Would you like to go to the login page?')) {
+              window.location.href = '/';
+            }
+          }, 2000);
+        } else {
+          errorMessage = `Registration failed: ${error.response.data.detail}`;
+        }
       } else if (error.response?.status === 400) {
         errorMessage = 'Registration failed: Invalid data provided or user already exists.';
       } else if (error.response?.status === 500) {
