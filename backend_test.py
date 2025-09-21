@@ -3153,6 +3153,15 @@ def main():
         else:
             print("✅ No database cleanup needed")
     
+    # REFERRAL RELATIONSHIP INVESTIGATION
+    print("\n🔍 RUNNING REFERRAL RELATIONSHIP INVESTIGATION")
+    print("=" * 50)
+    referral_investigation_success = tester.test_referral_relationship_investigation()
+    if not referral_investigation_success:
+        print("\n⚠️ Referral relationship investigation failed")
+    else:
+        print("\n✅ Referral relationship investigation completed")
+    
     # Print results
     print("\n================================")
     print(f"📊 Tests passed: {tester.tests_passed}/{tester.tests_run}")
