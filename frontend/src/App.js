@@ -170,8 +170,8 @@ function LandingPage() {
   const [referralCode, setReferralCode] = useState('');
   const [showLogin, setShowLogin] = useState(false);
   const [loginData, setLoginData] = useState({
-    address: '',
-    username: ''
+    username: '',
+    password: ''
   });
   const [loginLoading, setLoginLoading] = useState(false);
 
