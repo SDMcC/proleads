@@ -2864,6 +2864,19 @@ def main():
     else:
         print("\n✅ Comprehensive review request testing completed successfully")
     
+    # DATABASE CLEANUP FOR BROKEN WALLET
+    print("\n🧹 RUNNING DATABASE CLEANUP FOR BROKEN WALLET")
+    print("=" * 50)
+    cleanup_success, cleanup_result = tester.test_database_cleanup_for_broken_wallet()
+    if not cleanup_success:
+        print("\n⚠️ Database cleanup test failed")
+    else:
+        print("\n✅ Database cleanup test completed")
+        if cleanup_result.get("cleanup_needed"):
+            print("🚨 URGENT: Manual database cleanup required - see test output above")
+        else:
+            print("✅ No database cleanup needed")
+    
     # Print results
     print("\n================================")
     print(f"📊 Tests passed: {tester.tests_passed}/{tester.tests_run}")
