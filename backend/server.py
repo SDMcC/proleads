@@ -2804,6 +2804,113 @@ async def get_system_config(admin: dict = Depends(get_admin_user)):
     except Exception as e:
         logger.error(f"Failed to get system config: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to retrieve system configuration")
+@app.put("/api/admin/config/membership-tiers")
+async def update_membership_tiers(
+    tiers_data: Dict[str, MembershipTierConfig],
+    admin: dict = Depends(get_admin_user)
+):
+    """Update membership tiers configuration"""
+    try:
+        global MEMBERSHIP_TIERS
+        
+        # Validate tier data
+        for tier_name, tier_config in tiers_data.items():
+            if tier_config.price < 0:
+                raise HTTPException(status_code=400, detail=f"Invalid price for {tier_name}")
+            if not tier_config.commissions or len(tier_config.commissions) > 4:
+                raise HTTPException(status_code=400, detail=f"Invalid commission structure for {tier_name}")
+            for commission in tier_config.commissions:
+                if commission < 0 or commission > 1:
+                    raise HTTPException(status_code=400, detail=f"Commission rates must be between 0 and 1")
+        
+        # Convert to dictionary format for database storage
+        tiers_dict = {}
+        for tier_name, tier_config in tiers_data.items():
+            tiers_dict[tier_name] = {
+                "tier_name": tier_config.tier_name,
+                "price": tier_config.price,
+                "commissions": tier_config.commissions,
+                "enabled": tier_config.enabled,
+                "description": tier_config.description or f"{tier_name.capitalize()} membership tier"
+            }
+        
+        # Save to database
+        success = await save_system_config(membership_tiers=tiers_dict, updated_by=admin["username"])
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to save membership tiers configuration")
+        
+        # Reload configuration
+        await load_system_config()
+        
+        return {
+            "message": "Membership tiers updated successfully",
+            "updated_tiers": MEMBERSHIP_TIERS
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to update membership tiers: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to update membership tiers")
+
+@app.put("/api/admin/config/payment-processors")
+async def update_payment_processors(
+    processors_data: Dict[str, PaymentProcessorConfig],
+    admin: dict = Depends(get_admin_user)
+):
+    """Update payment processors configuration"""
+    try:
+        # Convert to dictionary format for database storage
+        processors_dict = {}
+        for processor_name, processor_config in processors_data.items():
+            processors_dict[processor_name] = {
+                "processor_name": processor_config.processor_name,
+                "api_key": processor_config.api_key,
+                "public_key": processor_config.public_key,
+                "ipn_secret": processor_config.ipn_secret,
+                "enabled": processor_config.enabled,
+                "supported_currencies": processor_config.supported_currencies
+            }
+        
+        # Save to database (keep existing membership tiers)
+        success = await save_system_config(payment_processors=processors_dict, updated_by=admin["username"])
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to save payment processors configuration")
+        
+        return {
+            "message": "Payment processors updated successfully",
+            "processors": processors_dict
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to update payment processors: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to update payment processors")
+
+@app.post("/api/admin/config/reset-to-defaults")
+async def reset_config_to_defaults(admin: dict = Depends(get_admin_user)):
+    """Reset system configuration to default values"""
+    try:
+        global MEMBERSHIP_TIERS
+        
+        # Reset to default configuration
+        MEMBERSHIP_TIERS = DEFAULT_MEMBERSHIP_TIERS.copy()
+        success = await save_system_config(updated_by=admin["username"])
+        
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to reset configuration")
+        
+        return {
+            "message": "Configuration reset to defaults successfully",
+            "default_tiers": MEMBERSHIP_TIERS
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to reset configuration: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to reset configuration")
 # User endpoints for leads
 @app.get("/api/users/leads")
 async def get_user_leads(
