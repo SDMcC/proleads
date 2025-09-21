@@ -125,6 +125,28 @@ class LeadDistribution(BaseModel):
     eligible_members: int
     estimated_weeks: int
 
+class MembershipTierConfig(BaseModel):
+    tier_name: str
+    price: float
+    commissions: List[float]
+    enabled: bool = True
+    description: Optional[str] = None
+
+class PaymentProcessorConfig(BaseModel):
+    processor_name: str = "nowpayments"  # nowpayments, atlos, etc.
+    api_key: Optional[str] = None
+    public_key: Optional[str] = None
+    ipn_secret: Optional[str] = None
+    enabled: bool = True
+    supported_currencies: List[str] = ["BTC", "ETH", "USDC", "USDT"]
+
+class SystemConfig(BaseModel):
+    membership_tiers: Dict[str, MembershipTierConfig] = {}
+    payment_processors: Dict[str, PaymentProcessorConfig] = {}
+    app_settings: Dict[str, Any] = {}
+    updated_at: Optional[datetime] = None
+    updated_by: Optional[str] = None
+
 # WebSocket connection manager
 class ConnectionManager:
     def __init__(self):
