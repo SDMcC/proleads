@@ -82,11 +82,6 @@ class UpdateProfile(BaseModel):
     wallet_address: Optional[str] = None
     current_password: Optional[str] = None
     new_password: Optional[str] = None
-class UserRegistration(BaseModel):
-    address: str
-    username: str
-    email: str
-    referrer_code: Optional[str] = None
 
 class NonceRequest(BaseModel):
     address: str
