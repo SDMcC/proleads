@@ -77,6 +77,10 @@ class VerifySignature(BaseModel):
     address: str
     signature: str
 
+class SimpleLoginRequest(BaseModel):
+    address: str
+    username: str
+
 class PaymentRequest(BaseModel):
     tier: str
     currency: str = "BTC"
