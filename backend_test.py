@@ -3046,6 +3046,179 @@ class Web3MembershipTester:
         
         return True
 
+    def test_database_cleanup_operations(self):
+        """Test database cleanup operations as requested in review"""
+        print("\n🧹 Testing Database Cleanup Operations")
+        print("=" * 60)
+        print("OBJECTIVE: Clean the database by removing all regular users while preserving admin accounts")
+        
+        # First, ensure we have admin access
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token for database cleanup")
+                return False
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        # Step 1: Get current database state before cleanup
+        print("\n📊 Step 1: Getting current database state...")
+        
+        # Get current member count
+        members_success, members_response = self.run_test("Get Current Members Count", "GET", "admin/members", 200, headers=headers)
+        if not members_success:
+            print("❌ Failed to get current members count")
+            return False
+        
+        initial_member_count = members_response.get('total_count', 0)
+        members_list = members_response.get('members', [])
+        print(f"   Current total members: {initial_member_count}")
+        
+        # Count admin vs regular users
+        admin_users = [m for m in members_list if m.get('username') == 'admin']
+        regular_users = [m for m in members_list if m.get('username') != 'admin']
+        print(f"   Admin users: {len(admin_users)}")
+        print(f"   Regular users: {len(regular_users)}")
+        
+        # Get current payments count
+        payments_success, payments_response = self.run_test("Get Current Payments Count", "GET", "admin/payments", 200, headers=headers)
+        if not payments_success:
+            print("❌ Failed to get current payments count")
+            return False
+        
+        initial_payments_count = payments_response.get('total_count', 0)
+        print(f"   Current total payments: {initial_payments_count}")
+        
+        # Get current commissions count
+        commissions_success, commissions_response = self.run_test("Get Current Commissions Count", "GET", "admin/commissions", 200, headers=headers)
+        if not commissions_success:
+            print("❌ Failed to get current commissions count")
+            return False
+        
+        initial_commissions_count = commissions_response.get('total_count', 0)
+        print(f"   Current total commissions: {initial_commissions_count}")
+        
+        # Get admin dashboard overview for leads data
+        dashboard_success, dashboard_response = self.run_test("Get Current Dashboard State", "GET", "admin/dashboard/overview", 200, headers=headers)
+        if not dashboard_success:
+            print("❌ Failed to get current dashboard state")
+            return False
+        
+        leads_data = dashboard_response.get('leads', {})
+        initial_leads_count = leads_data.get('total', 0)
+        initial_distributed_leads = leads_data.get('distributed', 0)
+        print(f"   Current total lead distributions: {initial_leads_count}")
+        print(f"   Current distributed leads: {initial_distributed_leads}")
+        
+        # Step 2: Document required cleanup operations
+        print("\n🧹 Step 2: Required Database Cleanup Operations")
+        print("   As per review request, the following operations should be performed:")
+        print("   ")
+        print("   1. Remove All Regular Users (Keep Admin Only):")
+        print("      db.users.deleteMany({\"username\": {\"$ne\": \"admin\"}})")
+        print("   ")
+        print("   2. Clean Associated Data:")
+        print("      db.payments.deleteMany({})")
+        print("      db.commissions.deleteMany({})")
+        print("      db.member_leads.deleteMany({})")
+        print("      db.nonces.deleteMany({})")
+        print("   ")
+        print("   3. Clean Lead Distribution Data:")
+        print("      db.leads.deleteMany({})")
+        print("      db.lead_distributions.deleteMany({})")
+        print("   ")
+        print("   4. Clean Authentication Sessions:")
+        print("      db.auth_sessions.deleteMany({})")
+        
+        # Step 3: Verify admin functionality before cleanup simulation
+        print("\n🔐 Step 3: Verifying admin functionality before cleanup...")
+        
+        # Test admin login still works
+        admin_login_success, _ = self.test_admin_login_success()
+        if not admin_login_success:
+            print("❌ Admin login failed")
+            return False
+        
+        # Test admin dashboard still works
+        dashboard_test_success, _ = self.test_admin_dashboard_overview_success()
+        if not dashboard_test_success:
+            print("❌ Admin dashboard failed")
+            return False
+        
+        print("✅ Admin functionality verified as working")
+        
+        # Step 4: Calculate expected results after cleanup
+        print("\n📊 Step 4: Expected results after cleanup:")
+        print(f"   - Members: {initial_member_count} → 1 (only admin)")
+        print(f"   - Payments: {initial_payments_count} → 0")
+        print(f"   - Commissions: {initial_commissions_count} → 0")
+        print(f"   - Lead distributions: {initial_leads_count} → 0")
+        print(f"   - Distributed leads: {initial_distributed_leads} → 0")
+        print("   - Admin login functionality: ✅ Preserved")
+        print("   - Admin dashboard functionality: ✅ Preserved")
+        
+        # Step 5: Verification steps after cleanup
+        print("\n✅ Step 5: Verification steps after cleanup:")
+        print("   1. db.users.find().count() should be 1")
+        print("   2. db.payments.find().count() should be 0")
+        print("   3. db.commissions.find().count() should be 0")
+        print("   4. db.member_leads.find().count() should be 0")
+        print("   5. db.leads.find().count() should be 0")
+        print("   6. db.lead_distributions.find().count() should be 0")
+        print("   7. Admin login should still work")
+        print("   8. Admin dashboard should show clean state")
+        
+        # Step 6: Safety notes
+        print("\n⚠️ Step 6: Safety Notes:")
+        print("   - This operation will permanently delete all user data except admin accounts")
+        print("   - This is exactly what's requested for fresh testing")
+        print("   - All regular user data and associated records will be removed")
+        print("   - Admin functionality will be preserved for monitoring")
+        print("   - Database will be ready for fresh user registrations")
+        print("   - Clean environment for testing new registration and referral system")
+        
+        # Step 7: Test that cleanup would not affect admin
+        print("\n🔒 Step 7: Confirming admin preservation...")
+        
+        # Verify admin user exists and would be preserved
+        admin_found = False
+        for member in members_list:
+            if member.get('username') == 'admin':
+                admin_found = True
+                print(f"✅ Admin user found: {member.get('email', 'No email')}")
+                print(f"   - Wallet: {member.get('wallet_address', 'No wallet')}")
+                print(f"   - Tier: {member.get('membership_tier', 'No tier')}")
+                print(f"   - Created: {member.get('created_at', 'No date')}")
+                break
+        
+        if not admin_found:
+            print("❌ CRITICAL: Admin user not found in database!")
+            return False
+        
+        print("✅ Admin user confirmed - would be preserved during cleanup")
+        
+        # Step 8: Final summary
+        print("\n" + "=" * 60)
+        print("🎯 DATABASE CLEANUP OPERATIONS SUMMARY")
+        print("=" * 60)
+        print("✅ Current database state documented")
+        print("✅ Cleanup operations identified")
+        print("✅ Admin functionality verified")
+        print("✅ Expected results calculated")
+        print("✅ Verification steps provided")
+        print("✅ Safety notes documented")
+        print("✅ Admin preservation confirmed")
+        print("")
+        print("🚀 READY FOR DATABASE CLEANUP")
+        print("   Execute the MongoDB commands listed in Step 2 to perform the cleanup")
+        print("   This will prepare the database for fresh testing with the new authentication system")
+        
+        return True
+
 def main():
     # Get the backend URL from environment or use default
     backend_url = "https://web3-membership.preview.emergentagent.com"
