@@ -328,6 +328,21 @@ backend:
         agent: "main"
         comment: "Need account cancellation with downline transfer logic"
 
+  - task: "Database Cleanup for Broken Wallet Address"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "URGENT DATABASE CLEANUP REQUEST: Wallet address 0xcfb56068Fc1e2d1E9724bD1Ba959A21efe7e1969 in broken state - shows 'User already registered' but registration never completed (no username exists). User stuck between registration and login pages."
+      - working: true
+        agent: "testing"
+        comment: "✅ DATABASE CLEANUP COMPLETED SUCCESSFULLY: Created new admin endpoint DELETE /api/admin/cleanup/wallet/{wallet_address} and executed cleanup for broken wallet 0xcfb56068Fc1e2d1E9724bD1Ba959A21efe7e1969. CLEANUP RESULTS: Deleted 1 user record, 2 payment records, 0 commission records, 0 member leads records, 0 referral updates. Total 3 records cleaned up. VERIFICATION: User can now register fresh with this wallet address - no 'already registered' error, clean slate achieved for testing affiliate referral system. Issue completely resolved."
+
   - task: "User Profile API"
     implemented: true
     working: true
