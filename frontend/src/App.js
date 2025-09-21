@@ -4497,6 +4497,410 @@ function LeadsManagementTab() {
   );
 }
 
+// Configuration Tab Component for Admin
+function ConfigurationTab() {
+  const [config, setConfig] = useState(null);
+  const [membershipTiers, setMembershipTiers] = useState({});
+  const [paymentProcessors, setPaymentProcessors] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [activeSection, setActiveSection] = useState('membership');
+  const [unsavedChanges, setUnsavedChanges] = useState(false);
+
+  useEffect(() => {
+    fetchConfiguration();
+  }, []);
+
+  const fetchConfiguration = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await axios.get(`${API_URL}/api/admin/config/system`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setConfig(response.data.config);
+      setMembershipTiers(response.data.config.membership_tiers || {});
+      setPaymentProcessors(response.data.config.payment_processors || {});
+    } catch (error) {
+      console.error('Failed to fetch configuration:', error);
+      alert('Failed to load configuration');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateMembershipTier = (tierName, field, value) => {
+    setMembershipTiers(prev => ({
+      ...prev,
+      [tierName]: {
+        ...prev[tierName],
+        [field]: value
+      }
+    }));
+    setUnsavedChanges(true);
+  };
+
+  const updatePaymentProcessor = (processorName, field, value) => {
+    setPaymentProcessors(prev => ({
+      ...prev,
+      [processorName]: {
+        ...prev[processorName],
+        [field]: value
+      }
+    }));
+    setUnsavedChanges(true);
+  };
+
+  const saveMembershipTiers = async () => {
+    setSaving(true);
+    try {
+      const token = localStorage.getItem('adminToken');
+      
+      // Convert to the format expected by the API
+      const tiersData = {};
+      Object.keys(membershipTiers).forEach(tierName => {
+        const tier = membershipTiers[tierName];
+        tiersData[tierName] = {
+          tier_name: tierName,
+          price: parseFloat(tier.price) || 0,
+          commissions: tier.commissions.map(c => parseFloat(c) || 0),
+          enabled: tier.enabled !== false,
+          description: tier.description || `${tierName.charAt(0).toUpperCase() + tierName.slice(1)} membership tier`
+        };
+      });
+
+      const response = await axios.put(`${API_URL}/api/admin/config/membership-tiers`, tiersData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      setUnsavedChanges(false);
+      alert('Membership tiers updated successfully!');
+      await fetchConfiguration(); // Refresh configuration
+    } catch (error) {
+      console.error('Failed to save membership tiers:', error);
+      alert('Failed to save membership tiers: ' + (error.response?.data?.detail || error.message));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const savePaymentProcessors = async () => {
+    setSaving(true);
+    try {
+      const token = localStorage.getItem('adminToken');
+      
+      // Convert to the format expected by the API
+      const processorsData = {};
+      Object.keys(paymentProcessors).forEach(processorName => {
+        const processor = paymentProcessors[processorName];
+        processorsData[processorName] = {
+          processor_name: processorName,
+          api_key: processor.api_key || null,
+          public_key: processor.public_key || null,
+          ipn_secret: processor.ipn_secret || null,
+          enabled: processor.enabled !== false,
+          supported_currencies: processor.supported_currencies || ["BTC", "ETH", "USDC", "USDT"]
+        };
+      });
+
+      const response = await axios.put(`${API_URL}/api/admin/config/payment-processors`, processorsData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      setUnsavedChanges(false);
+      alert('Payment processors updated successfully!');
+      await fetchConfiguration(); // Refresh configuration
+    } catch (error) {
+      console.error('Failed to save payment processors:', error);
+      alert('Failed to save payment processors: ' + (error.response?.data?.detail || error.message));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const resetToDefaults = async () => {
+    if (!confirm('Are you sure you want to reset all configuration to defaults? This action cannot be undone.')) {
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await axios.post(`${API_URL}/api/admin/config/reset-to-defaults`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      alert('Configuration reset to defaults successfully!');
+      await fetchConfiguration(); // Refresh configuration
+      setUnsavedChanges(false);
+    } catch (error) {
+      console.error('Failed to reset configuration:', error);
+      alert('Failed to reset configuration: ' + (error.response?.data?.detail || error.message));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-red-500"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Section Navigation */}
+      <div className="flex space-x-4 mb-6">
+        <button
+          onClick={() => setActiveSection('membership')}
+          className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+            activeSection === 'membership'
+              ? 'bg-red-600 text-white'
+              : 'bg-white bg-opacity-10 text-gray-300 hover:bg-opacity-20'
+          }`}
+        >
+          Membership Tiers
+        </button>
+        <button
+          onClick={() => setActiveSection('payment')}
+          className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+            activeSection === 'payment'
+              ? 'bg-red-600 text-white'
+              : 'bg-white bg-opacity-10 text-gray-300 hover:bg-opacity-20'
+          }`}
+        >
+          Payment Processors
+        </button>
+      </div>
+
+      {unsavedChanges && (
+        <div className="bg-yellow-600 bg-opacity-20 border border-yellow-600 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <div className="h-4 w-4 bg-yellow-600 rounded-full"></div>
+              <span className="text-yellow-200 font-medium">You have unsaved changes</span>
+            </div>
+            <div className="space-x-2">
+              <button
+                onClick={() => fetchConfiguration().then(() => setUnsavedChanges(false))}
+                className="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded transition-all duration-300"
+              >
+                Discard
+              </button>
+              <button
+                onClick={activeSection === 'membership' ? saveMembershipTiers : savePaymentProcessors}
+                disabled={saving}
+                className="px-3 py-1 bg-yellow-600 hover:bg-yellow-700 text-white text-sm rounded transition-all duration-300"
+              >
+                {saving ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Membership Tiers Configuration */}
+      {activeSection === 'membership' && (
+        <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-xl font-bold text-white">Membership Tiers Configuration</h3>
+            <div className="space-x-2">
+              <button
+                onClick={resetToDefaults}
+                disabled={saving}
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-all duration-300"
+              >
+                Reset to Defaults
+              </button>
+              <button
+                onClick={saveMembershipTiers}
+                disabled={saving || !unsavedChanges}
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-all duration-300"
+              >
+                {saving ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            {Object.keys(membershipTiers).map(tierName => {
+              const tier = membershipTiers[tierName];
+              return (
+                <div key={tierName} className="border border-gray-600 rounded-lg p-4">
+                  <div className="flex justify-between items-center mb-4">
+                    <h4 className="text-lg font-bold text-white capitalize">{tierName} Tier</h4>
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={tier.enabled !== false}
+                        onChange={(e) => updateMembershipTier(tierName, 'enabled', e.target.checked)}
+                        className="rounded"
+                      />
+                      <span className="text-gray-300">Enabled</span>
+                    </label>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-gray-300 text-sm font-medium mb-2">
+                        Price (USD)
+                      </label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={tier.price || 0}
+                        onChange={(e) => updateMembershipTier(tierName, 'price', e.target.value)}
+                        className="w-full px-3 py-2 bg-black bg-opacity-30 border border-gray-600 rounded text-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-gray-300 text-sm font-medium mb-2">
+                        Description
+                      </label>
+                      <input
+                        type="text"
+                        value={tier.description || ''}
+                        onChange={(e) => updateMembershipTier(tierName, 'description', e.target.value)}
+                        className="w-full px-3 py-2 bg-black bg-opacity-30 border border-gray-600 rounded text-white"
+                        placeholder={`${tierName.charAt(0).toUpperCase() + tierName.slice(1)} membership tier`}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <label className="block text-gray-300 text-sm font-medium mb-2">
+                      Commission Rates (as decimals, e.g., 0.25 for 25%)
+                    </label>
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                      {(tier.commissions || []).map((commission, index) => (
+                        <div key={index}>
+                          <label className="text-xs text-gray-400">Level {index + 1}</label>
+                          <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            max="1"
+                            value={commission || 0}
+                            onChange={(e) => {
+                              const newCommissions = [...(tier.commissions || [])];
+                              newCommissions[index] = parseFloat(e.target.value) || 0;
+                              updateMembershipTier(tierName, 'commissions', newCommissions);
+                            }}
+                            className="w-full px-2 py-1 bg-black bg-opacity-30 border border-gray-600 rounded text-white text-sm"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Payment Processors Configuration */}
+      {activeSection === 'payment' && (
+        <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-xl font-bold text-white">Payment Processors Configuration</h3>
+            <button
+              onClick={savePaymentProcessors}
+              disabled={saving || !unsavedChanges}
+              className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-all duration-300"
+            >
+              {saving ? 'Saving...' : 'Save Changes'}
+            </button>
+          </div>
+
+          <div className="space-y-6">
+            {Object.keys(paymentProcessors).map(processorName => {
+              const processor = paymentProcessors[processorName];
+              return (
+                <div key={processorName} className="border border-gray-600 rounded-lg p-4">
+                  <div className="flex justify-between items-center mb-4">
+                    <h4 className="text-lg font-bold text-white capitalize">{processorName}</h4>
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={processor.enabled !== false}
+                        onChange={(e) => updatePaymentProcessor(processorName, 'enabled', e.target.checked)}
+                        className="rounded"
+                      />
+                      <span className="text-gray-300">Enabled</span>
+                    </label>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block text-gray-300 text-sm font-medium mb-2">
+                        API Key
+                      </label>
+                      <input
+                        type="password"
+                        value={processor.api_key === '***HIDDEN***' ? '' : (processor.api_key || '')}
+                        onChange={(e) => updatePaymentProcessor(processorName, 'api_key', e.target.value)}
+                        className="w-full px-3 py-2 bg-black bg-opacity-30 border border-gray-600 rounded text-white"
+                        placeholder={processor.api_key === '***HIDDEN***' ? 'Current value hidden' : 'Enter API key'}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-gray-300 text-sm font-medium mb-2">
+                        Public Key
+                      </label>
+                      <input
+                        type="text"
+                        value={processor.public_key === '***HIDDEN***' ? '' : (processor.public_key || '')}
+                        onChange={(e) => updatePaymentProcessor(processorName, 'public_key', e.target.value)}
+                        className="w-full px-3 py-2 bg-black bg-opacity-30 border border-gray-600 rounded text-white"
+                        placeholder={processor.public_key === '***HIDDEN***' ? 'Current value hidden' : 'Enter public key'}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-gray-300 text-sm font-medium mb-2">
+                        IPN Secret
+                      </label>
+                      <input
+                        type="password"
+                        value={processor.ipn_secret === '***HIDDEN***' ? '' : (processor.ipn_secret || '')}
+                        onChange={(e) => updatePaymentProcessor(processorName, 'ipn_secret', e.target.value)}
+                        className="w-full px-3 py-2 bg-black bg-opacity-30 border border-gray-600 rounded text-white"
+                        placeholder={processor.ipn_secret === '***HIDDEN***' ? 'Current value hidden' : 'Enter IPN secret'}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-gray-300 text-sm font-medium mb-2">
+                        Supported Currencies (comma-separated)
+                      </label>
+                      <input
+                        type="text"
+                        value={(processor.supported_currencies || []).join(', ')}
+                        onChange={(e) => updatePaymentProcessor(processorName, 'supported_currencies', e.target.value.split(',').map(c => c.trim()))}
+                        className="w-full px-3 py-2 bg-black bg-opacity-30 border border-gray-600 rounded text-white"
+                        placeholder="BTC, ETH, USDC, USDT"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="text-sm text-gray-400">
+                    <p><strong>Note:</strong> Changes to payment processor configuration may require application restart to take full effect.</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 // Member Modal Component
 function MemberModal({ member, editingMember, onClose, onUpdate, onSuspend, onEdit }) {
   const [formData, setFormData] = useState({
