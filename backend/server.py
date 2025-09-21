@@ -2788,6 +2788,10 @@ async def get_system_config(admin: dict = Depends(get_admin_user)):
             await save_system_config()  # Initialize if not exists
             config_doc = await db.system_config.find_one({"config_type": "main"})
         
+        # Remove MongoDB ObjectId field to avoid JSON serialization issues
+        if config_doc and "_id" in config_doc:
+            del config_doc["_id"]
+        
         # Clean up the response to remove sensitive data
         if config_doc and "payment_processors" in config_doc:
             for processor_name, processor_config in config_doc["payment_processors"].items():
