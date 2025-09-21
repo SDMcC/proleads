@@ -3449,10 +3449,11 @@ class Web3MembershipTester:
         print("Admin: Admin dashboard shows both users exist")
         print("=" * 80)
         
-        # Step 1: Create firstuser
+        # Use unique usernames to avoid conflicts
+        timestamp = int(time.time())
         firstuser_address = f"0x{uuid.uuid4().hex[:40]}"
-        firstuser_username = "firstuser"
-        firstuser_email = "firstuser@test.com"
+        firstuser_username = f"firstuser_{timestamp}"
+        firstuser_email = f"firstuser_{timestamp}@test.com"
         firstuser_password = "password123"
         
         print(f"\n1️⃣ Creating firstuser...")
@@ -3489,8 +3490,8 @@ class Web3MembershipTester:
         
         # Step 3: Create seconduser using firstuser's referral code
         seconduser_address = f"0x{uuid.uuid4().hex[:40]}"
-        seconduser_username = "seconduser"
-        seconduser_email = "seconduser@test.com"
+        seconduser_username = f"seconduser_{timestamp}"
+        seconduser_email = f"seconduser_{timestamp}@test.com"
         seconduser_password = "password123"
         
         print(f"\n3️⃣ Creating seconduser with firstuser's referral code...")
