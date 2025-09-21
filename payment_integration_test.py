@@ -5,7 +5,7 @@ import json
 from datetime import datetime
 
 class Web3MembershipPaymentTester:
-    def __init__(self, base_url="https://web3-membership.preview.emergentagent.com"):
+    def __init__(self, base_url="https://web3-affiliate-1.preview.emergentagent.com"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0

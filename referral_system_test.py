@@ -532,7 +532,7 @@ class ReferralSystemTester:
 def main():
     """Main test execution"""
     # Use the backend URL from environment
-    base_url = "https://web3-membership.preview.emergentagent.com"
+    base_url = "https://web3-affiliate-1.preview.emergentagent.com"
     
     print("🚀 Starting Referral System Fix Verification")
     print(f"🌐 Testing against: {base_url}")
