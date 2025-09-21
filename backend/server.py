@@ -55,13 +55,16 @@ APP_URL = os.getenv("APP_URL")
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin123")  # Change in production
 
-# Membership tiers and commission rates
-MEMBERSHIP_TIERS = {
+# Default membership tiers and commission rates (will be overridden by database config)
+DEFAULT_MEMBERSHIP_TIERS = {
     "affiliate": {"price": 0, "commissions": [0.25, 0.05]},
     "bronze": {"price": 20, "commissions": [0.25, 0.05, 0.03, 0.02]},
     "silver": {"price": 50, "commissions": [0.27, 0.10, 0.05, 0.03]},
     "gold": {"price": 100, "commissions": [0.30, 0.15, 0.10, 0.05]}
 }
+
+# Global variable to hold current membership tiers (loaded from database)
+MEMBERSHIP_TIERS = DEFAULT_MEMBERSHIP_TIERS.copy()
 
 import bcrypt
 
