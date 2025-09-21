@@ -3811,6 +3811,15 @@ def main():
     else:
         print("\n✅ Referral relationship investigation completed")
     
+    # REFERRAL REGISTRATION ISSUE INVESTIGATION (PRIORITY)
+    print("\n🚨 RUNNING REFERRAL REGISTRATION ISSUE INVESTIGATION")
+    print("=" * 50)
+    referral_issue_success = tester.test_referral_registration_issue_investigation()
+    if not referral_issue_success:
+        print("\n⚠️ CRITICAL: Referral registration issue confirmed - needs immediate attention")
+    else:
+        print("\n✅ Referral registration issue investigation completed - system working correctly")
+    
     # Print results
     print("\n================================")
     print(f"📊 Tests passed: {tester.tests_passed}/{tester.tests_run}")
