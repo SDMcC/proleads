@@ -169,10 +169,92 @@ class ConnectionManager:
 
 websocket_manager = ConnectionManager()
 
-# Utility functions
 def generate_referral_code(address: str) -> str:
     """Generate unique referral code"""
     return f"REF{address[:6].upper()}{str(uuid.uuid4())[:8].upper()}"
+
+async def load_system_config():
+    """Load system configuration from database"""
+    global MEMBERSHIP_TIERS
+    
+    try:
+        config_doc = await db.system_config.find_one({"config_type": "main"})
+        if config_doc and "membership_tiers" in config_doc:
+            # Convert database config to the format expected by the application
+            for tier_name, tier_data in config_doc["membership_tiers"].items():
+                if tier_data.get("enabled", True):  # Only load enabled tiers
+                    MEMBERSHIP_TIERS[tier_name] = {
+                        "price": tier_data.get("price", 0),
+                        "commissions": tier_data.get("commissions", [])
+                    }
+            logger.info(f"Loaded configuration: {len(MEMBERSHIP_TIERS)} membership tiers")
+        else:
+            # Initialize with default configuration
+            await save_system_config()
+            logger.info("Initialized system configuration with defaults")
+    except Exception as e:
+        logger.error(f"Failed to load system config: {str(e)}. Using defaults.")
+        MEMBERSHIP_TIERS = DEFAULT_MEMBERSHIP_TIERS.copy()
+
+async def save_system_config(membership_tiers=None, payment_processors=None, updated_by="system"):
+    """Save system configuration to database"""
+    global MEMBERSHIP_TIERS
+    
+    try:
+        # Prepare membership tiers config
+        if membership_tiers is None:
+            membership_tiers_config = {}
+            for tier_name, tier_data in MEMBERSHIP_TIERS.items():
+                membership_tiers_config[tier_name] = {
+                    "tier_name": tier_name,
+                    "price": tier_data["price"],
+                    "commissions": tier_data["commissions"],
+                    "enabled": True,
+                    "description": f"{tier_name.capitalize()} membership tier"
+                }
+        else:
+            membership_tiers_config = membership_tiers
+        
+        # Prepare payment processors config
+        if payment_processors is None:
+            payment_processors_config = {
+                "nowpayments": {
+                    "processor_name": "nowpayments",
+                    "api_key": NOWPAYMENTS_API_KEY,
+                    "public_key": NOWPAYMENTS_PUBLIC_KEY,
+                    "ipn_secret": NOWPAYMENTS_IPN_SECRET,
+                    "enabled": True,
+                    "supported_currencies": ["BTC", "ETH", "USDC", "USDT", "LTC"]
+                }
+            }
+        else:
+            payment_processors_config = payment_processors
+        
+        # Save to database
+        config_doc = {
+            "config_type": "main",
+            "membership_tiers": membership_tiers_config,
+            "payment_processors": payment_processors_config,
+            "app_settings": {
+                "maintenance_mode": False,
+                "registration_enabled": True,
+                "referral_system_enabled": True
+            },
+            "updated_at": datetime.utcnow(),
+            "updated_by": updated_by
+        }
+        
+        await db.system_config.update_one(
+            {"config_type": "main"},
+            {"$set": config_doc},
+            upsert=True
+        )
+        
+        logger.info("System configuration saved successfully")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to save system config: {str(e)}")
+        return False
 
 async def get_current_user(authorization: Optional[str] = Header(None)):
     """Get current user from JWT token"""
