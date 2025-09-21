@@ -2911,6 +2911,7 @@ async def reset_config_to_defaults(admin: dict = Depends(get_admin_user)):
     except Exception as e:
         logger.error(f"Failed to reset configuration: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to reset configuration")
+
 # User endpoints for leads
 @app.get("/api/users/leads")
 async def get_user_leads(
