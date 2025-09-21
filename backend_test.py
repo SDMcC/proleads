@@ -2666,6 +2666,15 @@ def main():
     
     tester = Web3MembershipTester(backend_url)
     
+    # PRIORITY: Registration Failure Investigation
+    print("\n🚨 RUNNING REGISTRATION FAILURE INVESTIGATION")
+    print("=" * 50)
+    registration_investigation_success = tester.test_registration_failure_investigation()
+    if not registration_investigation_success:
+        print("\n⚠️ Registration failure investigation found critical issues")
+    else:
+        print("\n✅ Registration failure investigation completed - no critical issues found")
+    
     # Basic API tests
     tester.test_health_check()
     tester.test_get_membership_tiers()
