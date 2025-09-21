@@ -39,6 +39,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Startup event to load configuration
+@app.on_event("startup")
+async def startup_event():
+    """Load system configuration on startup"""
+    await load_system_config()
+
 # Database connection
 client = AsyncIOMotorClient(os.getenv("MONGO_URL"))
 db = client[os.getenv("DB_NAME")]
