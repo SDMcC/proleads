@@ -2914,6 +2914,138 @@ class Web3MembershipTester:
         
         return True, cleanup_summary
 
+    def test_referral_relationship_investigation(self):
+        """Investigate referral relationship display issue"""
+        print("\n🔍 INVESTIGATING REFERRAL RELATIONSHIP DISPLAY ISSUE")
+        print("=" * 60)
+        
+        # Get admin token first
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        # Step 1: Verify referral relationship in database
+        print("\n📊 STEP 1: Verifying referral relationships in database")
+        
+        # Look for firstuser in admin members
+        success, members_response = self.run_test("Get All Members for Investigation", "GET", "admin/members", 200, headers=headers)
+        if not success:
+            print("❌ Failed to get members list")
+            return False
+        
+        firstuser = None
+        new_referral_user = None
+        target_wallet = "0xcfb56068Fc1e2d1E9724bD1Ba959A21efe7e1969"
+        
+        members = members_response.get('members', [])
+        print(f"📋 Found {len(members)} total members in database")
+        
+        # Find firstuser and the new referral
+        for member in members:
+            if member.get('username') == 'firstuser':
+                firstuser = member
+                print(f"✅ Found firstuser: {member.get('email')} - Referrals: {member.get('total_referrals', 0)}")
+            elif member.get('wallet_address', '').lower() == target_wallet.lower():
+                new_referral_user = member
+                print(f"✅ Found new referral user: {member.get('username')} - Sponsor: {member.get('sponsor')}")
+        
+        if not firstuser:
+            print("❌ firstuser not found in database")
+            return False
+        
+        if not new_referral_user:
+            print(f"❌ New referral user with wallet {target_wallet} not found in database")
+            return False
+        
+        # Step 2: Get detailed member info for firstuser
+        print(f"\n🔍 STEP 2: Getting detailed member info for firstuser")
+        firstuser_id = firstuser.get('id')
+        
+        success, firstuser_details = self.run_test("Get firstuser Details", "GET", f"admin/members/{firstuser_id}", 200, headers=headers)
+        if not success:
+            print("❌ Failed to get firstuser details")
+            return False
+        
+        # Check referrals in firstuser details
+        referrals = firstuser_details.get('referrals', [])
+        print(f"📊 firstuser has {len(referrals)} referrals in detailed view:")
+        for referral in referrals:
+            print(f"   - {referral.get('username')} ({referral.get('email')}) - Tier: {referral.get('membership_tier')}")
+        
+        # Check if new referral is in firstuser's referrals
+        new_referral_in_list = any(
+            ref.get('username') == new_referral_user.get('username') 
+            for ref in referrals
+        )
+        
+        if new_referral_in_list:
+            print("✅ New referral IS found in firstuser's referral list")
+        else:
+            print("❌ New referral NOT found in firstuser's referral list")
+        
+        # Step 3: Check if new referral has correct referrer
+        print(f"\n🔗 STEP 3: Verifying referral relationship")
+        new_referral_sponsor = new_referral_user.get('sponsor')
+        if new_referral_sponsor:
+            if new_referral_sponsor.get('username') == 'firstuser':
+                print("✅ New referral correctly shows firstuser as sponsor")
+            else:
+                print(f"❌ New referral shows wrong sponsor: {new_referral_sponsor.get('username')}")
+        else:
+            print("❌ New referral has no sponsor information")
+        
+        # Step 4: Test Network Tree API for firstuser
+        print(f"\n🌳 STEP 4: Testing Network Tree API for firstuser")
+        
+        # First, we need to get a user token for firstuser (this is tricky without wallet signature)
+        # For now, let's test the endpoint structure
+        success, network_response = self.run_test("Test Network Tree Endpoint Structure", "GET", "users/network-tree", 401)
+        if success:
+            print("✅ Network tree endpoint exists and requires authentication")
+        else:
+            print("❌ Network tree endpoint test failed")
+        
+        # Step 5: Test User Dashboard APIs structure
+        print(f"\n📊 STEP 5: Testing User Dashboard API structure")
+        
+        # Test dashboard stats endpoint
+        success, dashboard_response = self.run_test("Test Dashboard Stats Endpoint Structure", "GET", "dashboard/stats", 401)
+        if success:
+            print("✅ Dashboard stats endpoint exists and requires authentication")
+        else:
+            print("❌ Dashboard stats endpoint test failed")
+        
+        # Step 6: Database Query Verification Summary
+        print(f"\n📋 STEP 6: Database Query Verification Summary")
+        print(f"   - Total members in database: {len(members)}")
+        print(f"   - firstuser found: {'✅' if firstuser else '❌'}")
+        print(f"   - firstuser total referrals (admin view): {firstuser.get('total_referrals', 0) if firstuser else 'N/A'}")
+        print(f"   - New referral user found: {'✅' if new_referral_user else '❌'}")
+        print(f"   - New referral has correct sponsor: {'✅' if new_referral_sponsor and new_referral_sponsor.get('username') == 'firstuser' else '❌'}")
+        print(f"   - New referral in firstuser's detailed referral list: {'✅' if new_referral_in_list else '❌'}")
+        
+        # Final assessment
+        if firstuser and new_referral_user and new_referral_sponsor and new_referral_sponsor.get('username') == 'firstuser':
+            if new_referral_in_list:
+                print("\n✅ INVESTIGATION RESULT: Referral relationship appears to be working correctly in admin view")
+                print("   The issue might be in the user-facing network tree API or frontend display")
+            else:
+                print("\n❌ INVESTIGATION RESULT: Referral relationship exists but not showing in detailed referral list")
+                print("   This suggests a database query issue in the member details endpoint")
+        else:
+            print("\n❌ INVESTIGATION RESULT: Referral relationship is broken in database")
+            print("   The new referral is not properly linked to firstuser as sponsor")
+        
+        return True
+
 def main():
     # Get the backend URL from environment or use default
     backend_url = "https://web3-membership.preview.emergentagent.com"
