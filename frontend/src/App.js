@@ -166,8 +166,14 @@ function ProtectedRoute({ children }) {
 
 // Landing Page Component
 function LandingPage() {
-  const { user } = useAuth();
+  const { user, login } = useAuth();
   const [referralCode, setReferralCode] = useState('');
+  const [showLogin, setShowLogin] = useState(false);
+  const [loginData, setLoginData] = useState({
+    address: '',
+    username: ''
+  });
+  const [loginLoading, setLoginLoading] = useState(false);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -177,130 +183,203 @@ function LandingPage() {
     }
   }, []);
 
+  const generateReferralLink = () => {
+    if (user && user.referral_code) {
+      const baseUrl = window.location.origin;
+      return `${baseUrl}/register?ref=${user.referral_code}`;
+    }
+    return '';
+  };
+
+  const copyReferralLink = () => {
+    const link = generateReferralLink();
+    navigator.clipboard.writeText(link);
+    alert('Referral link copied to clipboard!');
+  };
+
+  const handleSimpleLogin = async (e) => {
+    e.preventDefault();
+    if (!loginData.address || !loginData.username) {
+      alert('Please fill in all fields');
+      return;
+    }
+
+    // Basic wallet address validation
+    if (!loginData.address.startsWith('0x') || loginData.address.length !== 42) {
+      alert('Please enter a valid Ethereum wallet address');
+      return;
+    }
+
+    setLoginLoading(true);
+    try {
+      const response = await axios.post(`${API_URL}/api/auth/simple-login`, {
+        address: loginData.address.toLowerCase(),
+        username: loginData.username
+      });
+      
+      const { token } = response.data;
+      login(token);
+      window.location.href = '/dashboard';
+      
+    } catch (error) {
+      console.error('Login failed:', error);
+      let errorMessage = 'Login failed. Please check your credentials.';
+      if (error.response?.data?.detail) {
+        errorMessage = `Login failed: ${error.response.data.detail}`;
+      }
+      alert(errorMessage);
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
   if (user) {
-    return <Navigate to="/dashboard" />;
-  }
-
-  return (
-    <div className="min-h-screen">
-      {/* Navigation */}
-      <nav className="fixed w-full z-50 bg-black bg-opacity-50 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center space-x-2">
-              <Network className="h-8 w-8 text-blue-400" />
-              <span className="text-2xl font-bold text-white">Web3 Membership</span>
-            </div>
-            <div className="flex items-center space-x-4">
-              <WalletConnectButton />
-            </div>
+    return (
+      <div className="min-h-screen" style={{
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+      }}>
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold text-white mb-4">Welcome back, {user.username}!</h1>
+            <p className="text-xl text-gray-200">You're signed in and ready to go</p>
           </div>
-        </div>
-      </nav>
 
-      {/* Hero Section */}
-      <section className="pt-24 pb-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h1 className="text-5xl lg:text-7xl font-bold text-white mb-6">
-                Join the Future of
-                <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                  {" "}Web3 Membership
-                </span>
-              </h1>
-              <p className="text-xl text-gray-300 mb-8 leading-relaxed">
-                Unlock unlimited earning potential with our 4-tier affiliate system. 
-                Connect your wallet, choose your membership level, and start earning 
-                instant crypto commissions.
-              </p>
-              
-              {referralCode && (
-                <div className="bg-blue-900 bg-opacity-50 border border-blue-400 rounded-lg p-4 mb-6">
-                  <p className="text-blue-300 text-sm font-medium">
-                    🎉 You've been invited! Using referral code: <span className="font-bold text-blue-200">{referralCode}</span>
-                  </p>
-                </div>
-              )}
+          <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-8">
+              <h2 className="text-2xl font-bold text-white mb-4">Your Dashboard</h2>
+              <p className="text-gray-200 mb-6">Access your member dashboard to view earnings, referrals, and more.</p>
+              <a 
+                href="/dashboard"
+                className="inline-block bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105"
+              >
+                Go to Dashboard
+              </a>
+            </div>
 
-              <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-                <WalletConnectButton />
-                <button className="px-8 py-4 bg-transparent border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-gray-900 transition-all duration-300">
-                  Learn More
+            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-8">
+              <h2 className="text-2xl font-bold text-white mb-4">Share Your Link</h2>
+              <p className="text-gray-200 mb-4">Invite others and earn commissions</p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={generateReferralLink()}
+                  readOnly
+                  className="flex-1 px-4 py-2 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white text-sm"
+                />
+                <button
+                  onClick={copyReferralLink}
+                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-300"
+                >
+                  Copy
                 </button>
               </div>
             </div>
-            
-            <div className="relative">
-              <div className="relative z-10">
-                <img 
-                  src="https://images.unsplash.com/photo-1639815188546-c43c240ff4df?w=600&h=400&fit=crop"
-                  alt="Blockchain Network"
-                  className="rounded-2xl shadow-2xl w-full"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-blue-900 to-transparent rounded-2xl opacity-60"></div>
-              </div>
-              <div className="absolute -top-4 -left-4 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
-              <div className="absolute -bottom-8 -right-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen" style={{
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+    }}>
+      {/* Header */}
+      <header className="bg-black bg-opacity-20 backdrop-blur-sm">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center space-x-3">
+              <Network className="h-8 w-8 text-white" />
+              <h1 className="text-2xl font-bold text-white">Web3 Membership</h1>
             </div>
+            <button
+              onClick={() => setShowLogin(!showLogin)}
+              className="bg-white bg-opacity-20 text-white px-6 py-2 rounded-lg hover:bg-opacity-30 transition-all duration-300"
+            >
+              {showLogin ? 'Hide Login' : 'Login'}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Login Form */}
+      {showLogin && (
+        <div className="bg-black bg-opacity-20 backdrop-blur-sm border-b border-white border-opacity-10">
+          <div className="container mx-auto px-4 py-8">
+            <div className="max-w-md mx-auto">
+              <h2 className="text-2xl font-bold text-white mb-6 text-center">Login to Your Account</h2>
+              <form onSubmit={handleSimpleLogin} className="space-y-4">
+                <div>
+                  <label className="block text-white text-sm font-medium mb-2">
+                    Wallet Address
+                  </label>
+                  <input
+                    type="text"
+                    value={loginData.address}
+                    onChange={(e) => setLoginData(prev => ({ ...prev, address: e.target.value }))}
+                    className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
+                    placeholder="0x1234567890123456789012345678901234567890"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-white text-sm font-medium mb-2">
+                    Username
+                  </label>
+                  <input
+                    type="text"
+                    value={loginData.username}
+                    onChange={(e) => setLoginData(prev => ({ ...prev, username: e.target.value }))}
+                    className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
+                    placeholder="Enter your username"
+                    required
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={loginLoading}
+                  className="w-full bg-gradient-to-r from-green-600 to-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-green-700 hover:to-blue-700 transition-all duration-300 disabled:opacity-50"
+                >
+                  {loginLoading ? 'Logging in...' : 'Login'}
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Hero Section */}
+      <section className="py-20">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-5xl font-bold text-white mb-6">
+            Join the Ultimate <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">Web3 Membership</span>
+          </h2>
+          <p className="text-xl text-gray-200 mb-12 max-w-3xl mx-auto">
+            Experience a revolutionary affiliate system with 4-tier commissions, instant USDC payouts, and exclusive member benefits.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <a 
+              href="/register"
+              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-8 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-2xl"
+            >
+              Join Now
+            </a>
+            <a 
+              href="/register"
+              className="bg-white bg-opacity-20 text-white py-4 px-8 rounded-xl font-bold text-lg hover:bg-opacity-30 transition-all duration-300 backdrop-blur-sm border border-white border-opacity-30"
+            >
+              Learn More
+            </a>
           </div>
         </div>
       </section>
 
       {/* Membership Tiers */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-black bg-opacity-30">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-bold text-white mb-4">
-              Choose Your Membership Tier
-            </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Higher tiers unlock better commission rates and deeper affiliate levels
-            </p>
-          </div>
-
-          <MembershipTiers referralCode={referralCode} />
-        </div>
-      </section>
+      <MembershipTiers referralCode={referralCode} />
 
       {/* Commission Structure */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-bold text-white mb-4">
-              4-Level Commission Structure
-            </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Earn from multiple levels of referrals with instant USDC payouts
-            </p>
-          </div>
-
-          <CommissionStructure />
-        </div>
-      </section>
-
-      {/* Features */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-black bg-opacity-30">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <FeatureCard 
-              icon={<Wallet className="h-12 w-12 text-blue-400" />}
-              title="Web3 Wallet Integration"
-              description="Connect with any Web3 wallet using WalletConnect. Secure, decentralized authentication."
-            />
-            <FeatureCard 
-              icon={<DollarSign className="h-12 w-12 text-green-400" />}
-              title="Instant Crypto Payouts"
-              description="Receive commission payments instantly in USDC directly to your connected wallet."
-            />
-            <FeatureCard 
-              icon={<TrendingUp className="h-12 w-12 text-purple-400" />}
-              title="Multi-Level Earnings"
-              description="Earn from up to 4 levels of referrals with tier-based commission rates."
-            />
-          </div>
-        </div>
-      </section>
+      <CommissionStructure />
     </div>
   );
 }
