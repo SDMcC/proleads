@@ -671,9 +671,11 @@ function CommissionStructure() {
 function RegisterPage() {
   const { login } = useAuth();
   const [formData, setFormData] = useState({
-    address: '',
     username: '',
-    email: ''
+    email: '',
+    password: '',
+    confirmPassword: '',
+    wallet_address: ''
   });
   const [loading, setLoading] = useState(false);
   const [referralCode, setReferralCode] = useState('');
@@ -700,37 +702,50 @@ function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.address || !formData.username || !formData.email) {
-      alert('Please fill in all fields');
+    
+    // Validation
+    if (!formData.username || !formData.email || !formData.password || !formData.wallet_address) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      alert('Passwords do not match');
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      alert('Password must be at least 6 characters long');
       return;
     }
 
     // Basic wallet address validation
-    if (!formData.address.startsWith('0x') || formData.address.length !== 42) {
-      alert('Please enter a valid Ethereum wallet address (starts with 0x and is 42 characters long)');
+    if (!formData.wallet_address.startsWith('0x') || formData.wallet_address.length !== 42) {
+      alert('Please enter a valid Ethereum wallet address');
       return;
     }
 
     setLoading(true);
     try {
-      // Step 1: Register user
-      console.log('Attempting registration for:', formData.address.toLowerCase());
+      // Register user
+      console.log('Attempting registration...');
       const registerResponse = await axios.post(`${API_URL}/api/users/register`, {
-        address: formData.address.toLowerCase(),
         username: formData.username,
         email: formData.email,
+        password: formData.password,
+        wallet_address: formData.wallet_address,
         referrer_code: referralCode || undefined
       });
       console.log('Registration successful:', registerResponse.data);
 
-      // Step 2: Simple login with wallet address (no signature required)
-      const loginResponse = await axios.post(`${API_URL}/api/auth/simple-login`, {
-        address: formData.address.toLowerCase(),
-        username: formData.username
+      // Auto-login after registration
+      const loginResponse = await axios.post(`${API_URL}/api/auth/login`, {
+        username: formData.username,
+        password: formData.password
       });
       
       const { token } = loginResponse.data;
-      console.log('Login successful, redirecting to dashboard...');
+      console.log('Auto-login successful, redirecting to dashboard...');
       login(token);
 
       window.location.href = '/dashboard';
@@ -738,17 +753,12 @@ function RegisterPage() {
     } catch (error) {
       console.error('Registration failed:', error);
       console.error('Error response:', error.response?.data);
-      console.error('Error status:', error.response?.status);
       
       let errorMessage = 'Registration failed. Please try again.';
       if (error.response?.data?.detail) {
-        if (error.response.data.detail === "User already registered") {
-          errorMessage = 'This wallet address is already registered. Please use the login page or try a different wallet address.';
-        } else {
-          errorMessage = `Registration failed: ${error.response.data.detail}`;
-        }
+        errorMessage = `Registration failed: ${error.response.data.detail}`;
       } else if (error.response?.status === 400) {
-        errorMessage = 'Registration failed: Invalid data provided or user already exists.';
+        errorMessage = 'Registration failed: Invalid data or user already exists.';
       } else if (error.response?.status === 500) {
         errorMessage = 'Registration failed: Server error. Please try again later.';
       }
@@ -785,21 +795,6 @@ function RegisterPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-white text-sm font-medium mb-2">
-                Wallet Address *
-              </label>
-              <input
-                type="text"
-                value={formData.address}
-                onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
-                className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
-                placeholder="0x1234567890123456789012345678901234567890"
-                required
-              />
-              <p className="text-gray-400 text-xs mt-1">Enter your Ethereum wallet address</p>
-            </div>
-            
-            <div>
-              <label className="block text-white text-sm font-medium mb-2">
                 Username *
               </label>
               <input
@@ -824,6 +819,50 @@ function RegisterPage() {
                 placeholder="Enter your email"
                 required
               />
+            </div>
+
+            <div>
+              <label className="block text-white text-sm font-medium mb-2">
+                Password *
+              </label>
+              <input
+                type="password"
+                value={formData.password}
+                onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
+                placeholder="Enter your password"
+                required
+                minLength={6}
+              />
+            </div>
+
+            <div>
+              <label className="block text-white text-sm font-medium mb-2">
+                Confirm Password *
+              </label>
+              <input
+                type="password"
+                value={formData.confirmPassword}
+                onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
+                placeholder="Confirm your password"
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="block text-white text-sm font-medium mb-2">
+                Wallet Address *
+              </label>
+              <input
+                type="text"
+                value={formData.wallet_address}
+                onChange={(e) => setFormData(prev => ({ ...prev, wallet_address: e.target.value }))}
+                className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
+                placeholder="0x1234567890123456789012345678901234567890"
+                required
+              />
+              <p className="text-gray-400 text-xs mt-1">You can change this later in your account settings</p>
             </div>
 
             <button
