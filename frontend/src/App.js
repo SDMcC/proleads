@@ -199,22 +199,16 @@ function LandingPage() {
 
   const handleSimpleLogin = async (e) => {
     e.preventDefault();
-    if (!loginData.address || !loginData.username) {
+    if (!loginData.username || !loginData.password) {
       alert('Please fill in all fields');
-      return;
-    }
-
-    // Basic wallet address validation
-    if (!loginData.address.startsWith('0x') || loginData.address.length !== 42) {
-      alert('Please enter a valid Ethereum wallet address');
       return;
     }
 
     setLoginLoading(true);
     try {
-      const response = await axios.post(`${API_URL}/api/auth/simple-login`, {
-        address: loginData.address.toLowerCase(),
-        username: loginData.username
+      const response = await axios.post(`${API_URL}/api/auth/login`, {
+        username: loginData.username,
+        password: loginData.password
       });
       
       const { token } = response.data;
