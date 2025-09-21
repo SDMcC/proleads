@@ -2657,6 +2657,141 @@ class Web3MembershipTester:
         
         return True
 
+    def test_database_cleanup_and_registration_flow(self):
+        """Test database cleanup for broken wallet and registration flow fix"""
+        print("\n🧹 Testing Database Cleanup and Registration Flow Fix")
+        
+        # The specific wallet address that needs cleanup
+        broken_wallet = "0xcfb56068Fc1e2d1E9724bD1Ba959A21efe7e1969"
+        
+        # 1. First, get admin token
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token for cleanup")
+                return False
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        # 2. Execute database cleanup for the broken wallet
+        print(f"🧹 Executing database cleanup for wallet: {broken_wallet}")
+        cleanup_success, cleanup_response = self.run_test(
+            "Database Cleanup for Broken Wallet", 
+            "DELETE", 
+            f"admin/cleanup/wallet/{broken_wallet}", 
+            200, 
+            headers=headers
+        )
+        
+        if not cleanup_success:
+            print("❌ Database cleanup failed")
+            return False
+        
+        # Verify cleanup response
+        if cleanup_response.get('message') and 'cleaned up' in cleanup_response.get('message', '').lower():
+            print("✅ Database cleanup completed successfully")
+            print(f"   Cleanup details: {cleanup_response.get('message')}")
+        else:
+            print("❌ Cleanup response doesn't contain expected success message")
+            return False
+        
+        # 3. Test registration status - should now work without "already registered" error
+        print(f"📝 Testing registration for cleaned wallet: {broken_wallet}")
+        registration_data = {
+            "address": broken_wallet,
+            "username": "testuser123",
+            "email": "test@example.com"
+        }
+        
+        reg_success, reg_response = self.run_test(
+            "Registration After Cleanup", 
+            "POST", 
+            "users/register", 
+            200, 
+            registration_data
+        )
+        
+        if not reg_success:
+            print("❌ Registration failed after cleanup")
+            return False
+        
+        # Verify registration response
+        if reg_response.get('message') and 'successfully' in reg_response.get('message', '').lower():
+            print("✅ Registration successful after cleanup")
+            print(f"   Referral code generated: {reg_response.get('referral_code')}")
+        else:
+            print("❌ Registration response doesn't contain expected success message")
+            return False
+        
+        # 4. Test nonce generation for authentication flow
+        print(f"🔐 Testing nonce generation for wallet: {broken_wallet}")
+        nonce_data = {"address": broken_wallet}
+        
+        nonce_success, nonce_response = self.run_test(
+            "Nonce Generation After Registration", 
+            "POST", 
+            "auth/nonce", 
+            200, 
+            nonce_data
+        )
+        
+        if not nonce_success:
+            print("❌ Nonce generation failed")
+            return False
+        
+        # Verify nonce response
+        if nonce_response.get('nonce'):
+            print("✅ Nonce generation successful")
+            print(f"   Nonce: {nonce_response.get('nonce')[:10]}...")
+        else:
+            print("❌ Nonce response doesn't contain nonce")
+            return False
+        
+        # 5. Test that the user is now properly in the database
+        print("🔍 Verifying user exists in admin members list")
+        members_success, members_response = self.run_test(
+            "Verify User in Members List", 
+            "GET", 
+            f"admin/members?user_filter=testuser123", 
+            200, 
+            headers=headers
+        )
+        
+        if members_success:
+            members = members_response.get('members', [])
+            user_found = any(member.get('wallet_address', '').lower() == broken_wallet.lower() for member in members)
+            
+            if user_found:
+                print("✅ User found in admin members list after registration")
+            else:
+                print("❌ User not found in admin members list")
+                return False
+        else:
+            print("❌ Failed to verify user in members list")
+            return False
+        
+        # 6. Clean up the test user (optional - for cleanup)
+        print("🧹 Cleaning up test user after successful test")
+        final_cleanup_success, _ = self.run_test(
+            "Final Cleanup of Test User", 
+            "DELETE", 
+            f"admin/cleanup/wallet/{broken_wallet}", 
+            200, 
+            headers=headers
+        )
+        
+        if final_cleanup_success:
+            print("✅ Test user cleaned up successfully")
+        else:
+            print("⚠️ Test user cleanup failed (not critical)")
+        
+        print("✅ Database Cleanup and Registration Flow Test Passed")
+        return True
+
     def test_database_cleanup_for_broken_wallet(self, wallet_address="0xcfb56068Fc1e2d1E9724bD1Ba959A21efe7e1969"):
         """Test database cleanup for broken wallet address"""
         print(f"\n🧹 Testing Database Cleanup for Broken Wallet: {wallet_address}")
