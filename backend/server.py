@@ -847,13 +847,25 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
     # Format earnings by status
     earnings_by_status = {stat["_id"]: stat["total"] for stat in earnings_stats}
     
+    # Format referrals for display (avoid ObjectId serialization issues)
+    formatted_referrals = []
+    for referral in referrals:
+        formatted_referrals.append({
+            "username": referral.get("username"),
+            "email": referral.get("email"), 
+            "address": referral.get("address"),
+            "membership_tier": referral.get("membership_tier"),
+            "created_at": referral.get("created_at"),
+            "referral_code": referral.get("referral_code")
+        })
+    
     return {
         "total_earnings": earnings_by_status.get("completed", 0),
         "pending_earnings": earnings_by_status.get("pending", 0) + earnings_by_status.get("processing", 0),
         "total_referrals": len(referrals),
         "direct_referrals": len([r for r in referrals if r.get("referrer_address") == current_user["address"]]),
         "recent_commissions": formatted_commissions,
-        "referral_network": referrals
+        "referral_network": formatted_referrals
     }
 
 @app.get("/api/dashboard/network")
