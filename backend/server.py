@@ -2777,6 +2777,33 @@ async def perform_lead_distribution(distribution_id: str):
         )
         raise
 
+# Admin Configuration Management Endpoints
+@app.get("/api/admin/config/system")
+async def get_system_config(admin: dict = Depends(get_admin_user)):
+    """Get current system configuration"""
+    try:
+        config_doc = await db.system_config.find_one({"config_type": "main"})
+        if not config_doc:
+            # Return default configuration
+            await save_system_config()  # Initialize if not exists
+            config_doc = await db.system_config.find_one({"config_type": "main"})
+        
+        # Clean up the response to remove sensitive data
+        if config_doc and "payment_processors" in config_doc:
+            for processor_name, processor_config in config_doc["payment_processors"].items():
+                if "api_key" in processor_config:
+                    processor_config["api_key"] = "***HIDDEN***" if processor_config["api_key"] else None
+                if "ipn_secret" in processor_config:
+                    processor_config["ipn_secret"] = "***HIDDEN***" if processor_config["ipn_secret"] else None
+        
+        return {
+            "config": config_doc,
+            "current_membership_tiers": MEMBERSHIP_TIERS
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to get system config: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve system configuration")
 # User endpoints for leads
 @app.get("/api/users/leads")
 async def get_user_leads(
