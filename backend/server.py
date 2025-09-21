@@ -397,42 +397,71 @@ async def admin_login(request: AdminLogin):
     return {"token": token, "role": "admin", "username": request.username}
 
 # User management endpoints
-@app.post("/api/users/register")
-async def register_user(request: UserRegistration):
-    """Register new user"""
-    existing_user = await db.users.find_one({"address": request.address.lower()})
-    if existing_user:
-        raise HTTPException(status_code=400, detail="User already registered")
-    
-    referral_code = generate_referral_code(request.address)
-    referrer_address = None
-    
-    # Find referrer if code provided
-    if request.referrer_code:
-        referrer = await db.users.find_one({"referral_code": request.referrer_code})
-        if referrer:
-            referrer_address = referrer["address"]
-    
-    user_doc = {
-        "address": request.address.lower(),
-        "username": request.username,
-        "email": request.email,
-        "referral_code": referral_code,
-        "referrer_address": referrer_address,
-        "membership_tier": "affiliate",
-        "total_earnings": 0.0,
-        "total_referrals": 0,
-        "created_at": datetime.utcnow(),
-        "last_active": datetime.utcnow()
-    }
-    
-    await db.users.insert_one(user_doc)
-    
-    return {
-        "message": "User registered successfully",
-        "referral_code": referral_code,
-        "membership_tier": "affiliate"
-    }
+@app.post("/api/users/register", response_model=dict)
+async def register_user(user_data: UserRegistration):
+    """Register a new user with username, email, password, and wallet address"""
+    try:
+        # Check if username already exists
+        existing_user = await db.users.find_one({"username": user_data.username})
+        if existing_user:
+            raise HTTPException(status_code=400, detail="Username already exists")
+        
+        # Check if email already exists
+        existing_email = await db.users.find_one({"email": user_data.email})
+        if existing_email:
+            raise HTTPException(status_code=400, detail="Email already registered")
+        
+        # Check if wallet address already exists
+        existing_wallet = await db.users.find_one({"address": user_data.wallet_address.lower()})
+        if existing_wallet:
+            raise HTTPException(status_code=400, detail="Wallet address already registered")
+        
+        # Hash password
+        password_hash = bcrypt.hashpw(user_data.password.encode('utf-8'), bcrypt.gensalt())
+        
+        # Generate referral code
+        referral_code = f"REF{user_data.username.upper()}{uuid.uuid4().hex[:6].upper()}"
+        
+        # Handle referrer
+        referrer_address = None
+        if user_data.referrer_code:
+            referrer = await db.users.find_one({"referral_code": user_data.referrer_code})
+            if referrer:
+                referrer_address = referrer["address"]
+        
+        # Create user document
+        user_doc = {
+            "user_id": str(uuid.uuid4()),
+            "username": user_data.username,
+            "email": user_data.email,
+            "password_hash": password_hash.decode('utf-8'),
+            "address": user_data.wallet_address.lower(),
+            "membership_tier": "affiliate",
+            "referral_code": referral_code,
+            "referrer_code": user_data.referrer_code,
+            "referrer_address": referrer_address,
+            "created_at": datetime.utcnow(),
+            "suspended": False
+        }
+        
+        # Insert user
+        result = await db.users.insert_one(user_doc)
+        
+        logger.info(f"New user registered: {user_data.username} ({user_data.email})")
+        
+        return {
+            "user_id": user_doc["user_id"],
+            "username": user_data.username,
+            "email": user_data.email,
+            "referral_code": referral_code,
+            "membership_tier": "affiliate"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Registration failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Registration failed")
 
 @app.get("/api/users/profile")
 async def get_profile(current_user: dict = Depends(get_current_user)):
