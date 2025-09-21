@@ -2345,6 +2345,318 @@ class Web3MembershipTester:
         
         return all_tests_passed
 
+    def test_registration_failure_investigation(self):
+        """Comprehensive test for affiliate referral registration failure investigation"""
+        print("\n🔍 REGISTRATION FAILURE INVESTIGATION - Affiliate Referral System")
+        print("=" * 80)
+        
+        # Test Priority 1: Basic Registration Without Referral
+        print("\n📋 PRIORITY 1: Basic Registration Without Referral")
+        basic_reg_success = self.test_basic_registration_without_referral()
+        
+        # Test Priority 2: Referral Code Registration
+        print("\n📋 PRIORITY 2: Referral Code Registration")
+        referral_reg_success = self.test_referral_code_registration()
+        
+        # Test Priority 3: Database Constraints
+        print("\n📋 PRIORITY 3: Database Constraints")
+        constraints_success = self.test_database_constraints()
+        
+        # Test Priority 4: Commission System Integration
+        print("\n📋 PRIORITY 4: Commission System Integration")
+        commission_success = self.test_commission_system_integration()
+        
+        # Summary
+        print("\n" + "=" * 80)
+        print("🎯 REGISTRATION FAILURE INVESTIGATION SUMMARY")
+        print("=" * 80)
+        
+        results = {
+            "Basic Registration": basic_reg_success,
+            "Referral Registration": referral_reg_success,
+            "Database Constraints": constraints_success,
+            "Commission Integration": commission_success
+        }
+        
+        for test_name, success in results.items():
+            status = "✅ PASSED" if success else "❌ FAILED"
+            print(f"   {test_name}: {status}")
+        
+        all_passed = all(results.values())
+        if all_passed:
+            print("\n✅ ALL REGISTRATION TESTS PASSED - No critical issues found")
+        else:
+            print("\n❌ REGISTRATION ISSUES DETECTED - See detailed results above")
+        
+        return all_passed
+    
+    def test_basic_registration_without_referral(self):
+        """Test user registration without referral code"""
+        print("\n🔸 Testing Basic Registration Without Referral Code")
+        
+        # Generate unique test data
+        test_address = f"0x{uuid.uuid4().hex[:40]}"
+        test_username = f"basic_user_{int(time.time())}"
+        test_email = f"{test_username}@example.com"
+        
+        # Test 1: Register new user without referral
+        data = {
+            "address": test_address,
+            "username": test_username,
+            "email": test_email
+        }
+        
+        success, response = self.run_test("Basic Registration (No Referral)", "POST", "users/register", 200, data)
+        
+        if not success:
+            print("❌ CRITICAL: Basic registration without referral failed")
+            return False
+        
+        # Verify response structure
+        if not response.get('referral_code'):
+            print("❌ CRITICAL: No referral code generated for new user")
+            return False
+        
+        if response.get('membership_tier') != 'affiliate':
+            print("❌ CRITICAL: New user not assigned affiliate tier")
+            return False
+        
+        print("✅ Basic registration successful - referral code generated")
+        
+        # Test 2: Get nonce for authentication
+        nonce_data = {"address": test_address}
+        nonce_success, nonce_response = self.run_test("Get Nonce for Basic User", "POST", "auth/nonce", 200, nonce_data)
+        
+        if not nonce_success:
+            print("❌ CRITICAL: Nonce generation failed for registered user")
+            return False
+        
+        if not nonce_response.get('nonce'):
+            print("❌ CRITICAL: No nonce returned")
+            return False
+        
+        print("✅ Nonce generation successful")
+        
+        # Test 3: Verify signature endpoint (expect failure with mock signature)
+        verify_data = {
+            "address": test_address,
+            "signature": "0x1234567890abcdef"  # Mock signature
+        }
+        
+        # We expect this to fail with 401 due to invalid signature
+        verify_success, verify_response = self.run_test("Verify Mock Signature", "POST", "auth/verify", 401, verify_data)
+        
+        if verify_success:
+            print("✅ Signature verification properly rejects invalid signatures")
+        else:
+            print("❌ WARNING: Signature verification not working as expected")
+        
+        return True
+    
+    def test_referral_code_registration(self):
+        """Test registration WITH referral code (simulate affiliate signup)"""
+        print("\n🔸 Testing Referral Code Registration")
+        
+        # Step 1: Create a referrer user first
+        referrer_address = f"0x{uuid.uuid4().hex[:40]}"
+        referrer_username = f"referrer_{int(time.time())}"
+        referrer_email = f"{referrer_username}@example.com"
+        
+        referrer_data = {
+            "address": referrer_address,
+            "username": referrer_username,
+            "email": referrer_email
+        }
+        
+        ref_success, ref_response = self.run_test("Create Referrer User", "POST", "users/register", 200, referrer_data)
+        
+        if not ref_success or not ref_response.get('referral_code'):
+            print("❌ CRITICAL: Failed to create referrer user")
+            return False
+        
+        referral_code = ref_response.get('referral_code')
+        print(f"✅ Referrer created with code: {referral_code}")
+        
+        # Step 2: Register new user WITH referral code
+        new_user_address = f"0x{uuid.uuid4().hex[:40]}"
+        new_user_username = f"referred_user_{int(time.time())}"
+        new_user_email = f"{new_user_username}@example.com"
+        
+        referred_data = {
+            "address": new_user_address,
+            "username": new_user_username,
+            "email": new_user_email,
+            "referrer_code": referral_code
+        }
+        
+        referred_success, referred_response = self.run_test("Register with Referral Code", "POST", "users/register", 200, referred_data)
+        
+        if not referred_success:
+            print("❌ CRITICAL: Registration with referral code failed")
+            return False
+        
+        if not referred_response.get('referral_code'):
+            print("❌ CRITICAL: No referral code generated for referred user")
+            return False
+        
+        print("✅ Referral registration successful")
+        
+        # Step 3: Test with invalid referral code
+        invalid_ref_data = {
+            "address": f"0x{uuid.uuid4().hex[:40]}",
+            "username": f"invalid_ref_user_{int(time.time())}",
+            "email": f"invalid_ref_user_{int(time.time())}@example.com",
+            "referrer_code": "INVALID_CODE_123"
+        }
+        
+        # This should still succeed but without referrer linkage
+        invalid_success, invalid_response = self.run_test("Register with Invalid Referral Code", "POST", "users/register", 200, invalid_ref_data)
+        
+        if invalid_success:
+            print("✅ Registration with invalid referral code handled gracefully")
+        else:
+            print("❌ WARNING: Registration with invalid referral code failed")
+        
+        return True
+    
+    def test_database_constraints(self):
+        """Test database constraints and validation"""
+        print("\n🔸 Testing Database Constraints")
+        
+        # Generate test data
+        test_address = f"0x{uuid.uuid4().hex[:40]}"
+        test_username = f"constraint_user_{int(time.time())}"
+        test_email = f"{test_username}@example.com"
+        
+        # Test 1: Register user successfully
+        data = {
+            "address": test_address,
+            "username": test_username,
+            "email": test_email
+        }
+        
+        success, response = self.run_test("Initial User Registration", "POST", "users/register", 200, data)
+        
+        if not success:
+            print("❌ CRITICAL: Initial user registration failed")
+            return False
+        
+        # Test 2: Try to register same wallet address again (should fail)
+        duplicate_address_data = {
+            "address": test_address,  # Same address
+            "username": f"different_user_{int(time.time())}",
+            "email": f"different_user_{int(time.time())}@example.com"
+        }
+        
+        dup_success, dup_response = self.run_test("Duplicate Wallet Address", "POST", "users/register", 400, duplicate_address_data)
+        
+        if dup_success:
+            print("✅ Duplicate wallet address properly rejected")
+        else:
+            print("❌ CRITICAL: Duplicate wallet address not properly handled")
+            return False
+        
+        # Test 3: Test with invalid email format
+        invalid_email_data = {
+            "address": f"0x{uuid.uuid4().hex[:40]}",
+            "username": f"invalid_email_user_{int(time.time())}",
+            "email": "invalid_email_format"  # Invalid email
+        }
+        
+        # This might succeed depending on backend validation
+        email_success, email_response = self.run_test("Invalid Email Format", "POST", "users/register", 200, invalid_email_data)
+        
+        if email_success:
+            print("⚠️ WARNING: Invalid email format accepted (consider adding validation)")
+        else:
+            print("✅ Invalid email format properly rejected")
+        
+        # Test 4: Test with empty required fields
+        empty_data = {
+            "address": "",
+            "username": "",
+            "email": ""
+        }
+        
+        empty_success, empty_response = self.run_test("Empty Required Fields", "POST", "users/register", 422, empty_data)
+        
+        if empty_success:
+            print("✅ Empty required fields properly rejected")
+        else:
+            print("⚠️ WARNING: Empty fields validation might need improvement")
+        
+        return True
+    
+    def test_commission_system_integration(self):
+        """Test commission system integration with registration"""
+        print("\n🔸 Testing Commission System Integration")
+        
+        # This test verifies that the commission system doesn't interfere with registration
+        # and that the referral relationships are properly established
+        
+        # Step 1: Create referrer chain (3 levels)
+        users = []
+        referral_codes = []
+        
+        for i in range(3):
+            address = f"0x{uuid.uuid4().hex[:40]}"
+            username = f"commission_user_{i}_{int(time.time())}"
+            email = f"{username}@example.com"
+            
+            data = {
+                "address": address,
+                "username": username,
+                "email": email
+            }
+            
+            # Add referrer code for levels 1 and 2
+            if i > 0:
+                data["referrer_code"] = referral_codes[-1]
+            
+            success, response = self.run_test(f"Create Commission User Level {i+1}", "POST", "users/register", 200, data)
+            
+            if not success:
+                print(f"❌ CRITICAL: Failed to create commission user level {i+1}")
+                return False
+            
+            users.append({
+                "address": address,
+                "username": username,
+                "email": email,
+                "referral_code": response.get('referral_code')
+            })
+            
+            referral_codes.append(response.get('referral_code'))
+        
+        print("✅ Commission user chain created successfully")
+        
+        # Step 2: Test that referral relationships don't break registration
+        final_user_address = f"0x{uuid.uuid4().hex[:40]}"
+        final_user_username = f"final_commission_user_{int(time.time())}"
+        final_user_email = f"{final_user_username}@example.com"
+        
+        final_data = {
+            "address": final_user_address,
+            "username": final_user_username,
+            "email": final_user_email,
+            "referrer_code": referral_codes[-1]  # Use last user's referral code
+        }
+        
+        final_success, final_response = self.run_test("Final Commission User Registration", "POST", "users/register", 200, final_data)
+        
+        if not final_success:
+            print("❌ CRITICAL: Commission system interfering with registration")
+            return False
+        
+        print("✅ Commission system integration working correctly")
+        
+        # Step 3: Test payment creation (which triggers commission calculation)
+        # Note: This is a mock test since we can't actually process payments
+        print("⚠️ NOTE: Payment processing and commission calculation require actual payment confirmation")
+        print("⚠️ This would be tested in integration with NOWPayments webhook callbacks")
+        
+        return True
+
 def main():
     # Get the backend URL from environment or use default
     backend_url = "https://web3-membership.preview.emergentagent.com"
