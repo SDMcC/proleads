@@ -647,7 +647,19 @@ function RegisterPage() {
 
     } catch (error) {
       console.error('Registration failed:', error);
-      alert('Registration failed. Please try again.');
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
+      
+      let errorMessage = 'Registration failed. Please try again.';
+      if (error.response?.data?.detail) {
+        errorMessage = `Registration failed: ${error.response.data.detail}`;
+      } else if (error.response?.status === 400) {
+        errorMessage = 'Registration failed: Invalid data provided or user already exists.';
+      } else if (error.response?.status === 500) {
+        errorMessage = 'Registration failed: Server error. Please try again later.';
+      }
+      
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }
