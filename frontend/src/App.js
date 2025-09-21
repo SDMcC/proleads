@@ -621,26 +621,39 @@ function RegisterPage() {
 
     setLoading(true);
     try {
-      await axios.post(`${API_URL}/api/users/register`, {
+      // Step 1: Register user
+      console.log('Attempting registration for:', address.toLowerCase());
+      const registerResponse = await axios.post(`${API_URL}/api/users/register`, {
         address: address.toLowerCase(),
         username: formData.username,
         email: formData.email,
         referrer_code: referralCode || undefined
       });
+      console.log('Registration successful:', registerResponse.data);
 
+      // Step 2: Get nonce for authentication
+      console.log('Getting nonce for authentication...');
       const nonceResponse = await axios.post(`${API_URL}/api/auth/nonce`, { 
         address: address.toLowerCase() 
       });
       const { nonce } = nonceResponse.data;
+      console.log('Nonce received:', nonce);
+      
+      // Step 3: Sign message
+      console.log('Requesting signature from wallet...');
       const message = `Sign this message to authenticate: ${nonce}`;
       const signature = await signMessageAsync({ message });
+      console.log('Signature received');
       
+      // Step 4: Verify signature and get token
+      console.log('Verifying signature...');
       const verifyResponse = await axios.post(`${API_URL}/api/auth/verify`, {
         address: address.toLowerCase(),
         signature
       });
       
       const { token } = verifyResponse.data;
+      console.log('Authentication successful, redirecting to dashboard...');
       login(token);
 
       window.location.href = '/dashboard';
@@ -667,6 +680,10 @@ function RegisterPage() {
         errorMessage = 'Registration failed: Invalid data provided or user already exists.';
       } else if (error.response?.status === 500) {
         errorMessage = 'Registration failed: Server error. Please try again later.';
+      } else if (error.code === 'ACTION_REJECTED') {
+        errorMessage = 'Registration cancelled: You rejected the signature request. Please try again and approve the signature.';
+      } else if (error.message?.includes('User rejected')) {
+        errorMessage = 'Registration cancelled: You rejected the signature request. Please try again and approve the signature.';
       }
       
       alert(errorMessage);
