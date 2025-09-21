@@ -282,7 +282,39 @@ async def initiate_payout(address: str, amount: float):
         logger.error(f"Payout error: {str(e)}")
         return None
 
-# Authentication endpoints
+@app.post("/api/auth/simple-login")
+async def simple_login(request: SimpleLoginRequest):
+    """Simple login with wallet address and username (no signature required)"""
+    try:
+        # Find user by wallet address
+        user = await db.users.find_one({"address": request.address.lower()})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Verify username matches
+        if user.get("username") != request.username:
+            raise HTTPException(status_code=400, detail="Invalid username for this wallet address")
+        
+        # Generate JWT token
+        token_data = {
+            "address": user["address"],
+            "username": user["username"],
+            "email": user["email"],
+            "membership_tier": user.get("membership_tier", "affiliate"),
+            "exp": datetime.utcnow() + timedelta(hours=24)
+        }
+        
+        token = jwt.encode(token_data, JWT_SECRET, algorithm=JWT_ALGORITHM)
+        
+        return {"token": token, "user": token_data}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Simple login failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Login failed")
+
+# Original nonce-based auth endpoints (keeping for backward compatibility)
 @app.post("/api/auth/nonce")
 async def generate_nonce(request: NonceRequest):
     """Generate nonce for wallet authentication"""
