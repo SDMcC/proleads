@@ -4619,7 +4619,7 @@ function ConfigurationTab() {
   };
 
   const resetToDefaults = async () => {
-    if (!confirm('Are you sure you want to reset all configuration to defaults? This action cannot be undone.')) {
+    if (!window.confirm('Are you sure you want to reset all configuration to defaults? This action cannot be undone.')) {
       return;
     }
 
