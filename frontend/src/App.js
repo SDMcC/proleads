@@ -347,10 +347,15 @@ function WalletConnectButton() {
 
   useEffect(() => {
     if (isConnected && address && !user && !loading) {
-      // Only auto-authenticate on landing page, not on registration page
+      // Only auto-authenticate on specific pages, avoid during registration flow
       const currentPath = window.location.pathname;
-      if (currentPath === '/') {
-        handleAuth();
+      if (currentPath === '/' || currentPath === '/payment') {
+        // Add a small delay to avoid conflicts with registration flow
+        setTimeout(() => {
+          if (!user && !loading) {
+            handleAuth();
+          }
+        }, 1000);
       }
     }
   }, [isConnected, address, user]);
