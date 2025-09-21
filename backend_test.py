@@ -3228,6 +3228,15 @@ def main():
     
     tester = Web3MembershipTester(backend_url)
     
+    # CRITICAL PRIORITY: Database Cleanup Operations (Review Request)
+    print("\n🚨 CRITICAL PRIORITY: DATABASE CLEANUP OPERATIONS (REVIEW REQUEST)")
+    print("=" * 70)
+    cleanup_ops_success = tester.test_database_cleanup_operations()
+    if not cleanup_ops_success:
+        print("\n⚠️ CRITICAL: Database cleanup operations test FAILED")
+    else:
+        print("\n✅ Database cleanup operations test PASSED")
+    
     # CRITICAL PRIORITY: Database Cleanup and Registration Flow Fix
     print("\n🚨 CRITICAL PRIORITY: DATABASE CLEANUP & REGISTRATION FLOW FIX")
     print("=" * 70)
