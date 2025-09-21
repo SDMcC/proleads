@@ -3449,6 +3449,17 @@ def main():
     
     tester = Web3MembershipTester(backend_url)
     
+    # Check if specific test is requested via command line
+    if len(sys.argv) > 1 and sys.argv[1] == "clean_db":
+        print("🎯 Running Clean Database Verification Suite")
+        success = tester.test_clean_database_verification_suite()
+        
+        print("\n================================")
+        print(f"📊 Tests passed: {tester.tests_passed}/{tester.tests_run}")
+        print(f"📊 Success rate: {tester.tests_passed/tester.tests_run*100:.1f}%")
+        
+        return 0 if success else 1
+    
     # CRITICAL PRIORITY: Database Cleanup Operations (Review Request)
     print("\n🚨 CRITICAL PRIORITY: DATABASE CLEANUP OPERATIONS (REVIEW REQUEST)")
     print("=" * 70)
