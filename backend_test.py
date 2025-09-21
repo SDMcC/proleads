@@ -3440,6 +3440,241 @@ class Web3MembershipTester:
         print("\n✅ CLEAN DATABASE VERIFICATION SUITE COMPLETED SUCCESSFULLY")
         return True
 
+    def test_referral_registration_issue_investigation(self):
+        """Test the specific referral registration issue reported - seconduser/firstuser"""
+        print("\n🔍 INVESTIGATING REFERRAL REGISTRATION ISSUE - seconduser/firstuser")
+        print("=" * 80)
+        print("Issue: User registered 'seconduser' using 'firstuser' affiliate link")
+        print("Problem: firstuser's dashboard doesn't show the referral")
+        print("Admin: Admin dashboard shows both users exist")
+        print("=" * 80)
+        
+        # Step 1: Create firstuser
+        firstuser_address = f"0x{uuid.uuid4().hex[:40]}"
+        firstuser_username = "firstuser"
+        firstuser_email = "firstuser@test.com"
+        firstuser_password = "password123"
+        
+        print(f"\n1️⃣ Creating firstuser...")
+        print(f"   Address: {firstuser_address}")
+        print(f"   Username: {firstuser_username}")
+        
+        firstuser_data = {
+            "username": firstuser_username,
+            "email": firstuser_email,
+            "password": firstuser_password,
+            "wallet_address": firstuser_address
+        }
+        
+        success, response = self.run_test("Create firstuser", "POST", "users/register", 200, firstuser_data)
+        if not success:
+            print("❌ Failed to create firstuser")
+            return False
+        
+        firstuser_referral_code = response.get('referral_code')
+        if not firstuser_referral_code:
+            print("❌ firstuser referral code not generated")
+            return False
+        
+        print(f"✅ firstuser created with referral code: {firstuser_referral_code}")
+        
+        # Step 2: Verify firstuser's referral code endpoint
+        print(f"\n2️⃣ Testing firstuser's referral code endpoint...")
+        success, response = self.run_test("Get firstuser referral info", "GET", f"referral/{firstuser_referral_code}", 200)
+        if not success:
+            print("❌ firstuser referral code endpoint failed")
+            return False
+        
+        print(f"✅ firstuser referral code endpoint working")
+        
+        # Step 3: Create seconduser using firstuser's referral code
+        seconduser_address = f"0x{uuid.uuid4().hex[:40]}"
+        seconduser_username = "seconduser"
+        seconduser_email = "seconduser@test.com"
+        seconduser_password = "password123"
+        
+        print(f"\n3️⃣ Creating seconduser with firstuser's referral code...")
+        print(f"   Address: {seconduser_address}")
+        print(f"   Username: {seconduser_username}")
+        print(f"   Referrer Code: {firstuser_referral_code}")
+        
+        seconduser_data = {
+            "username": seconduser_username,
+            "email": seconduser_email,
+            "password": seconduser_password,
+            "wallet_address": seconduser_address,
+            "referrer_code": firstuser_referral_code
+        }
+        
+        success, response = self.run_test("Create seconduser with referral", "POST", "users/register", 200, seconduser_data)
+        if not success:
+            print("❌ Failed to create seconduser with referral code")
+            return False
+        
+        seconduser_referral_code = response.get('referral_code')
+        print(f"✅ seconduser created with referral code: {seconduser_referral_code}")
+        
+        # Step 4: Check database records via admin API
+        print(f"\n4️⃣ Checking database records via admin API...")
+        
+        # Login as admin first
+        admin_data = {"username": "admin", "password": "admin123"}
+        success, admin_response = self.run_test("Admin login for investigation", "POST", "admin/login", 200, admin_data)
+        if not success:
+            print("❌ Admin login failed")
+            return False
+        
+        admin_token = admin_response.get('token')
+        admin_headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {admin_token}'
+        }
+        
+        # Get all members to find our users
+        success, members_response = self.run_test("Get all members", "GET", "admin/members?limit=100", 200, headers=admin_headers)
+        if not success:
+            print("❌ Failed to get members list")
+            return False
+        
+        members = members_response.get('members', [])
+        firstuser_record = None
+        seconduser_record = None
+        
+        for member in members:
+            if member.get('username') == firstuser_username:
+                firstuser_record = member
+            elif member.get('username') == seconduser_username:
+                seconduser_record = member
+        
+        if not firstuser_record:
+            print("❌ firstuser not found in database")
+            return False
+        
+        if not seconduser_record:
+            print("❌ seconduser not found in database")
+            return False
+        
+        print(f"✅ Both users found in database")
+        print(f"   firstuser ID: {firstuser_record.get('id')}")
+        print(f"   seconduser ID: {seconduser_record.get('id')}")
+        
+        # Step 5: Get detailed member info to check referral relationship
+        print(f"\n5️⃣ Checking referral relationship in database...")
+        
+        # Get firstuser details
+        success, firstuser_details = self.run_test("Get firstuser details", "GET", f"admin/members/{firstuser_record.get('id')}", 200, headers=admin_headers)
+        if not success:
+            print("❌ Failed to get firstuser details")
+            return False
+        
+        # Get seconduser details
+        success, seconduser_details = self.run_test("Get seconduser details", "GET", f"admin/members/{seconduser_record.get('id')}", 200, headers=admin_headers)
+        if not success:
+            print("❌ Failed to get seconduser details")
+            return False
+        
+        # Check referral relationship
+        firstuser_referrals = firstuser_details.get('referrals', [])
+        seconduser_sponsor = seconduser_details.get('sponsor')
+        
+        print(f"   firstuser referrals count: {len(firstuser_referrals)}")
+        print(f"   seconduser sponsor: {seconduser_sponsor}")
+        
+        # Check if seconduser appears in firstuser's referrals
+        seconduser_in_referrals = any(ref.get('username') == seconduser_username for ref in firstuser_referrals)
+        
+        if not seconduser_in_referrals:
+            print("❌ CRITICAL ISSUE: seconduser NOT found in firstuser's referrals list")
+            print(f"   firstuser referrals: {[ref.get('username') for ref in firstuser_referrals]}")
+        else:
+            print("✅ seconduser found in firstuser's referrals list")
+        
+        # Check if firstuser is seconduser's sponsor
+        if not seconduser_sponsor or seconduser_sponsor.get('username') != firstuser_username:
+            print("❌ CRITICAL ISSUE: firstuser NOT set as seconduser's sponsor")
+            print(f"   seconduser sponsor: {seconduser_sponsor}")
+        else:
+            print("✅ firstuser correctly set as seconduser's sponsor")
+        
+        # Step 6: Test dashboard stats API for firstuser
+        print(f"\n6️⃣ Testing firstuser's dashboard stats...")
+        
+        # Login as firstuser
+        firstuser_login_data = {
+            "username": firstuser_username,
+            "password": firstuser_password
+        }
+        
+        success, firstuser_login_response = self.run_test("firstuser login", "POST", "auth/login", 200, firstuser_login_data)
+        if not success:
+            print("❌ firstuser login failed")
+            return False
+        
+        firstuser_token = firstuser_login_response.get('token')
+        firstuser_headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {firstuser_token}'
+        }
+        
+        # Get dashboard stats
+        success, dashboard_stats = self.run_test("firstuser dashboard stats", "GET", "dashboard/stats", 200, headers=firstuser_headers)
+        if not success:
+            print("❌ firstuser dashboard stats failed")
+            return False
+        
+        total_referrals = dashboard_stats.get('total_referrals', 0)
+        referral_network = dashboard_stats.get('referral_network', [])
+        
+        print(f"   Dashboard total_referrals: {total_referrals}")
+        print(f"   Dashboard referral_network count: {len(referral_network)}")
+        
+        if total_referrals == 0:
+            print("❌ CRITICAL ISSUE: Dashboard shows 0 referrals for firstuser")
+        else:
+            print("✅ Dashboard shows referrals for firstuser")
+        
+        if len(referral_network) == 0:
+            print("❌ CRITICAL ISSUE: Dashboard referral network is empty")
+        else:
+            print("✅ Dashboard referral network has entries")
+            for referral in referral_network:
+                print(f"     - {referral.get('username')} ({referral.get('address')})")
+        
+        # Step 7: Summary and diagnosis
+        print(f"\n7️⃣ DIAGNOSIS SUMMARY")
+        print("=" * 40)
+        
+        issues_found = []
+        
+        if not seconduser_in_referrals:
+            issues_found.append("seconduser not in firstuser's referrals list")
+        
+        if not seconduser_sponsor or seconduser_sponsor.get('username') != firstuser_username:
+            issues_found.append("firstuser not set as seconduser's sponsor")
+        
+        if total_referrals == 0:
+            issues_found.append("Dashboard shows 0 referrals")
+        
+        if len(referral_network) == 0:
+            issues_found.append("Dashboard referral network is empty")
+        
+        if issues_found:
+            print("❌ REFERRAL REGISTRATION ISSUES CONFIRMED:")
+            for issue in issues_found:
+                print(f"   - {issue}")
+            
+            print("\n🔧 ROOT CAUSE ANALYSIS:")
+            print("   The referral relationship was not properly established during registration.")
+            print("   This could be due to:")
+            print("   1. referrer_address not being set correctly in seconduser's record")
+            print("   2. Dashboard stats query not finding the referral relationships")
+            print("   3. Database referral linkage logic failing during registration")
+            
+            return False
+        else:
+            print("✅ ALL REFERRAL RELATIONSHIPS WORKING CORRECTLY")
+            return True
+
 def main():
     # Get the backend URL from environment or use default
     backend_url = "https://web3-membership.preview.emergentagent.com"
