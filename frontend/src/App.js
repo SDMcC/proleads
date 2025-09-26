@@ -3646,6 +3646,7 @@ function AdminDashboard() {
 
   useEffect(() => {
     fetchAdminData();
+    fetchAdminNotifications();
   }, []);
 
   useEffect(() => {
