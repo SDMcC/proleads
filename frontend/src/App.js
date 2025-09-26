@@ -1016,14 +1016,25 @@ function Dashboard() {
   };
 
   const sidebarItems = [
-    { id: 'overview', label: 'Overview', icon: BarChart3 },
-    { id: 'network', label: 'Network Tree', icon: Network },
-    { id: 'affiliate-tools', label: 'Affiliate Tools', icon: ExternalLink },
+    { id: 'overview', label: 'Dashboard', icon: BarChart3 },
+    { id: 'leads', label: 'My Leads', icon: FileText },
+    { 
+      id: 'affiliate', 
+      label: 'Affiliate', 
+      icon: ExternalLink,
+      isNested: true,
+      subItems: [
+        { id: 'affiliate-tools', label: 'Affiliate Tools', icon: ExternalLink },
+        { id: 'network', label: 'Network Tree', icon: Network },
+        { id: 'referrals', label: 'Referrals', icon: Users }
+      ]
+    },
     { id: 'earnings', label: 'Earnings', icon: DollarSign },
     { id: 'payments', label: 'Payment History', icon: Activity },
     { id: 'milestones', label: 'Milestones', icon: Award },
-    { id: 'leads', label: 'My Leads', icon: FileText },
-    { id: 'account', label: 'Account Settings', icon: Settings }
+    { id: 'autoresponder', label: 'Autoresponder', icon: Mail },
+    { id: 'account', label: 'Account', icon: Settings },
+    { id: 'tickets', label: 'Tickets', icon: MessageCircle }
   ];
 
   if (loading) {
