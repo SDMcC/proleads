@@ -2706,7 +2706,7 @@ function AccountTab({ user, accountSubTab, setAccountSubTab }) {
       </div>
 
       {/* Account Sub-tab Content */}
-      {accountSubTab === 'settings' && <AccountSettingsTab user={user} />}
+      {accountSubTab === 'settings' && <AccountSettingsOnlyTab user={user} />}
       {accountSubTab === 'notifications' && (
         <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-8 text-center">
           <Bell className="h-16 w-16 text-gray-400 mx-auto mb-4" />
@@ -2721,16 +2721,7 @@ function AccountTab({ user, accountSubTab, setAccountSubTab }) {
           <p className="text-gray-300">Complete your Know Your Customer verification process. Coming soon!</p>
         </div>
       )}
-      {accountSubTab === 'cancel' && (
-        <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-8 text-center">
-          <UserX className="h-16 w-16 text-red-400 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-white mb-2">Cancel Account</h3>
-          <p className="text-gray-300 mb-4">This will permanently delete your account and all associated data.</p>
-          <button className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-300">
-            Request Account Cancellation
-          </button>
-        </div>
-      )}
+      {accountSubTab === 'cancel' && <CancelAccountTab />}
     </div>
   );
 }
