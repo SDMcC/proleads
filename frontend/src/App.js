@@ -425,13 +425,13 @@ function LandingPage() {
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <a 
-              href="/register"
+              href={`/register${referralCode ? `?ref=${referralCode}` : ''}`}
               className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-8 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-2xl"
             >
               Join Now
             </a>
             <a 
-              href="/register"
+              href={`/register${referralCode ? `?ref=${referralCode}` : ''}`}
               className="bg-white bg-opacity-20 text-white py-4 px-8 rounded-xl font-bold text-lg hover:bg-opacity-30 transition-all duration-300 backdrop-blur-sm border border-white border-opacity-30"
             >
               Learn More
