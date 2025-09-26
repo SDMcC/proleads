@@ -853,6 +853,80 @@ async def mark_notifications_read(current_user: dict = Depends(get_current_user)
     except Exception as e:
         logger.error(f"Failed to mark notifications as read: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to mark notifications as read")
+# Admin notification system functions
+async def create_admin_notification(notification_type: str, title: str, message: str, related_user: str = None):
+    """Create a notification for admin"""
+    try:
+        notification_doc = {
+            "notification_id": str(uuid.uuid4()),
+            "user_address": "admin",  # Special address for admin notifications
+            "type": notification_type,
+            "title": title,
+            "message": message,
+            "related_user": related_user,  # Track which user the notification is about
+            "created_at": datetime.utcnow(),
+            "read_status": False
+        }
+        
+        await db.admin_notifications.insert_one(notification_doc)
+        logger.info(f"Admin notification created: {title}")
+        
+    except Exception as e:
+        logger.error(f"Failed to create admin notification: {str(e)}")
+
+@app.get("/api/admin/notifications")
+async def get_admin_notifications(admin: dict = Depends(get_admin_user)):
+    """Get notifications for admin"""
+    try:
+        notifications = await db.admin_notifications.find().sort("created_at", -1).to_list(None)
+        
+        # Convert ObjectId and datetime for JSON serialization
+        for notification in notifications:
+            notification["_id"] = str(notification["_id"])
+            notification["created_at"] = notification["created_at"].isoformat()
+        
+        return {
+            "notifications": notifications,
+            "unread_count": len([n for n in notifications if not n["read_status"]])
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to fetch admin notifications: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch admin notifications")
+
+@app.delete("/api/admin/notifications/{notification_id}")
+async def clear_admin_notification(notification_id: str, admin: dict = Depends(get_admin_user)):
+    """Clear/delete a specific admin notification"""
+    try:
+        result = await db.admin_notifications.delete_one({
+            "notification_id": notification_id
+        })
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Notification not found")
+        
+        return {"message": "Admin notification cleared successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to clear admin notification: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to clear admin notification")
+
+@app.post("/api/admin/notifications/mark-read")
+async def mark_admin_notifications_read(admin: dict = Depends(get_admin_user)):
+    """Mark all admin notifications as read"""
+    try:
+        result = await db.admin_notifications.update_many(
+            {"read_status": False},
+            {"$set": {"read_status": True}}
+        )
+        
+        return {"message": f"Marked {result.modified_count} admin notifications as read"}
+        
+    except Exception as e:
+        logger.error(f"Failed to mark admin notifications as read: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to mark admin notifications as read")
 
 # Payment endpoints
 @app.post("/api/payments/create")
