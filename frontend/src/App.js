@@ -5513,20 +5513,6 @@ function MemberModal({ member, editingMember, onClose, onUpdate, onSuspend, onUn
                 <h3 className="text-lg font-semibold text-white mb-4">Member Information</h3>
                 <div className="space-y-3">
                   <div>
-                    <span className="text-gray-400">Username:</span>
-                    <span className="text-white ml-2">{memberData.username}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-400">Email:</span>
-                    <span className="text-white ml-2">{memberData.email}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-400">Wallet:</span>
-                    <span className="text-white ml-2 font-mono text-sm">
-                      {memberData.wallet_address || memberData.id}
-                    </span>
-                  </div>
-                  <div>
                     <span className="text-gray-400">Tier:</span>
                     <span className={`ml-2 px-2 py-1 rounded text-xs uppercase font-medium ${
                       memberData.membership_tier === 'gold' ? 'bg-yellow-600 text-yellow-100' :
@@ -5535,6 +5521,20 @@ function MemberModal({ member, editingMember, onClose, onUpdate, onSuspend, onUn
                       'bg-blue-600 text-blue-100'
                     }`}>
                       {memberData.membership_tier}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Username:</span>
+                    <span className="text-white ml-2">{memberData.username}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Email:</span>
+                    <span className="text-white ml-2">{memberData.email}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Sponsor:</span>
+                    <span className="text-white ml-2">
+                      {member?.sponsor?.username || 'N/A'}
                     </span>
                   </div>
                   <div>
@@ -5550,6 +5550,12 @@ function MemberModal({ member, editingMember, onClose, onUpdate, onSuspend, onUn
                         new Date(memberData.subscription_expires_at).toLocaleDateString() : 
                         'N/A'
                       }
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Wallet:</span>
+                    <span className="text-white ml-2 font-mono text-sm">
+                      {memberData.wallet_address || memberData.id}
                     </span>
                   </div>
                   <div>
