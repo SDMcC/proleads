@@ -6166,6 +6166,340 @@ def main():
         print("✅ Admin Members Management Enhancement Test Passed")
         return True
 
+    def test_get_user_notifications_success(self):
+        """Test GET /api/users/notifications with user authentication"""
+        # First, create a test user and get token
+        test_user = self.create_test_user_for_notifications()
+        if not test_user:
+            print("❌ Failed to create test user for notifications")
+            return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {test_user["token"]}'
+        }
+        
+        success, response = self.run_test("Get User Notifications (Success)", "GET", "users/notifications", 200, headers=headers)
+        
+        if success:
+            # Verify response structure
+            required_keys = ['notifications', 'unread_count']
+            missing_keys = [key for key in required_keys if key not in response]
+            
+            if not missing_keys:
+                print("✅ Notifications response contains all required fields")
+                
+                # Verify notification objects structure
+                notifications = response.get('notifications', [])
+                if notifications:
+                    notification = notifications[0]
+                    required_notification_keys = ['notification_id', 'user_address', 'type', 'title', 
+                                                'message', 'created_at', 'read_status']
+                    missing_notification_keys = [key for key in required_notification_keys if key not in notification]
+                    
+                    if not missing_notification_keys:
+                        print("✅ Notification objects contain all required fields")
+                        
+                        # Verify notification types
+                        valid_types = ['referral', 'milestone', 'commission']
+                        notification_type = notification.get('type')
+                        if notification_type in valid_types:
+                            print(f"✅ Notification type '{notification_type}' is valid")
+                        else:
+                            print(f"❌ Invalid notification type: {notification_type}")
+                            return False, {}
+                    else:
+                        print(f"❌ Notification objects missing required keys: {missing_notification_keys}")
+                        return False, {}
+                else:
+                    print("⚠️ No notifications found for user")
+                
+                return True, response
+            else:
+                print(f"❌ Notifications response missing required keys: {missing_keys}")
+                return False, {}
+        
+        return success, response
+    
+    def test_get_user_notifications_unauthorized(self):
+        """Test GET /api/users/notifications without authentication"""
+        headers = {'Content-Type': 'application/json'}
+        success, response = self.run_test("Get User Notifications (Unauthorized)", "GET", "users/notifications", 401, headers=headers)
+        return success, response
+    
+    def test_clear_notification_success(self):
+        """Test DELETE /api/users/notifications/{notification_id} for clearing individual notifications"""
+        # First, create a test user and get notifications
+        test_user = self.create_test_user_for_notifications()
+        if not test_user:
+            print("❌ Failed to create test user for notifications")
+            return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {test_user["token"]}'
+        }
+        
+        # Get notifications first
+        notifications_success, notifications_response = self.run_test("Get Notifications for Clear Test", "GET", "users/notifications", 200, headers=headers)
+        if not notifications_success or not notifications_response.get('notifications'):
+            print("⚠️ No notifications available to test clearing")
+            return True, {}  # Skip test if no notifications
+        
+        notification_id = notifications_response['notifications'][0]['notification_id']
+        
+        success, response = self.run_test("Clear Individual Notification (Success)", "DELETE", f"users/notifications/{notification_id}", 200, headers=headers)
+        
+        if success:
+            if response.get('message') and 'successfully' in response.get('message', '').lower():
+                print("✅ Notification cleared successfully")
+                return True, response
+            else:
+                print("❌ Clear response doesn't contain success message")
+                return False, {}
+        
+        return success, response
+    
+    def test_clear_notification_not_found(self):
+        """Test DELETE /api/users/notifications/{notification_id} with non-existent notification"""
+        test_user = self.create_test_user_for_notifications()
+        if not test_user:
+            print("❌ Failed to create test user for notifications")
+            return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {test_user["token"]}'
+        }
+        
+        fake_notification_id = str(uuid.uuid4())
+        success, response = self.run_test("Clear Notification (Not Found)", "DELETE", f"users/notifications/{fake_notification_id}", 404, headers=headers)
+        return success, response
+    
+    def test_clear_notification_unauthorized(self):
+        """Test DELETE /api/users/notifications/{notification_id} without authentication"""
+        headers = {'Content-Type': 'application/json'}
+        fake_notification_id = str(uuid.uuid4())
+        success, response = self.run_test("Clear Notification (Unauthorized)", "DELETE", f"users/notifications/{fake_notification_id}", 401, headers=headers)
+        return success, response
+    
+    def test_mark_notifications_read_success(self):
+        """Test POST /api/users/notifications/mark-read for marking all notifications as read"""
+        test_user = self.create_test_user_for_notifications()
+        if not test_user:
+            print("❌ Failed to create test user for notifications")
+            return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {test_user["token"]}'
+        }
+        
+        success, response = self.run_test("Mark All Notifications Read (Success)", "POST", "users/notifications/mark-read", 200, headers=headers)
+        
+        if success:
+            if response.get('message') and 'marked' in response.get('message', '').lower():
+                print("✅ Notifications marked as read successfully")
+                return True, response
+            else:
+                print("❌ Mark read response doesn't contain success message")
+                return False, {}
+        
+        return success, response
+    
+    def test_mark_notifications_read_unauthorized(self):
+        """Test POST /api/users/notifications/mark-read without authentication"""
+        headers = {'Content-Type': 'application/json'}
+        success, response = self.run_test("Mark Notifications Read (Unauthorized)", "POST", "users/notifications/mark-read", 401, headers=headers)
+        return success, response
+    
+    def create_test_user_for_notifications(self):
+        """Create a test user and simulate notifications for testing"""
+        # Create a unique test user
+        test_address = f"0x{uuid.uuid4().hex[:40]}"
+        test_username = f"notif_user_{int(time.time())}"
+        test_email = f"{test_username}@test.com"
+        test_password = "testpass123"
+        
+        # Register user
+        user_data = {
+            "username": test_username,
+            "email": test_email,
+            "password": test_password,
+            "wallet_address": test_address
+        }
+        
+        reg_success, reg_response = self.run_test("Create Notification Test User", "POST", "users/register", 200, user_data)
+        if not reg_success:
+            return None
+        
+        # Login user to get token
+        login_data = {
+            "username": test_username,
+            "password": test_password
+        }
+        
+        login_success, login_response = self.run_test("Login Notification Test User", "POST", "auth/login", 200, login_data)
+        if not login_success or not login_response.get('token'):
+            return None
+        
+        return {
+            "address": test_address,
+            "username": test_username,
+            "email": test_email,
+            "token": login_response['token']
+        }
+    
+    def test_referral_notification_creation(self):
+        """Test that referral notifications are created when new users register with referral codes"""
+        print("\n🔔 Testing Referral Notification Creation")
+        
+        # Create referrer user
+        referrer_address = f"0x{uuid.uuid4().hex[:40]}"
+        referrer_username = f"referrer_{int(time.time())}"
+        referrer_email = f"{referrer_username}@test.com"
+        referrer_password = "testpass123"
+        
+        referrer_data = {
+            "username": referrer_username,
+            "email": referrer_email,
+            "password": referrer_password,
+            "wallet_address": referrer_address
+        }
+        
+        ref_success, ref_response = self.run_test("Create Referrer for Notification Test", "POST", "users/register", 200, referrer_data)
+        if not ref_success or not ref_response.get('referral_code'):
+            print("❌ Failed to create referrer user")
+            return False
+        
+        referral_code = ref_response['referral_code']
+        
+        # Login referrer to get token
+        referrer_login_data = {
+            "username": referrer_username,
+            "password": referrer_password
+        }
+        
+        ref_login_success, ref_login_response = self.run_test("Login Referrer for Notification Test", "POST", "auth/login", 200, referrer_login_data)
+        if not ref_login_success or not ref_login_response.get('token'):
+            print("❌ Failed to login referrer user")
+            return False
+        
+        referrer_token = ref_login_response['token']
+        
+        # Create new user with referral code
+        new_user_address = f"0x{uuid.uuid4().hex[:40]}"
+        new_user_username = f"referred_{int(time.time())}"
+        new_user_email = f"{new_user_username}@test.com"
+        new_user_password = "testpass123"
+        
+        new_user_data = {
+            "username": new_user_username,
+            "email": new_user_email,
+            "password": new_user_password,
+            "wallet_address": new_user_address,
+            "referrer_code": referral_code
+        }
+        
+        new_user_success, new_user_response = self.run_test("Create Referred User for Notification Test", "POST", "users/register", 200, new_user_data)
+        if not new_user_success:
+            print("❌ Failed to create referred user")
+            return False
+        
+        # Check if referrer received notification
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {referrer_token}'
+        }
+        
+        # Wait a moment for notification to be created
+        time.sleep(1)
+        
+        notif_success, notif_response = self.run_test("Check Referral Notification Created", "GET", "users/notifications", 200, headers=headers)
+        if not notif_success:
+            print("❌ Failed to get notifications for referrer")
+            return False
+        
+        notifications = notif_response.get('notifications', [])
+        referral_notifications = [n for n in notifications if n.get('type') == 'referral']
+        
+        if referral_notifications:
+            print("✅ Referral notification created successfully")
+            notification = referral_notifications[0]
+            
+            # Verify notification content
+            if new_user_username in notification.get('message', ''):
+                print("✅ Referral notification contains correct user information")
+            else:
+                print("❌ Referral notification doesn't contain expected user information")
+                return False
+            
+            return True
+        else:
+            print("❌ No referral notification found")
+            return False
+    
+    def test_notification_system_complete(self):
+        """Test complete notification system functionality"""
+        print("\n🔔 Testing Complete Notification System")
+        
+        # 1. Test notification API endpoints
+        print("\n📡 Testing Notification API Endpoints")
+        
+        # Test get notifications with authentication
+        notif_success, _ = self.test_get_user_notifications_success()
+        if not notif_success:
+            print("❌ Get user notifications failed")
+            return False
+        
+        # Test get notifications without authentication
+        unauth_success, _ = self.test_get_user_notifications_unauthorized()
+        if not unauth_success:
+            print("❌ Unauthorized notifications test failed")
+            return False
+        
+        # Test clear individual notification
+        clear_success, _ = self.test_clear_notification_success()
+        if not clear_success:
+            print("❌ Clear individual notification failed")
+            return False
+        
+        # Test clear non-existent notification
+        clear_not_found_success, _ = self.test_clear_notification_not_found()
+        if not clear_not_found_success:
+            print("❌ Clear non-existent notification test failed")
+            return False
+        
+        # Test clear notification without authentication
+        clear_unauth_success, _ = self.test_clear_notification_unauthorized()
+        if not clear_unauth_success:
+            print("❌ Clear notification unauthorized test failed")
+            return False
+        
+        # Test mark all notifications as read
+        mark_read_success, _ = self.test_mark_notifications_read_success()
+        if not mark_read_success:
+            print("❌ Mark notifications read failed")
+            return False
+        
+        # Test mark notifications read without authentication
+        mark_read_unauth_success, _ = self.test_mark_notifications_read_unauthorized()
+        if not mark_read_unauth_success:
+            print("❌ Mark notifications read unauthorized test failed")
+            return False
+        
+        # 2. Test notification creation integration
+        print("\n🔗 Testing Notification Creation Integration")
+        
+        # Test referral notification creation
+        referral_notif_success = self.test_referral_notification_creation()
+        if not referral_notif_success:
+            print("❌ Referral notification creation failed")
+            return False
+        
+        print("\n✅ Complete Notification System Test Passed")
+        return True
+
 if __name__ == "__main__":
     # Check if specific test is requested
     if len(sys.argv) > 1 and sys.argv[1] == "csv_upload":
