@@ -6566,5 +6566,21 @@ if __name__ == "__main__":
         print("=" * 80)
         
         sys.exit(0 if success else 1)
+    elif len(sys.argv) > 1 and sys.argv[1] == "notification_system":
+        print("🎯 RUNNING SPECIFIC TEST: Notification System Backend Implementation")
+        print("=" * 80)
+        
+        backend_url = "https://blockleads.preview.emergentagent.com"
+        tester = Web3MembershipTester(backend_url)
+        
+        # Run the specific notification system test
+        success = tester.test_notification_system_complete()
+        
+        print("\n" + "=" * 80)
+        print(f"🎯 FINAL RESULT: {'✅ PASSED' if success else '❌ FAILED'}")
+        print(f"📊 Tests passed: {tester.tests_passed}/{tester.tests_run}")
+        print("=" * 80)
+        
+        sys.exit(0 if success else 1)
     else:
         sys.exit(main())
