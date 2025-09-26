@@ -4156,6 +4156,143 @@ class Web3MembershipTester:
         print("=" * 80)
         return all_passed
 
+    def test_firstuser_login_and_affiliate_link_format(self):
+        """Test firstuser login and verify affiliate link format"""
+        print("\n🔗 Testing firstuser Login and Affiliate Link Format")
+        
+        # Test login with firstuser credentials
+        login_data = {
+            "username": "firstuser",
+            "password": "testpassword123"
+        }
+        
+        login_success, login_response = self.run_test("firstuser Login", "POST", "auth/login", 200, login_data)
+        if not login_success:
+            print("❌ firstuser login failed")
+            return False
+        
+        # Extract token from login response
+        token = login_response.get('token')
+        if not token:
+            print("❌ No token received from login")
+            return False
+        
+        print(f"✅ firstuser login successful, token received")
+        
+        # Get user profile to check affiliate link format
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {token}'
+        }
+        
+        profile_success, profile_response = self.run_test("Get firstuser Profile", "GET", "users/profile", 200, headers=headers)
+        if not profile_success:
+            print("❌ Failed to get firstuser profile")
+            return False
+        
+        # Check referral code and link format
+        referral_code = profile_response.get('referral_code')
+        referral_link = profile_response.get('referral_link')
+        
+        if not referral_code:
+            print("❌ No referral code found in profile")
+            return False
+        
+        if not referral_link:
+            print("❌ No referral link found in profile")
+            return False
+        
+        print(f"✅ Referral code: {referral_code}")
+        print(f"✅ Current referral link: {referral_link}")
+        
+        # Check if the referral code matches expected format (REFFIRSTUSER5DCBEE)
+        expected_referral_code = "REFFIRSTUSER5DCBEE"
+        if referral_code != expected_referral_code:
+            print(f"⚠️ Referral code mismatch - Expected: {expected_referral_code}, Got: {referral_code}")
+        else:
+            print(f"✅ Referral code matches expected format: {expected_referral_code}")
+        
+        # Check current link format (should be old format initially)
+        expected_old_format = f"{self.base_url}?ref={referral_code}"
+        if referral_link == expected_old_format:
+            print(f"✅ Current link uses old format as expected: {referral_link}")
+        else:
+            print(f"⚠️ Current link format unexpected - Expected: {expected_old_format}, Got: {referral_link}")
+        
+        # Check if new format is implemented
+        expected_new_format = f"{self.base_url}/r/{referral_code}"
+        if referral_link == expected_new_format:
+            print(f"✅ NEW FORMAT IMPLEMENTED: {referral_link}")
+            return True
+        else:
+            print(f"❌ NEW FORMAT NOT YET IMPLEMENTED - Expected: {expected_new_format}")
+            print(f"   Current format: {referral_link}")
+            return False
+    
+    def test_dashboard_stats_affiliate_link_format(self):
+        """Test dashboard stats endpoint for affiliate link format"""
+        print("\n📊 Testing Dashboard Stats Affiliate Link Format")
+        
+        # First login as firstuser
+        login_data = {
+            "username": "firstuser", 
+            "password": "testpassword123"
+        }
+        
+        login_success, login_response = self.run_test("firstuser Login for Dashboard", "POST", "auth/login", 200, login_data)
+        if not login_success:
+            print("❌ firstuser login failed")
+            return False
+        
+        token = login_response.get('token')
+        if not token:
+            print("❌ No token received from login")
+            return False
+        
+        # Get dashboard stats
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {token}'
+        }
+        
+        stats_success, stats_response = self.run_test("Get Dashboard Stats", "GET", "dashboard/stats", 200, headers=headers)
+        if not stats_success:
+            print("❌ Failed to get dashboard stats")
+            return False
+        
+        print("✅ Dashboard stats retrieved successfully")
+        
+        # Check if dashboard stats contains referral network with affiliate links
+        referral_network = stats_response.get('referral_network', [])
+        print(f"✅ Found {len(referral_network)} referrals in network")
+        
+        # The dashboard stats endpoint doesn't directly return affiliate links
+        # but it shows the referral network structure
+        return True
+    
+    def test_affiliate_link_format_comprehensive(self):
+        """Comprehensive test for affiliate link format across all endpoints"""
+        print("\n🎯 Comprehensive Affiliate Link Format Testing")
+        
+        # Test 1: Login and Profile Check
+        profile_test_success = self.test_firstuser_login_and_affiliate_link_format()
+        
+        # Test 2: Dashboard Stats Check  
+        dashboard_test_success = self.test_dashboard_stats_affiliate_link_format()
+        
+        # Summary
+        if profile_test_success:
+            print("✅ Profile endpoint affiliate link format test PASSED")
+        else:
+            print("❌ Profile endpoint affiliate link format test FAILED")
+        
+        if dashboard_test_success:
+            print("✅ Dashboard stats endpoint test PASSED")
+        else:
+            print("❌ Dashboard stats endpoint test FAILED")
+        
+        return profile_test_success and dashboard_test_success
+
 def main():
     # Get the backend URL from environment or use default
     backend_url = "https://web3-affiliate-1.preview.emergentagent.com"
@@ -4166,7 +4303,22 @@ def main():
     tester = Web3MembershipTester(backend_url)
     
     # Check if specific test is requested via command line
-    if len(sys.argv) > 1 and sys.argv[1] == "clean_db":
+    if len(sys.argv) > 1 and sys.argv[1] == "affiliate_link":
+        print("🎯 Running Affiliate Link Format Test for firstuser")
+        success = tester.test_affiliate_link_format_comprehensive()
+        
+        print("\n================================")
+        print(f"📊 Tests passed: {tester.tests_passed}/{tester.tests_run}")
+        print(f"📊 Success rate: {tester.tests_passed/tester.tests_run*100:.1f}%")
+        
+        if success:
+            print("\n🎉 Affiliate link format test completed successfully!")
+            return 0
+        else:
+            print("\n💥 Affiliate link format test failed!")
+            return 1
+    
+    elif len(sys.argv) > 1 and sys.argv[1] == "clean_db":
         print("🎯 Running Clean Database Verification Suite")
         success = tester.test_clean_database_verification_suite()
         
