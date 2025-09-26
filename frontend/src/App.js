@@ -1030,6 +1030,13 @@ function Dashboard() {
         headers: { Authorization: `Bearer ${token}` }
       });
       setStats(response.data);
+    } catch (error) {
+      console.error('Failed to fetch dashboard stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const fetchNotifications = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -1069,12 +1076,6 @@ function Dashboard() {
       setUnreadCount(0);
     } catch (error) {
       console.error('Failed to mark notifications as read:', error);
-    }
-  };
-    } catch (error) {
-      console.error('Failed to fetch dashboard stats:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
