@@ -1271,6 +1271,7 @@ async def get_member_details(member_id: str, admin: dict = Depends(get_admin_use
                 "subscription_expires_at": subscription_expires_at,
                 "is_expired": is_expired
             },
+            "sponsor": sponsor_info,
             "stats": {
                 "total_referrals": len(referrals),
                 "total_earnings": total_earnings,
