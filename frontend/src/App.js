@@ -1011,19 +1011,7 @@ function Dashboard() {
     fetchNotifications();
   }, []);
 
-  // Close notifications panel when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (notificationsPanelOpen && !event.target.closest('.notification-panel')) {
-        setNotificationsPanelOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [notificationsPanelOpen]);
+  // Click outside handling is now managed by NotificationPanel component
 
   const fetchDashboardStats = async () => {
     try {
