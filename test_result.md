@@ -328,6 +328,21 @@ backend:
         agent: "main"
         comment: "Need account cancellation with downline transfer logic"
 
+  - task: "Referral Tracking Investigation - firstuser/fifthuser"
+    implemented: true
+    working: false
+    file: "server.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "REVIEW REQUEST: Investigate referral tracking issue for user 'fifthuser' who was registered under firstuser's affiliate link. Issue: fifthuser appears in admin dashboard but doesn't show up in firstuser's referral dashboard."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL REFERRAL TRACKING ISSUE CONFIRMED: Comprehensive investigation reveals that fifthuser has NO SPONSOR despite expected referral relationship with firstuser. DETAILED FINDINGS: 1) DATABASE INVESTIGATION - ✅ firstuser exists with correct referral code REFFIRSTUSER5DCBEE, ✅ fifthuser exists in database, ❌ fifthuser has no sponsor field set (should be firstuser), ❌ fifthuser NOT found in firstuser's referrals array (firstuser shows 2 referrals: seconduser, fourthuser - but missing fifthuser). 2) REFERRAL CODE LOOKUP - ✅ GET /api/referral/REFFIRSTUSER5DCBEE works correctly and returns firstuser's information. 3) REGISTRATION FLOW - ✅ NEW registrations with firstuser's referral code work perfectly (tested successfully with new test user). ROOT CAUSE: This is a HISTORICAL DATA PROBLEM - the referral relationship between firstuser and fifthuser was never properly established during fifthuser's original registration, but the referral system itself is functioning correctly for new users. IMPACT: fifthuser appears in admin dashboard but doesn't show in firstuser's referral dashboard because the database relationship is missing. RECOMMENDATION: Manual database update needed to fix historical data - set fifthuser's referrer_address to firstuser's wallet address."
+
   - task: "Database Cleanup for Broken Wallet Address"
     implemented: true
     working: true
