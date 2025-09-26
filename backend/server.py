@@ -1079,6 +1079,18 @@ async def payment_callback(request: Request):
                 {"$set": update_data}
             )
             
+            # Get user info for notifications
+            user = await db.users.find_one({"address": user_address})
+            username = user.get("username", "Unknown User") if user else "Unknown User"
+            
+            # Create admin notification for payment
+            await create_admin_notification(
+                notification_type="payment",
+                title="Payment Confirmed",
+                message=f"{username} upgraded to {tier.capitalize()} membership - ${amount}",
+                related_user=user_address
+            )
+            
             # Calculate commissions with corrected logic
             await calculate_commissions(user_address, tier, amount)
             
