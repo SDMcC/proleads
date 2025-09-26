@@ -4158,214 +4158,218 @@ function AdminDashboard() {
   );
 }
 
-// User Leads Tab Component
+// Leads Tab Component (for users)
 function LeadsTab() {
-  const [leads, setLeads] = useState([]);
+  const [csvFiles, setCsvFiles] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
+  const [totalFiles, setTotalFiles] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const limit = 10;
 
   useEffect(() => {
-    fetchLeads();
-  }, [page]);
+    fetchCsvFiles();
+  }, [currentPage]);
 
-  const fetchLeads = async () => {
+  const fetchCsvFiles = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/users/leads?page=${page}&limit=50`, {
+      const response = await axios.get(`${API_URL}/api/users/leads?page=${currentPage}&limit=${limit}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      setLeads(response.data.leads || []);
+      setCsvFiles(response.data.csv_files || []);
+      setTotalFiles(response.data.total_count || 0);
       setTotalPages(response.data.total_pages || 1);
     } catch (error) {
-      console.error('Failed to fetch leads:', error);
+      console.error('Failed to fetch CSV files:', error);
+      alert('Failed to load CSV files');
     } finally {
       setLoading(false);
     }
   };
 
-  const downloadLeadsCSV = async () => {
+  const downloadCsvFile = async (fileId, filename) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/users/leads/download`, {
+      const response = await axios.get(`${API_URL}/api/users/leads/download/${fileId}`, {
         headers: { Authorization: `Bearer ${token}` },
         responseType: 'blob'
       });
-
+      
       // Create download link
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const blob = new Blob([response.data], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      
-      // Get filename from response headers
-      const contentDisposition = response.headers['content-disposition'];
-      let filename = 'my_leads.csv';
-      if (contentDisposition) {
-        const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).+?\2|[^;\n]*)/);
-        if (filenameMatch && filenameMatch[1]) {
-          filename = filenameMatch[1].replace(/['"]/g, '');
-        }
-      }
-      
       link.setAttribute('download', filename);
       document.body.appendChild(link);
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
       
-      // Refresh leads to update download status
-      fetchLeads();
+      // Refresh the files list to update download status
+      fetchCsvFiles();
+      
+      alert('CSV file downloaded successfully!');
     } catch (error) {
-      console.error('Failed to download leads:', error);
-      alert('Failed to download leads CSV');
+      console.error('Failed to download CSV file:', error);
+      alert('Failed to download CSV file');
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-red-500"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      {/* Header Section */}
-      <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h3 className="text-xl font-bold text-white mb-2">My Leads</h3>
-            <p className="text-gray-300">
-              Download and manage your assigned leads. Leads are distributed based on your membership tier.
-            </p>
-          </div>
-          <button
-            onClick={downloadLeadsCSV}
-            className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg flex items-center space-x-2 transition-all duration-300"
-          >
-            <FileText className="h-4 w-4" />
-            <span>Download All CSV</span>
-          </button>
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-white">My Lead Files</h2>
+        <div className="text-gray-300">
+          {totalFiles} CSV file{totalFiles !== 1 ? 's' : ''} available
         </div>
       </div>
 
-      {/* Leads Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
-          <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-blue-600 bg-opacity-20 rounded-lg flex items-center justify-center">
-              <FileText className="h-6 w-6 text-blue-400" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-white">{leads.length}</p>
-              <p className="text-gray-400">Total Leads</p>
-            </div>
-          </div>
+      {csvFiles.length === 0 ? (
+        <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-8 text-center">
+          <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-white mb-2">No Lead Files Available</h3>
+          <p className="text-gray-300">Lead files will appear here when they are distributed by the admin.</p>
         </div>
-        
-        <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
-          <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-green-600 bg-opacity-20 rounded-lg flex items-center justify-center">
-              <Activity className="h-6 w-6 text-green-400" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-white">
-                {leads.filter(lead => lead.downloaded).length}
-              </p>
-              <p className="text-gray-400">Downloaded</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
-          <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-orange-600 bg-opacity-20 rounded-lg flex items-center justify-center">
-              <Clock className="h-6 w-6 text-orange-400" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-white">
-                {leads.filter(lead => !lead.downloaded).length}
-              </p>
-              <p className="text-gray-400">Pending</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Leads Table */}
-      <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
-        <h4 className="text-lg font-bold text-white mb-4">Lead Details</h4>
-        
-        {loading ? (
-          <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto"></div>
-          </div>
-        ) : leads.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="border-b border-gray-600">
-                  <th className="pb-3 text-gray-300 font-medium">Name</th>
-                  <th className="pb-3 text-gray-300 font-medium">Email</th>
-                  <th className="pb-3 text-gray-300 font-medium">Address</th>
-                  <th className="pb-3 text-gray-300 font-medium">Assigned Date</th>
-                  <th className="pb-3 text-gray-300 font-medium">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {leads.map((lead, index) => (
-                  <tr key={index} className="border-b border-gray-700 last:border-b-0">
-                    <td className="py-3 text-white font-medium">{lead.lead_name}</td>
-                    <td className="py-3 text-white">{lead.lead_email}</td>
-                    <td className="py-3 text-gray-300">{lead.lead_address}</td>
-                    <td className="py-3 text-gray-400">
-                      {new Date(lead.assigned_at).toLocaleDateString()}
-                    </td>
-                    <td className="py-3">
-                      {lead.downloaded ? (
-                        <span className="px-2 py-1 bg-green-600 text-green-100 rounded text-xs">
-                          Downloaded
-                        </span>
-                      ) : (
-                        <span className="px-2 py-1 bg-orange-600 text-orange-100 rounded text-xs">
-                          Pending
-                        </span>
-                      )}
-                    </td>
+      ) : (
+        <>
+          {/* CSV Files Table */}
+          <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-gray-600">
+                    <th className="py-3 px-4 text-gray-300 font-medium">Filename</th>
+                    <th className="py-3 px-4 text-gray-300 font-medium">Lead Count</th>
+                    <th className="py-3 px-4 text-gray-300 font-medium">Tier</th>
+                    <th className="py-3 px-4 text-gray-300 font-medium">Created</th>
+                    <th className="py-3 px-4 text-gray-300 font-medium">Downloads</th>
+                    <th className="py-3 px-4 text-gray-300 font-medium">Action</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {csvFiles.map((file) => (
+                    <tr key={file.file_id} className="border-b border-gray-700 hover:bg-white hover:bg-opacity-5">
+                      <td className="py-4 px-4">
+                        <div className="flex items-center space-x-2">
+                          <FileText className="h-4 w-4 text-blue-400" />
+                          <span className="text-white font-medium">{file.filename}</span>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className="bg-blue-600 bg-opacity-20 text-blue-300 px-2 py-1 rounded text-sm">
+                          {file.lead_count} leads
+                        </span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className={`px-2 py-1 rounded text-sm capitalize ${
+                          file.member_tier === 'gold' ? 'bg-yellow-600 bg-opacity-20 text-yellow-300' :
+                          file.member_tier === 'silver' ? 'bg-gray-600 bg-opacity-20 text-gray-300' :
+                          'bg-orange-600 bg-opacity-20 text-orange-300'
+                        }`}>
+                          {file.member_tier}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4 text-gray-300">
+                        {file.created_at ? new Date(file.created_at).toLocaleDateString() : 'N/A'}
+                      </td>
+                      <td className="py-4 px-4 text-gray-300">
+                        <div className="flex flex-col">
+                          <span>{file.download_count} time{file.download_count !== 1 ? 's' : ''}</span>
+                          {file.downloaded_at && (
+                            <span className="text-xs text-gray-400">
+                              Last: {new Date(file.downloaded_at).toLocaleDateString()}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <button
+                          onClick={() => downloadCsvFile(file.file_id, file.filename)}
+                          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center space-x-2"
+                        >
+                          <Download className="h-4 w-4" />
+                          <span>Download</span>
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        ) : (
-          <div className="text-center py-8">
-            <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-400 text-lg">No leads assigned yet</p>
-            <p className="text-gray-500 text-sm mt-2">
-              Leads are distributed automatically based on your membership tier.
-              <br />
-              Upgrade your membership to receive more leads per distribution.
-            </p>
-          </div>
-        )}
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex justify-center items-center space-x-4 mt-6 pt-6 border-t border-gray-700">
-            <button
-              onClick={() => setPage(Math.max(1, page - 1))}
-              disabled={page === 1}
-              className="px-4 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-800 disabled:text-gray-500 text-white rounded-lg transition-all duration-300"
-            >
-              Previous
-            </button>
-            
-            <span className="text-gray-400">Page {page} of {totalPages}</span>
-            
-            <button
-              onClick={() => setPage(Math.min(totalPages, page + 1))}
-              disabled={page === totalPages}
-              className="px-4 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-800 disabled:text-gray-500 text-white rounded-lg transition-all duration-300"
-            >
-              Next
-            </button>
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center space-x-2 mt-6">
+              <button
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                className="px-4 py-2 bg-white bg-opacity-10 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-opacity-20"
+              >
+                Previous
+              </button>
+              
+              <div className="flex space-x-2">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  const page = i + 1;
+                  return (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-3 py-2 rounded-lg ${
+                        currentPage === page
+                          ? 'bg-red-600 text-white'
+                          : 'bg-white bg-opacity-10 text-gray-300 hover:bg-opacity-20'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  );
+                })}
+              </div>
+              
+              <button
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 bg-white bg-opacity-10 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-opacity-20"
+              >
+                Next
+              </button>
+            </div>
+          )}
+
+          {/* Summary Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-4 text-center">
+              <div className="text-2xl font-bold text-white">{totalFiles}</div>
+              <div className="text-gray-300">Total Files</div>
+            </div>
+            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-4 text-center">
+              <div className="text-2xl font-bold text-white">
+                {csvFiles.reduce((sum, file) => sum + file.lead_count, 0)}
+              </div>
+              <div className="text-gray-300">Total Leads</div>
+            </div>
+            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-4 text-center">
+              <div className="text-2xl font-bold text-white">
+                {csvFiles.reduce((sum, file) => sum + file.download_count, 0)}
+              </div>
+              <div className="text-gray-300">Total Downloads</div>
+            </div>
           </div>
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 }
