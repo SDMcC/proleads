@@ -2711,38 +2711,61 @@ async def perform_lead_distribution(distribution_id: str):
             logger.info("No available leads for distribution")
             return
         
-        # Distribution logic: assign leads based on membership tier
+        # Distribution logic: create CSV files based on membership tier
         leads_per_member = {
-            "bronze": 5,
-            "silver": 8,
-            "gold": 12
+            "bronze": 100,
+            "silver": 250,
+            "gold": 500
         }
         
         distributions_made = 0
         
         for member in eligible_members:
             member_tier = member.get("membership_tier", "bronze")
-            max_leads_for_member = leads_per_member.get(member_tier, 5)
+            max_leads_for_member = leads_per_member.get(member_tier, 100)
             
-            # Get leads this member hasn't received yet
-            existing_member_leads = await db.member_leads.find({
+            # Check if member already has a CSV file for this distribution
+            existing_csv = await db.member_csv_files.find_one({
                 "member_address": member["address"],
                 "distribution_id": distribution_id
-            }).to_list(None)
+            })
             
-            existing_lead_ids = {ml["lead_id"] for ml in existing_member_leads}
+            if existing_csv:
+                logger.info(f"Member {member['username']} already has CSV file for distribution {distribution_id}")
+                continue
             
-            # Filter available leads excluding ones already assigned to this member
-            member_available_leads = [
-                lead for lead in available_leads 
-                if lead["lead_id"] not in existing_lead_ids
-            ]
+            # Get leads for this member (up to their tier limit)
+            member_leads = available_leads[:max_leads_for_member]
             
-            # Assign leads up to the member's limit
-            leads_to_assign = member_available_leads[:max_leads_for_member]
+            if not member_leads:
+                logger.info(f"No leads available for member {member['username']}")
+                continue
             
-            for lead in leads_to_assign:
-                # Create member lead assignment
+            # Generate CSV content
+            csv_content = "Name,Email,Address\n"
+            for lead in member_leads:
+                csv_content += f'"{lead["name"]}","{lead["email"]}","{lead["address"]}"\n'
+            
+            # Create CSV file record
+            csv_file_doc = {
+                "file_id": str(uuid.uuid4()),
+                "member_address": member["address"],
+                "member_username": member["username"],
+                "member_tier": member_tier,
+                "distribution_id": distribution_id,
+                "filename": f"leads_{member['username']}_{distribution_id[:8]}.csv",
+                "csv_content": csv_content,
+                "lead_count": len(member_leads),
+                "created_at": datetime.utcnow(),
+                "downloaded": False,
+                "downloaded_at": None,
+                "download_count": 0
+            }
+            
+            await db.member_csv_files.insert_one(csv_file_doc)
+            
+            # Create individual member_leads records for tracking (keep existing structure for now)
+            for lead in member_leads:
                 member_lead_doc = {
                     "assignment_id": str(uuid.uuid4()),
                     "member_address": member["address"],
@@ -2755,7 +2778,8 @@ async def perform_lead_distribution(distribution_id: str):
                     "lead_address": lead["address"],
                     "assigned_at": datetime.utcnow(),
                     "downloaded": False,
-                    "downloaded_at": None
+                    "downloaded_at": None,
+                    "csv_file_id": csv_file_doc["file_id"]  # Link to CSV file
                 }
                 
                 await db.member_leads.insert_one(member_lead_doc)
@@ -2765,8 +2789,12 @@ async def perform_lead_distribution(distribution_id: str):
                     {"lead_id": lead["lead_id"]},
                     {"$inc": {"distribution_count": 1}}
                 )
-                
-                distributions_made += 1
+            
+            distributions_made += len(member_leads)
+            
+            # Remove distributed leads from available_leads to avoid duplicates
+            distributed_lead_ids = {lead["lead_id"] for lead in member_leads}
+            available_leads = [lead for lead in available_leads if lead["lead_id"] not in distributed_lead_ids]
         
         # Mark distribution as completed
         await db.lead_distributions.update_one(
