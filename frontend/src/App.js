@@ -1288,6 +1288,97 @@ function Dashboard() {
     </div>
   );
 }
+// Notification Panel Component (using Portal)
+function NotificationPanel({ bellButtonRef, notifications, onClose, onClearNotification }) {
+  const [position, setPosition] = useState({ top: 0, right: 0 });
+
+  useEffect(() => {
+    if (bellButtonRef) {
+      const rect = bellButtonRef.getBoundingClientRect();
+      setPosition({
+        top: rect.bottom + 8, // 8px gap below the button
+        right: window.innerWidth - rect.right, // Align to right edge of button
+      });
+    }
+  }, [bellButtonRef]);
+
+  // Close on click outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.notification-dropdown')) {
+        onClose();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [onClose]);
+
+  return ReactDOM.createPortal(
+    <div 
+      className="notification-dropdown fixed w-80 bg-gray-900 rounded-xl shadow-xl border border-gray-700"
+      style={{
+        top: `${position.top}px`,
+        right: `${position.right}px`,
+        zIndex: 9999
+      }}
+    >
+      <div className="p-4 border-b border-gray-700">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-white">Notifications</h3>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-white"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+      
+      <div className="max-h-96 overflow-y-auto">
+        {notifications.length === 0 ? (
+          <div className="p-4 text-center text-gray-400">
+            <Bell className="h-8 w-8 mx-auto mb-2 opacity-50" />
+            <p>No notifications yet</p>
+          </div>
+        ) : (
+          notifications.map((notification) => (
+            <div 
+              key={notification.notification_id}
+              className={`p-4 border-b border-gray-700 last:border-b-0 ${
+                !notification.read_status ? 'bg-blue-900 bg-opacity-20' : ''
+              }`}
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center space-x-2 mb-1">
+                    {notification.type === 'referral' && <Users className="h-4 w-4 text-blue-500" />}
+                    {notification.type === 'milestone' && <Award className="h-4 w-4 text-yellow-500" />}
+                    {notification.type === 'commission' && <DollarSign className="h-4 w-4 text-green-500" />}
+                    <h4 className="text-sm font-medium text-white">{notification.title}</h4>
+                  </div>
+                  <p className="text-sm text-gray-300">{notification.message}</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {new Date(notification.created_at).toLocaleDateString()} {new Date(notification.created_at).toLocaleTimeString()}
+                  </p>
+                </div>
+                <button
+                  onClick={() => onClearNotification(notification.notification_id)}
+                  className="ml-2 text-gray-400 hover:text-red-400 transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>,
+    document.body
+  );
+}
 
 // Dashboard Tab Components
 function OverviewTab({ stats, user }) {
