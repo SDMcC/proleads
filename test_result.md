@@ -409,6 +409,21 @@ backend:
         agent: "testing"
         comment: "✅ REFERRAL RELATIONSHIP VERIFICATION COMPLETED: Comprehensive testing confirms the referral relationship between firstuser and seconduser is working correctly. VERIFICATION RESULTS: 1) Admin Members List - ✅ firstuser found with 1 referral, ✅ seconduser has firstuser as sponsor, 2) Admin Detailed Member Info - ✅ firstuser has 1 referral in detailed view, ✅ seconduser found in firstuser's referral list, 3) Database Relationship - ✅ seconduser.sponsor = firstuser, ✅ firstuser.referrals includes seconduser, 4) API Endpoints - ✅ Network tree API exists and requires authentication, ✅ Dashboard stats API exists and requires authentication. CONCLUSION: The referral relationship is properly established in the database and visible through admin verification. All required APIs are functional and properly secured. The manual fix has been successful."
 
+  - task: "Member Dashboard Affiliate Link Format Update"
+    implemented: false
+    working: false
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "REVIEW REQUEST: Test the member dashboard affiliate link display to verify that it shows the correct /r/{code} format instead of the old /register?ref= format"
+      - working: false
+        agent: "testing"
+        comment: "❌ AFFILIATE LINK FORMAT NOT YET IMPLEMENTED: Comprehensive testing reveals that the backend still uses the OLD affiliate link format. DETAILED FINDINGS: 1) Backend Implementation Check - Current code in /app/backend/server.py line 719 shows: 'referral_link': f'{APP_URL}?ref={current_user['referral_code']}', 2) Expected vs Current Format - Current: https://web3-affiliate-1.preview.emergentagent.com?ref=REFFIRSTUSER5DCBEE, Expected: https://web3-affiliate-1.preview.emergentagent.com/r/REFFIRSTUSER5DCBEE, 3) User Verification - ✅ firstuser exists in database with correct referral code REFFIRSTUSER5DCBEE, ✅ User authentication system working (though firstuser uses wallet auth, not password), 4) Profile Endpoint Analysis - The GET /api/users/profile endpoint returns referral_link in old ?ref= format, Dashboard stats endpoints would also return old format. ROOT CAUSE: The affiliate link format update from ?ref={code} to /r/{code} has not been implemented in the backend code. The profile endpoint and any other endpoints returning referral links still use the old query parameter format. IMPACT: Both Overview tab and Affiliate Tools tab in member dashboard will show old format links instead of the new /r/{code} format as requested. RECOMMENDATION: Update backend code to change referral link format from f'{APP_URL}?ref={referral_code}' to f'{APP_URL}/r/{referral_code}' in all relevant endpoints."
+
 frontend:
   - task: "Admin Login Interface"
     implemented: true
