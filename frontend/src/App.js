@@ -2629,6 +2629,109 @@ function AccountSettingsTab({ user }) {
   );
 }
 
+// Referrals Tab Component (placeholder)
+function ReferralsTab() {
+  return (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold text-white">Referrals</h2>
+      <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-8 text-center">
+        <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+        <h3 className="text-xl font-semibold text-white mb-2">Referrals Management</h3>
+        <p className="text-gray-300">Track and manage your referrals here. This page is coming soon!</p>
+      </div>
+    </div>
+  );
+}
+
+// Autoresponder Tab Component (placeholder)
+function AutoresponderTab() {
+  return (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold text-white">Autoresponder</h2>
+      <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-8 text-center">
+        <Mail className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+        <h3 className="text-xl font-semibold text-white mb-2">Email Autoresponder</h3>
+        <p className="text-gray-300">Set up automated email sequences and campaigns. This feature is coming soon!</p>
+      </div>
+    </div>
+  );
+}
+
+// Tickets Tab Component (placeholder)
+function TicketsTab() {
+  return (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold text-white">Support Tickets</h2>
+      <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-8 text-center">
+        <MessageCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+        <h3 className="text-xl font-semibold text-white mb-2">Support System</h3>
+        <p className="text-gray-300">Submit and track your support tickets here. This feature is coming soon!</p>
+      </div>
+    </div>
+  );
+}
+
+// Enhanced Account Tab Component with sub-tabs
+function AccountTab({ user }) {
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-white">Account Management</h2>
+      </div>
+
+      {/* Account Sub-tabs */}
+      <div className="flex space-x-1 mb-6">
+        {[
+          { id: 'settings', label: 'Account Settings', icon: Settings },
+          { id: 'notifications', label: 'Notifications', icon: Bell },
+          { id: 'kyc', label: 'KYC', icon: Shield },
+          { id: 'cancel', label: 'Cancel Account', icon: UserX }
+        ].map(({ id, label, icon: Icon }) => (
+          <button
+            key={id}
+            onClick={() => setAccountSubTab(id)}
+            className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center space-x-2 ${
+              accountSubTab === id
+                ? 'bg-blue-600 text-white'
+                : 'bg-white bg-opacity-10 text-gray-300 hover:bg-opacity-20'
+            }`}
+          >
+            <Icon className="h-4 w-4" />
+            <span>{label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Account Sub-tab Content */}
+      {accountSubTab === 'settings' && <AccountSettingsTab user={user} />}
+      {accountSubTab === 'notifications' && (
+        <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-8 text-center">
+          <Bell className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-white mb-2">Notification Settings</h3>
+          <p className="text-gray-300">Manage your email and SMS notification preferences. Coming soon!</p>
+        </div>
+      )}
+      {accountSubTab === 'kyc' && (
+        <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-8 text-center">
+          <Shield className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-white mb-2">KYC Verification</h3>
+          <p className="text-gray-300">Complete your Know Your Customer verification process. Coming soon!</p>
+        </div>
+      )}
+      {accountSubTab === 'cancel' && (
+        <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-8 text-center">
+          <UserX className="h-16 w-16 text-red-400 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-white mb-2">Cancel Account</h3>
+          <p className="text-gray-300 mb-4">This will permanently delete your account and all associated data.</p>
+          <button className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-300">
+            Request Account Cancellation
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Recent Payments Component
 function RecentPayments() {
   const [payments, setPayments] = useState([]);
