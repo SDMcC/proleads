@@ -855,10 +855,19 @@ async def payment_callback(request: Request):
             tier = payment["tier"]
             amount = payment["amount"]
             
-            # Upgrade membership
+            # Calculate subscription expiry (1 year from now for paid tiers)
+            subscription_expires_at = None
+            if tier != "affiliate":  # Paid tiers get 1 year subscription
+                subscription_expires_at = datetime.utcnow() + timedelta(days=365)
+            
+            # Upgrade membership with expiry date
+            update_data = {"membership_tier": tier}
+            if subscription_expires_at:
+                update_data["subscription_expires_at"] = subscription_expires_at
+                
             await db.users.update_one(
                 {"address": user_address},
-                {"$set": {"membership_tier": tier}}
+                {"$set": update_data}
             )
             
             # Calculate commissions with corrected logic
