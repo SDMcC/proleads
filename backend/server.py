@@ -716,7 +716,7 @@ async def get_profile(current_user: dict = Depends(get_current_user)):
         "referral_code": current_user["referral_code"],
         "total_referrals": referral_count,
         "total_earnings": earnings,
-        "referral_link": f"{APP_URL}?ref={current_user['referral_code']}"
+        "referral_link": f"{APP_URL}/r/{current_user['referral_code']}"
     }
 
 # Payment endpoints
