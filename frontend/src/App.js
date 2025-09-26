@@ -4552,6 +4552,7 @@ function AdminDashboard() {
           }}
           onUpdate={updateMember}
           onSuspend={suspendMember}
+          onUnsuspend={unsuspendMember}
           onEdit={handleEditMember}
         />
       )}
