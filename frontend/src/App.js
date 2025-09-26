@@ -62,26 +62,69 @@ const API_URL = process.env.REACT_APP_BACKEND_URL;
 const AuthContext = React.createContext();
 
 // Main App Component
+// Error Boundary Component for Wallet Connection
+class WalletErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    // Check if this is a MetaMask/wallet connection error
+    if (error.message && (
+      error.message.includes('MetaMask') || 
+      error.message.includes('wallet') ||
+      error.message.includes('Web3Modal') ||
+      error.message.includes('WalletConnect')
+    )) {
+      return { hasError: true, error };
+    }
+    return null;
+  }
+
+  componentDidCatch(error, errorInfo) {
+    if (error.message && (
+      error.message.includes('MetaMask') || 
+      error.message.includes('wallet') ||
+      error.message.includes('Web3Modal') ||
+      error.message.includes('WalletConnect')
+    )) {
+      console.warn('Wallet connection error handled gracefully:', error.message);
+    }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      // Render fallback UI without wallet functionality
+      return this.props.children;
+    }
+
+    return this.props.children;
+  }
+}
+
 function App() {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <Router>
-            <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
-              <Routes>
-                <Route path="/" element={<LandingPage />} />
-                <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                <Route path="/register" element={<RegisterPage />} />
-                <Route path="/r/:code" element={<ReferralRedirect />} />
-                <Route path="/payment" element={<ProtectedRoute><PaymentPage /></ProtectedRoute>} />
-                <Route path="/payment/success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
-                <Route path="/admin/login" element={<AdminLoginPage />} />
-                <Route path="/admin/dashboard" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
-              </Routes>
-            </div>
-          </Router>
-        </AuthProvider>
+        <WalletErrorBoundary>
+          <AuthProvider>
+            <Router>
+              <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
+                <Routes>
+                  <Route path="/" element={<LandingPage />} />
+                  <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                  <Route path="/register" element={<RegisterPage />} />
+                  <Route path="/r/:code" element={<ReferralRedirect />} />
+                  <Route path="/payment" element={<ProtectedRoute><PaymentPage /></ProtectedRoute>} />
+                  <Route path="/payment/success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
+                  <Route path="/admin/login" element={<AdminLoginPage />} />
+                  <Route path="/admin/dashboard" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
+                </Routes>
+              </div>
+            </Router>
+          </AuthProvider>
+        </WalletErrorBoundary>
       </QueryClientProvider>
     </WagmiProvider>
   );
