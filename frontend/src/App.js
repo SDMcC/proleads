@@ -466,9 +466,11 @@ function WalletConnectButton() {
   // Safely access wallet hooks with error handling
   let address, isConnected, signMessageAsync;
   
+  // Always call hooks at top level - no conditional calls
+  const accountHook = useAccount();
+  const signHook = useSignMessage();
+  
   try {
-    const accountHook = useAccount();
-    const signHook = useSignMessage();
     address = accountHook.address;
     isConnected = accountHook.isConnected;
     signMessageAsync = signHook.signMessageAsync;
