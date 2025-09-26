@@ -3009,6 +3009,70 @@ async def reset_config_to_defaults(admin: dict = Depends(get_admin_user)):
         logger.error(f"Failed to reset configuration: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to reset configuration")
 
+@app.get("/api/users/referrals")
+async def get_user_referrals(
+    page: int = 1,
+    limit: int = 20,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get user's referrals with pagination"""
+    try:
+        user_address = current_user["address"]
+        offset = (page - 1) * limit
+        
+        # Get all users who have this user as their referrer
+        referrals = await db.users.find({
+            "referrer_address": user_address
+        }).sort("created_at", -1).skip(offset).limit(limit).to_list(length=limit)
+        
+        # Get total count for pagination
+        total_referrals = await db.users.count_documents({
+            "referrer_address": user_address
+        })
+        
+        # Format referral data with additional information
+        formatted_referrals = []
+        for referral in referrals:
+            # Get referral's referral count
+            referral_count = await db.users.count_documents({
+                "referrer_address": referral["address"]
+            })
+            
+            # Get referral's earnings (optional - if you want to include this)
+            total_earnings = 0
+            commissions = await db.commissions.find({
+                "recipient_address": referral["address"]
+            }).to_list(None)
+            
+            for commission in commissions:
+                if commission.get("status") == "paid":
+                    total_earnings += commission.get("amount", 0)
+            
+            formatted_referrals.append({
+                "user_id": referral.get("user_id"),
+                "username": referral.get("username"),
+                "email": referral.get("email"),
+                "address": referral.get("address"),
+                "membership_tier": referral.get("membership_tier", "affiliate"),
+                "status": "suspended" if referral.get("suspended", False) else "active",
+                "referral_count": referral_count,
+                "total_earnings": total_earnings,
+                "joined_date": referral.get("created_at").isoformat() if referral.get("created_at") else None,
+                "last_active": referral.get("last_active").isoformat() if referral.get("last_active") else None
+            })
+        
+        return {
+            "referrals": formatted_referrals,
+            "total_count": total_referrals,
+            "page": page,
+            "limit": limit,
+            "total_pages": (total_referrals + limit - 1) // limit
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to get user referrals: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve referrals")
+
 # User endpoints for leads
 @app.get("/api/users/leads")
 async def get_user_leads(
