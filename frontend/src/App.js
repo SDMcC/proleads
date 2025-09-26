@@ -202,8 +202,8 @@ function ReferralRedirect() {
   const { code } = useParams();
   
   useEffect(() => {
-    // Redirect to registration page with referral code
-    window.location.href = `/register?ref=${code}`;
+    // Redirect to homepage with referral code so users see the landing page first
+    window.location.href = `/?ref=${code}`;
   }, [code]);
 
   // Show loading while redirecting
@@ -213,7 +213,7 @@ function ReferralRedirect() {
     }}>
       <div className="text-center">
         <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
-        <p className="text-white text-lg">Redirecting to registration...</p>
+        <p className="text-white text-lg">Loading your referral link...</p>
         <p className="text-gray-200 text-sm mt-2">Using referral code: {code}</p>
       </div>
     </div>
