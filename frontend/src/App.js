@@ -3932,6 +3932,7 @@ function AdminDashboard() {
                       >
                         Joined {sortField === 'created_at' && (sortDirection === 'asc' ? '↑' : '↓')}
                       </th>
+                      <th className="pb-3 text-gray-300 font-medium">Expiry Date</th>
                       <th className="pb-3 text-gray-300 font-medium">Status</th>
                       <th className="pb-3 text-gray-300 font-medium">Actions</th>
                     </tr>
