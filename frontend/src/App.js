@@ -48,12 +48,16 @@ const config = defaultWagmiConfig({
   ssr: true
 });
 
-// 3. Create modal
-createWeb3Modal({
-  wagmiConfig: config,
-  projectId,
-  enableAnalytics: true
-});
+// 3. Create modal with error handling
+try {
+  createWeb3Modal({
+    wagmiConfig: config,
+    projectId,
+    enableAnalytics: true
+  });
+} catch (error) {
+  console.warn('Web3Modal creation failed (this is fine for traditional auth):', error.message);
+}
 
 const queryClient = new QueryClient();
 const API_URL = process.env.REACT_APP_BACKEND_URL;
