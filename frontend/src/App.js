@@ -2672,7 +2672,7 @@ function TicketsTab() {
 }
 
 // Enhanced Account Tab Component with sub-tabs
-function AccountTab({ user }) {
+function AccountTab({ user, accountSubTab, setAccountSubTab }) {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
