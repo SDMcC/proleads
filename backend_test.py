@@ -5696,8 +5696,9 @@ class Web3MembershipTester:
         referrer_token = ref_login_response['token']
         
         # Create new user with referral code
+        new_unique_id = str(uuid.uuid4())[:8]
         new_user_address = f"0x{uuid.uuid4().hex[:40]}"
-        new_user_username = f"referred_{int(time.time())}"
+        new_user_username = f"referred_{int(time.time())}_{new_unique_id}"
         new_user_email = f"{new_user_username}@test.com"
         new_user_password = "testpass123"
         
