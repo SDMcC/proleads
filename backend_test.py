@@ -4358,8 +4358,7 @@ if __name__ == "__main__":
     
     def test_admin_configuration_system(self):
         """Test complete Admin Configuration Management System"""
-        print("
-⚙️ Testing Admin Configuration Management System")
+        print("\n⚙️ Testing Admin Configuration Management System")
         
         # 1. Test admin login first
         login_success, _ = self.test_admin_login_success()
