@@ -998,9 +998,15 @@ function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [affiliateMenuOpen, setAffiliateMenuOpen] = useState(false);
   const [accountSubTab, setAccountSubTab] = useState('settings');
+  
+  // Notification states
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notificationsPanelOpen, setNotificationsPanelOpen] = useState(false);
 
   useEffect(() => {
     fetchDashboardStats();
+    fetchNotifications();
   }, []);
 
   const fetchDashboardStats = async () => {
