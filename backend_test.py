@@ -4293,6 +4293,528 @@ class Web3MembershipTester:
         
         return profile_test_success and dashboard_test_success
 
+    def create_test_csv_file(self, filename, headers, data_rows):
+        """Create a test CSV file with given headers and data"""
+        import tempfile
+        import os
+        
+        # Create temporary file
+        temp_file = tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False)
+        
+        # Write headers
+        temp_file.write(','.join(headers) + '\n')
+        
+        # Write data rows
+        for row in data_rows:
+            temp_file.write(','.join(row) + '\n')
+        
+        temp_file.close()
+        return temp_file.name
+    
+    def test_csv_upload_lowercase_headers(self):
+        """Test CSV upload with lowercase headers (name,email,address)"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        # Create test CSV with lowercase headers
+        headers = ['name', 'email', 'address']
+        data_rows = [
+            ['John Doe', 'john.doe@example.com', '123 Main St, City, State'],
+            ['Jane Smith', 'jane.smith@example.com', '456 Oak Ave, Town, State'],
+            ['Bob Johnson', 'bob.johnson@example.com', '789 Pine Rd, Village, State']
+        ]
+        
+        csv_file_path = self.create_test_csv_file('test_lowercase.csv', headers, data_rows)
+        
+        try:
+            url = f"{self.base_url}/api/admin/leads/upload"
+            print(f"\n🔍 Testing CSV Upload with Lowercase Headers...")
+            print(f"   URL: {url}")
+            print(f"   Headers: {headers}")
+            
+            headers_dict = {'Authorization': f'Bearer {self.admin_token}'}
+            
+            with open(csv_file_path, 'rb') as f:
+                files = {'csv_file': ('test_lowercase.csv', f, 'text/csv')}
+                response = requests.post(url, headers=headers_dict, files=files)
+            
+            success = response.status_code == 200
+            
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                response_data = response.json()
+                print(f"   Response: {json.dumps(response_data)[:200]}...")
+                
+                # Verify response structure
+                if all(key in response_data for key in ['distribution_id', 'total_leads', 'eligible_members', 'status']):
+                    print("✅ Response contains all required fields")
+                    if response_data.get('total_leads') == 3:
+                        print("✅ Correct number of leads processed")
+                    else:
+                        print(f"❌ Expected 3 leads, got {response_data.get('total_leads')}")
+                        return False, {}
+                else:
+                    print("❌ Response missing required fields")
+                    return False, {}
+                
+                return True, response_data
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                try:
+                    error_detail = response.json().get('detail', 'No detail provided')
+                    print(f"   Error: {error_detail}")
+                except:
+                    print(f"   Response: {response.text}")
+                return False, {}
+                
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False, {}
+        finally:
+            # Clean up temporary file
+            import os
+            if os.path.exists(csv_file_path):
+                os.unlink(csv_file_path)
+            self.tests_run += 1
+    
+    def test_csv_upload_capitalized_headers(self):
+        """Test CSV upload with capitalized headers (Name,Email,Address)"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        # Create test CSV with capitalized headers
+        headers = ['Name', 'Email', 'Address']
+        data_rows = [
+            ['Alice Brown', 'alice.brown@example.com', '321 Elm St, City, State'],
+            ['Charlie Davis', 'charlie.davis@example.com', '654 Maple Ave, Town, State'],
+            ['Diana Wilson', 'diana.wilson@example.com', '987 Cedar Rd, Village, State']
+        ]
+        
+        csv_file_path = self.create_test_csv_file('test_capitalized.csv', headers, data_rows)
+        
+        try:
+            url = f"{self.base_url}/api/admin/leads/upload"
+            print(f"\n🔍 Testing CSV Upload with Capitalized Headers...")
+            print(f"   URL: {url}")
+            print(f"   Headers: {headers}")
+            
+            headers_dict = {'Authorization': f'Bearer {self.admin_token}'}
+            
+            with open(csv_file_path, 'rb') as f:
+                files = {'csv_file': ('test_capitalized.csv', f, 'text/csv')}
+                response = requests.post(url, headers=headers_dict, files=files)
+            
+            success = response.status_code == 200
+            
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                response_data = response.json()
+                print(f"   Response: {json.dumps(response_data)[:200]}...")
+                
+                # Verify response structure
+                if response_data.get('total_leads') == 3:
+                    print("✅ Correct number of leads processed with capitalized headers")
+                else:
+                    print(f"❌ Expected 3 leads, got {response_data.get('total_leads')}")
+                    return False, {}
+                
+                return True, response_data
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                try:
+                    error_detail = response.json().get('detail', 'No detail provided')
+                    print(f"   Error: {error_detail}")
+                except:
+                    print(f"   Response: {response.text}")
+                return False, {}
+                
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False, {}
+        finally:
+            # Clean up temporary file
+            import os
+            if os.path.exists(csv_file_path):
+                os.unlink(csv_file_path)
+            self.tests_run += 1
+    
+    def test_csv_upload_mixed_case_headers(self):
+        """Test CSV upload with mixed case headers (Name,email,Address)"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        # Create test CSV with mixed case headers
+        headers = ['Name', 'email', 'Address']
+        data_rows = [
+            ['Eva Martinez', 'eva.martinez@example.com', '111 Birch St, City, State'],
+            ['Frank Taylor', 'frank.taylor@example.com', '222 Spruce Ave, Town, State'],
+            ['Grace Lee', 'grace.lee@example.com', '333 Willow Rd, Village, State']
+        ]
+        
+        csv_file_path = self.create_test_csv_file('test_mixed_case.csv', headers, data_rows)
+        
+        try:
+            url = f"{self.base_url}/api/admin/leads/upload"
+            print(f"\n🔍 Testing CSV Upload with Mixed Case Headers...")
+            print(f"   URL: {url}")
+            print(f"   Headers: {headers}")
+            
+            headers_dict = {'Authorization': f'Bearer {self.admin_token}'}
+            
+            with open(csv_file_path, 'rb') as f:
+                files = {'csv_file': ('test_mixed_case.csv', f, 'text/csv')}
+                response = requests.post(url, headers=headers_dict, files=files)
+            
+            success = response.status_code == 200
+            
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                response_data = response.json()
+                print(f"   Response: {json.dumps(response_data)[:200]}...")
+                
+                # Verify response structure
+                if response_data.get('total_leads') == 3:
+                    print("✅ Correct number of leads processed with mixed case headers")
+                else:
+                    print(f"❌ Expected 3 leads, got {response_data.get('total_leads')}")
+                    return False, {}
+                
+                return True, response_data
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                try:
+                    error_detail = response.json().get('detail', 'No detail provided')
+                    print(f"   Error: {error_detail}")
+                except:
+                    print(f"   Response: {response.text}")
+                return False, {}
+                
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False, {}
+        finally:
+            # Clean up temporary file
+            import os
+            if os.path.exists(csv_file_path):
+                os.unlink(csv_file_path)
+            self.tests_run += 1
+    
+    def test_csv_upload_missing_header(self):
+        """Test CSV upload with missing header (only name,email - missing address)"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        # Create test CSV with missing address header
+        headers = ['name', 'email']
+        data_rows = [
+            ['Henry Clark', 'henry.clark@example.com'],
+            ['Ivy Rodriguez', 'ivy.rodriguez@example.com'],
+            ['Jack White', 'jack.white@example.com']
+        ]
+        
+        csv_file_path = self.create_test_csv_file('test_missing_header.csv', headers, data_rows)
+        
+        try:
+            url = f"{self.base_url}/api/admin/leads/upload"
+            print(f"\n🔍 Testing CSV Upload with Missing Header...")
+            print(f"   URL: {url}")
+            print(f"   Headers: {headers} (missing 'address')")
+            
+            headers_dict = {'Authorization': f'Bearer {self.admin_token}'}
+            
+            with open(csv_file_path, 'rb') as f:
+                files = {'csv_file': ('test_missing_header.csv', f, 'text/csv')}
+                response = requests.post(url, headers=headers_dict, files=files)
+            
+            success = response.status_code == 400
+            
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                try:
+                    error_detail = response.json().get('detail', 'No detail provided')
+                    print(f"   Error: {error_detail}")
+                    
+                    # Verify error message mentions missing headers and shows found headers
+                    if 'CSV must contain headers' in error_detail and 'Found headers' in error_detail:
+                        print("✅ Error message is descriptive and shows found headers")
+                    else:
+                        print("❌ Error message doesn't provide enough detail")
+                        return False, {}
+                except:
+                    print(f"   Response: {response.text}")
+                    return False, {}
+                
+                return True, {}
+            else:
+                print(f"❌ Failed - Expected 400, got {response.status_code}")
+                try:
+                    response_data = response.json()
+                    print(f"   Response: {json.dumps(response_data)[:200]}...")
+                except:
+                    print(f"   Response: {response.text}")
+                return False, {}
+                
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False, {}
+        finally:
+            # Clean up temporary file
+            import os
+            if os.path.exists(csv_file_path):
+                os.unlink(csv_file_path)
+            self.tests_run += 1
+    
+    def test_csv_upload_missing_data_in_row(self):
+        """Test CSV upload with missing data in specific rows"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        # Create test CSV with missing email in row 2
+        headers = ['name', 'email', 'address']
+        data_rows = [
+            ['Karen Green', 'karen.green@example.com', '444 Ash St, City, State'],
+            ['Larry Blue', '', '555 Poplar Ave, Town, State'],  # Missing email
+            ['Mary Purple', 'mary.purple@example.com', '666 Hickory Rd, Village, State']
+        ]
+        
+        csv_file_path = self.create_test_csv_file('test_missing_data.csv', headers, data_rows)
+        
+        try:
+            url = f"{self.base_url}/api/admin/leads/upload"
+            print(f"\n🔍 Testing CSV Upload with Missing Data in Row...")
+            print(f"   URL: {url}")
+            print(f"   Headers: {headers}")
+            print("   Row 2 has missing email field")
+            
+            headers_dict = {'Authorization': f'Bearer {self.admin_token}'}
+            
+            with open(csv_file_path, 'rb') as f:
+                files = {'csv_file': ('test_missing_data.csv', f, 'text/csv')}
+                response = requests.post(url, headers=headers_dict, files=files)
+            
+            success = response.status_code == 400
+            
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                try:
+                    error_detail = response.json().get('detail', 'No detail provided')
+                    print(f"   Error: {error_detail}")
+                    
+                    # Verify error message specifies which row and which fields are missing
+                    if 'Missing required data in row 3' in error_detail and 'email' in error_detail:
+                        print("✅ Error message specifies exact row and missing field")
+                    else:
+                        print("❌ Error message doesn't specify row and field details")
+                        return False, {}
+                except:
+                    print(f"   Response: {response.text}")
+                    return False, {}
+                
+                return True, {}
+            else:
+                print(f"❌ Failed - Expected 400, got {response.status_code}")
+                try:
+                    response_data = response.json()
+                    print(f"   Response: {json.dumps(response_data)[:200]}...")
+                except:
+                    print(f"   Response: {response.text}")
+                return False, {}
+                
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False, {}
+        finally:
+            # Clean up temporary file
+            import os
+            if os.path.exists(csv_file_path):
+                os.unlink(csv_file_path)
+            self.tests_run += 1
+    
+    def test_csv_upload_no_file_provided(self):
+        """Test CSV upload endpoint when no file is provided"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        try:
+            url = f"{self.base_url}/api/admin/leads/upload"
+            print(f"\n🔍 Testing CSV Upload with No File Provided...")
+            print(f"   URL: {url}")
+            
+            headers_dict = {'Authorization': f'Bearer {self.admin_token}'}
+            
+            # Send request without file
+            response = requests.post(url, headers=headers_dict)
+            
+            success = response.status_code == 400
+            
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                try:
+                    error_detail = response.json().get('detail', 'No detail provided')
+                    print(f"   Error: {error_detail}")
+                    
+                    # Verify error message mentions CSV file is required
+                    if 'CSV file is required' in error_detail:
+                        print("✅ Error message correctly indicates CSV file is required")
+                    else:
+                        print("❌ Error message doesn't indicate CSV file requirement")
+                        return False, {}
+                except:
+                    print(f"   Response: {response.text}")
+                    return False, {}
+                
+                return True, {}
+            else:
+                print(f"❌ Failed - Expected 400, got {response.status_code}")
+                try:
+                    response_data = response.json()
+                    print(f"   Response: {json.dumps(response_data)[:200]}...")
+                except:
+                    print(f"   Response: {response.text}")
+                return False, {}
+                
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False, {}
+        finally:
+            self.tests_run += 1
+    
+    def test_csv_upload_unauthorized(self):
+        """Test CSV upload without admin authentication"""
+        # Create test CSV
+        headers = ['name', 'email', 'address']
+        data_rows = [
+            ['Test User', 'test@example.com', '123 Test St, Test City, Test State']
+        ]
+        
+        csv_file_path = self.create_test_csv_file('test_unauthorized.csv', headers, data_rows)
+        
+        try:
+            url = f"{self.base_url}/api/admin/leads/upload"
+            print(f"\n🔍 Testing CSV Upload without Admin Authentication...")
+            print(f"   URL: {url}")
+            
+            # Send request without admin token
+            with open(csv_file_path, 'rb') as f:
+                files = {'csv_file': ('test_unauthorized.csv', f, 'text/csv')}
+                response = requests.post(url, files=files)
+            
+            success = response.status_code == 401
+            
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                try:
+                    error_detail = response.json().get('detail', 'No detail provided')
+                    print(f"   Error: {error_detail}")
+                except:
+                    print(f"   Response: {response.text}")
+                
+                return True, {}
+            else:
+                print(f"❌ Failed - Expected 401, got {response.status_code}")
+                try:
+                    response_data = response.json()
+                    print(f"   Response: {json.dumps(response_data)[:200]}...")
+                except:
+                    print(f"   Response: {response.text}")
+                return False, {}
+                
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False, {}
+        finally:
+            # Clean up temporary file
+            import os
+            if os.path.exists(csv_file_path):
+                os.unlink(csv_file_path)
+            self.tests_run += 1
+    
+    def test_csv_lead_upload_functionality(self):
+        """Test complete CSV lead upload functionality"""
+        print("\n📊 Testing CSV Lead Upload Functionality")
+        
+        # 1. Test admin login first
+        login_success, _ = self.test_admin_login_success()
+        if not login_success:
+            print("❌ Admin login failed - cannot test CSV upload")
+            return False
+        
+        # 2. Test CSV upload with lowercase headers
+        lowercase_success, _ = self.test_csv_upload_lowercase_headers()
+        if not lowercase_success:
+            print("❌ CSV upload with lowercase headers failed")
+            return False
+        
+        # 3. Test CSV upload with capitalized headers
+        capitalized_success, _ = self.test_csv_upload_capitalized_headers()
+        if not capitalized_success:
+            print("❌ CSV upload with capitalized headers failed")
+            return False
+        
+        # 4. Test CSV upload with mixed case headers
+        mixed_case_success, _ = self.test_csv_upload_mixed_case_headers()
+        if not mixed_case_success:
+            print("❌ CSV upload with mixed case headers failed")
+            return False
+        
+        # 5. Test CSV upload with missing header
+        missing_header_success, _ = self.test_csv_upload_missing_header()
+        if not missing_header_success:
+            print("❌ CSV upload with missing header validation failed")
+            return False
+        
+        # 6. Test CSV upload with missing data in row
+        missing_data_success, _ = self.test_csv_upload_missing_data_in_row()
+        if not missing_data_success:
+            print("❌ CSV upload with missing data validation failed")
+            return False
+        
+        # 7. Test CSV upload with no file provided
+        no_file_success, _ = self.test_csv_upload_no_file_provided()
+        if not no_file_success:
+            print("❌ CSV upload with no file validation failed")
+            return False
+        
+        # 8. Test CSV upload without admin authentication
+        unauthorized_success, _ = self.test_csv_upload_unauthorized()
+        if not unauthorized_success:
+            print("❌ CSV upload unauthorized access validation failed")
+            return False
+        
+        print("✅ CSV Lead Upload Functionality Test Passed")
+        return True
+
 def main():
     # Get the backend URL from environment or use default
     backend_url = "https://web3-affiliate-1.preview.emergentagent.com"
