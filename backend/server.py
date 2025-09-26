@@ -2694,7 +2694,10 @@ async def perform_lead_distribution(distribution_id: str):
         # Get eligible members (bronze, silver, gold - not suspended)
         eligible_members = await db.users.find({
             "membership_tier": {"$in": ["bronze", "silver", "gold"]},
-            "suspended": {"$ne": True}
+            "$or": [
+                {"suspended": False},
+                {"suspended": {"$exists": False}}
+            ]
         }).to_list(None)
         
         if not eligible_members:
