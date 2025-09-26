@@ -560,6 +560,18 @@ frontend:
         agent: "testing"
         comment: "✅ COMPREHENSIVE PAGINATED REFERRALS INTERFACE TESTING COMPLETED SUCCESSFULLY: All functionality from the review request has been thoroughly tested and verified working correctly. NAVIGATION TESTING: ✅ Affiliate menu expands properly with chevron icons, ✅ Referrals option appears in Affiliate submenu, ✅ Clicking Referrals loads the paginated interface without errors. INTERFACE STRUCTURE: ✅ Page displays correct 'My Referrals' title, ✅ Summary cards showing Total Referrals (1), Active (1), Bronze Members (1), Sub-Referrals (0), ✅ Referrals table with all required columns: Member, Email, Tier, Status, Referrals, Joined, ✅ Pagination structure ready (not visible with single page). DATA DISPLAY: ✅ Member avatars with username initials (gradient background), ✅ Email addresses displayed properly, ✅ Membership tier badges with correct colors (Bronze=orange), ✅ Status badges with correct colors (Active=green), ✅ Referral count with Users icon for sub-referrals, ✅ Joined date formatted correctly (9/26/2025). AUTHENTICATION: ✅ Page requires proper authentication, ✅ JWT token found in localStorage, ✅ User successfully authenticated as firstuser_1758888762. RESPONSIVE DESIGN: ✅ Table container has horizontal scroll for mobile compatibility. CONCLUSION: The paginated referrals interface is fully operational and meets all requirements from the review request. All 8 major test scenarios passed successfully."
 
+  - task: "Admin Members Management UI Enhancement - Expiry & Suspend/Unsuspend"
+    implemented: true
+    working: "NA"
+    file: "App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "IMPLEMENTATION COMPLETED: Enhanced Admin Members Management UI with subscription expiry display and fixed suspend/unsuspend logic. CHANGES MADE: 1) Added 'Expiry Date' column to members table showing subscription_expires_at, 2) Added 'Expired' badge (yellow) for members with expired subscriptions alongside existing Active/Suspended status, 3) Created unsuspendMember function for reinstating suspended members, 4) Fixed MemberModal to show 'Unsuspend Member' button when member is suspended instead of always showing 'Suspend Member', 5) Added subscription expiry date and comprehensive status display in member details modal. User can now see expiry dates, expired member badges, and properly suspend/unsuspend members via the modal. Ready for testing."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
