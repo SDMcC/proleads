@@ -1016,6 +1016,47 @@ function Dashboard() {
         headers: { Authorization: `Bearer ${token}` }
       });
       setStats(response.data);
+  const fetchNotifications = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API_URL}/api/users/notifications`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setNotifications(response.data.notifications);
+      setUnreadCount(response.data.unread_count);
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error);
+    }
+  };
+
+  const clearNotification = async (notificationId) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`${API_URL}/api/users/notifications/${notificationId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      // Remove from local state
+      setNotifications(notifications.filter(n => n.notification_id !== notificationId));
+      setUnreadCount(Math.max(0, unreadCount - 1));
+    } catch (error) {
+      console.error('Failed to clear notification:', error);
+      alert('Failed to clear notification');
+    }
+  };
+
+  const markAllNotificationsRead = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API_URL}/api/users/notifications/mark-read`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      // Update local state
+      setNotifications(notifications.map(n => ({ ...n, read_status: true })));
+      setUnreadCount(0);
+    } catch (error) {
+      console.error('Failed to mark notifications as read:', error);
+    }
+  };
     } catch (error) {
       console.error('Failed to fetch dashboard stats:', error);
     } finally {
