@@ -1152,7 +1152,7 @@ function Dashboard() {
                 
                 {/* Notifications Dropdown */}
                 {notificationsPanelOpen && (
-                  <div className="absolute right-0 mt-2 w-80 bg-gray-900 rounded-xl shadow-xl border border-gray-700 z-50">
+                  <div className="absolute right-0 mt-2 w-80 bg-gray-900 rounded-xl shadow-xl border border-gray-700 z-[9999]">
                     <div className="p-4 border-b border-gray-700">
                       <div className="flex items-center justify-between">
                         <h3 className="text-lg font-semibold text-white">Notifications</h3>
