@@ -2492,28 +2492,46 @@ async def upload_leads_csv(request: Request, admin: dict = Depends(get_admin_use
         # Parse CSV to validate structure and count rows
         csv_reader = csv.DictReader(io.StringIO(csv_content))
         leads_data = []
+        # Required headers (case-insensitive)
         required_headers = ['name', 'email', 'address']
         
+        # Create a case mapping for headers
+        header_mapping = {}
+        for header in csv_reader.fieldnames:
+            for required in required_headers:
+                if header.lower() == required.lower():
+                    header_mapping[required] = header
+                    break
+        
         # Validate headers
-        if not all(header.lower() in [h.lower() for h in csv_reader.fieldnames] for header in required_headers):
+        missing_headers = [header for header in required_headers if header not in header_mapping]
+        if missing_headers:
             raise HTTPException(
                 status_code=400, 
-                detail=f"CSV must contain headers: {', '.join(required_headers)}"
+                detail=f"CSV must contain headers: {', '.join(required_headers)}. Found headers: {', '.join(csv_reader.fieldnames)}"
             )
         
         # Process and validate CSV rows
         for row_num, row in enumerate(csv_reader, start=2):
-            if not all(row.get(header) for header in required_headers):
+            # Check if all required data is present using the mapped headers
+            missing_data = []
+            for required_header in required_headers:
+                actual_header = header_mapping[required_header]
+                value = row.get(actual_header, '').strip()
+                if not value:
+                    missing_data.append(actual_header)
+            
+            if missing_data:
                 raise HTTPException(
                     status_code=400,
-                    detail=f"Missing required data in row {row_num}"
+                    detail=f"Missing required data in row {row_num}: {', '.join(missing_data)}"
                 )
             
             lead_data = {
                 "lead_id": str(uuid.uuid4()),
-                "name": row.get("name") or row.get("Name"),
-                "email": row.get("email") or row.get("Email"),
-                "address": row.get("address") or row.get("Address"),
+                "name": row.get(header_mapping['name'], '').strip(),
+                "email": row.get(header_mapping['email'], '').strip(),
+                "address": row.get(header_mapping['address'], '').strip(),
                 "distribution_count": 0,
                 "created_at": datetime.utcnow()
             }
