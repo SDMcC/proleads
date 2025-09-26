@@ -1183,6 +1183,12 @@ async def get_all_members(
                         "address": sponsor["address"]
                     }
             
+            # Check if subscription is expired
+            subscription_expires_at = member.get("subscription_expires_at")
+            is_expired = False
+            if subscription_expires_at and subscription_expires_at < datetime.utcnow():
+                is_expired = True
+            
             enriched_member = {
                 "id": member["address"],  # Using address as ID
                 "username": member["username"],
@@ -1195,7 +1201,9 @@ async def get_all_members(
                 "created_at": member["created_at"],
                 "last_active": member.get("last_active"),
                 "suspended": member.get("suspended", False),
-                "referral_code": member["referral_code"]
+                "referral_code": member["referral_code"],
+                "subscription_expires_at": subscription_expires_at,
+                "is_expired": is_expired
             }
             enriched_members.append(enriched_member)
         
