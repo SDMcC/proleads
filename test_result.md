@@ -410,8 +410,8 @@ backend:
         comment: "✅ REFERRAL RELATIONSHIP VERIFICATION COMPLETED: Comprehensive testing confirms the referral relationship between firstuser and seconduser is working correctly. VERIFICATION RESULTS: 1) Admin Members List - ✅ firstuser found with 1 referral, ✅ seconduser has firstuser as sponsor, 2) Admin Detailed Member Info - ✅ firstuser has 1 referral in detailed view, ✅ seconduser found in firstuser's referral list, 3) Database Relationship - ✅ seconduser.sponsor = firstuser, ✅ firstuser.referrals includes seconduser, 4) API Endpoints - ✅ Network tree API exists and requires authentication, ✅ Dashboard stats API exists and requires authentication. CONCLUSION: The referral relationship is properly established in the database and visible through admin verification. All required APIs are functional and properly secured. The manual fix has been successful."
 
   - task: "Member Dashboard Affiliate Link Format Update"
-    implemented: false
-    working: false
+    implemented: true
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "high"
@@ -423,6 +423,9 @@ backend:
       - working: false
         agent: "testing"
         comment: "❌ AFFILIATE LINK FORMAT NOT YET IMPLEMENTED: Comprehensive testing reveals that the backend still uses the OLD affiliate link format. DETAILED FINDINGS: 1) Backend Implementation Check - Current code in /app/backend/server.py line 719 shows: 'referral_link': f'{APP_URL}?ref={current_user['referral_code']}', 2) Expected vs Current Format - Current: https://web3-affiliate-1.preview.emergentagent.com?ref=REFFIRSTUSER5DCBEE, Expected: https://web3-affiliate-1.preview.emergentagent.com/r/REFFIRSTUSER5DCBEE, 3) User Verification - ✅ firstuser exists in database with correct referral code REFFIRSTUSER5DCBEE, ✅ User authentication system working (though firstuser uses wallet auth, not password), 4) Profile Endpoint Analysis - The GET /api/users/profile endpoint returns referral_link in old ?ref= format, Dashboard stats endpoints would also return old format. ROOT CAUSE: The affiliate link format update from ?ref={code} to /r/{code} has not been implemented in the backend code. The profile endpoint and any other endpoints returning referral links still use the old query parameter format. IMPACT: Both Overview tab and Affiliate Tools tab in member dashboard will show old format links instead of the new /r/{code} format as requested. RECOMMENDATION: Update backend code to change referral link format from f'{APP_URL}?ref={referral_code}' to f'{APP_URL}/r/{referral_code}' in all relevant endpoints."
+      - working: true
+        agent: "testing"
+        comment: "✅ COMPREHENSIVE REFERRAL LINK SYSTEM TESTING COMPLETED: Both major fixes have been successfully implemented and verified working correctly. FIX 1 - REFERRAL LINK FLOW: ✅ /r/{code} redirect to homepage working (uses window.location.href in ReferralRedirect component), ✅ Homepage preserves referral codes in Join Now and Learn More buttons, ✅ Registration page displays referrer information correctly, ✅ Complete flow from /r/ link → homepage → registration preserves referral codes. FIX 2 - MEMBER DASHBOARD AFFILIATE LINK FORMAT: ✅ Backend API updated to use /r/{code} format (server.py line 719), ✅ Overview tab shows correct /r/{code} format links, ✅ Affiliate Tools tab shows correct /r/{code} format links, ✅ Copy functionality working with new format, ✅ QR code generation uses new /r/{code} format (URL encoded in QR data). TESTING RESULTS: Successfully logged into member dashboard with user 'firstuser_1758888762', verified both Overview and Affiliate Tools tabs display affiliate links in format 'https://web3-affiliate-1.preview.emergentagent.com/r/REFFIRSTUSER_175888876249EC8E', confirmed QR code contains properly encoded /r/{code} URL, tested copy functionality works correctly. BACKEND VERIFICATION: Referral API working correctly, user profile API returns /r/{code} format, database relationships intact. All requested functionality is working as expected."
 
 frontend:
   - task: "Admin Login Interface"
