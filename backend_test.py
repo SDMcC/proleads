@@ -5084,3 +5084,171 @@ if __name__ == "__main__":
         print("✅ Admin Configuration Management System Test Passed")
         return True
 
+    def test_affiliate_link_format_review_request(self):
+        """Test that the backend API now returns the correct /r/{code} format for affiliate links - REVIEW REQUEST"""
+        print("\n🔗 AFFILIATE LINK FORMAT UPDATE - REVIEW REQUEST")
+        print("=" * 80)
+        print("OBJECTIVE: Test that backend API returns /r/{code} format instead of ?ref= format")
+        print("EXPECTED: referral_link should be https://web3-affiliate-1.preview.emergentagent.com/r/REFFIRSTUSER5DCBEE")
+        print("=" * 80)
+        
+        # Step 1: Try to login as firstuser using simple login (no password required)
+        login_data = {
+            "address": "0xc3p0f36260817d1c78c471406bde482177a19350",
+            "username": "firstuser"
+        }
+        
+        login_success, login_response = self.run_test("firstuser Simple Login", "POST", "auth/simple-login", 200, login_data)
+        if not login_success:
+            print("❌ firstuser simple login failed - trying password login")
+            # Try password login as fallback
+            password_login_data = {
+                "username": "firstuser", 
+                "password": "testpassword123"
+            }
+            login_success, login_response = self.run_test("firstuser Password Login", "POST", "auth/login", 200, password_login_data)
+            if not login_success:
+                print("❌ Both login methods failed for firstuser")
+                # Try to find any existing user to test with
+                print("⚠️ Attempting to find any existing user for testing...")
+                return self.test_affiliate_link_format_with_any_user()
+        
+        token = login_response.get('token')
+        if not token:
+            print("❌ No token received from login")
+            return False
+        
+        print(f"✅ firstuser login successful, token received")
+        
+        # Step 2: Get user profile to check affiliate link format
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {token}'
+        }
+        
+        profile_success, profile_response = self.run_test("Get firstuser Profile", "GET", "users/profile", 200, headers=headers)
+        if not profile_success:
+            print("❌ Failed to get firstuser profile")
+            return False
+        
+        # Step 3: Extract and verify referral data
+        referral_code = profile_response.get('referral_code')
+        referral_link = profile_response.get('referral_link')
+        
+        if not referral_code:
+            print("❌ No referral code found in profile")
+            return False
+        
+        if not referral_link:
+            print("❌ No referral link found in profile")
+            return False
+        
+        print(f"✅ Referral code: {referral_code}")
+        print(f"✅ Current referral link: {referral_link}")
+        
+        # Step 4: Verify the NEW /r/ format is implemented
+        expected_new_format = f"{self.base_url}/r/{referral_code}"
+        expected_old_format = f"{self.base_url}?ref={referral_code}"
+        
+        print(f"\n📋 FORMAT VERIFICATION:")
+        print(f"   Expected NEW format: {expected_new_format}")
+        print(f"   Expected OLD format: {expected_old_format}")
+        print(f"   Actual format:       {referral_link}")
+        
+        if referral_link == expected_new_format:
+            print(f"\n✅ SUCCESS: NEW /r/ FORMAT IS IMPLEMENTED!")
+            print(f"   ✅ Backend API correctly returns: {referral_link}")
+            print(f"   ✅ Format changed from ?ref= to /r/ as requested")
+            print(f"   ✅ The affiliate link is ready for use in member dashboard")
+            return True
+        elif referral_link == expected_old_format:
+            print(f"\n❌ FAILURE: Still using OLD ?ref= format")
+            print(f"   ❌ Current format: {referral_link}")
+            print(f"   ❌ Expected format: {expected_new_format}")
+            print(f"   🔧 Backend needs to be updated to use /r/ format")
+            return False
+        else:
+            print(f"\n⚠️ UNEXPECTED: Unknown format detected")
+            print(f"   ⚠️ Current format: {referral_link}")
+            print(f"   ⚠️ Expected NEW format: {expected_new_format}")
+            print(f"   ⚠️ Expected OLD format: {expected_old_format}")
+            return False
+    
+    def test_affiliate_link_format_with_any_user(self):
+        """Test affiliate link format with any available user"""
+        print("\n🔗 Testing Affiliate Link Format with Any Available User")
+        
+        # Get admin token first
+        admin_login_success, _ = self.test_admin_login_success()
+        if not admin_login_success:
+            print("❌ Failed to get admin token")
+            return False
+        
+        # Get any user from the members list
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        members_success, members_response = self.run_test("Get Members for Link Test", "GET", "admin/members?limit=1", 200, headers=headers)
+        if not members_success or not members_response.get('members'):
+            print("❌ No members available to test affiliate link format")
+            return False
+        
+        member = members_response['members'][0]
+        username = member['username']
+        
+        # Try to login with this user (using simple login)
+        login_data = {
+            "address": member['wallet_address'],
+            "username": username
+        }
+        
+        login_success, login_response = self.run_test(f"{username} Simple Login", "POST", "auth/simple-login", 200, login_data)
+        if not login_success:
+            print(f"❌ Failed to login as {username}")
+            return False
+        
+        token = login_response.get('token')
+        if not token:
+            print("❌ No token received from login")
+            return False
+        
+        # Get profile and check affiliate link format
+        profile_headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {token}'
+        }
+        
+        profile_success, profile_response = self.run_test(f"Get {username} Profile", "GET", "users/profile", 200, headers=profile_headers)
+        if not profile_success:
+            print(f"❌ Failed to get {username} profile")
+            return False
+        
+        referral_link = profile_response.get('referral_link')
+        referral_code = profile_response.get('referral_code')
+        
+        if not referral_link or not referral_code:
+            print("❌ No referral link or code found in profile")
+            return False
+        
+        # Check format
+        expected_new_format = f"{self.base_url}/r/{referral_code}"
+        expected_old_format = f"{self.base_url}?ref={referral_code}"
+        
+        print(f"\n📋 FORMAT VERIFICATION for {username}:")
+        print(f"   Expected NEW format: {expected_new_format}")
+        print(f"   Expected OLD format: {expected_old_format}")
+        print(f"   Actual format:       {referral_link}")
+        
+        if referral_link == expected_new_format:
+            print(f"\n✅ SUCCESS: NEW /r/ FORMAT IS IMPLEMENTED!")
+            print(f"   ✅ Backend API correctly returns: {referral_link}")
+            return True
+        elif referral_link == expected_old_format:
+            print(f"\n❌ FAILURE: Still using OLD ?ref= format")
+            return False
+        else:
+            print(f"\n⚠️ UNEXPECTED: Unknown format detected")
+            return False
+
