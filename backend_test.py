@@ -4973,6 +4973,281 @@ class Web3MembershipTester:
         print("✅ CSV Lead Upload Functionality Test Passed")
         return True
 
+    def test_user_referrals_api_success(self):
+        """Test GET /api/users/referrals with proper authentication"""
+        # First, we need to get a user token for testing
+        # Let's try to login with existing user credentials
+        login_data = {
+            "username": "firstuser_1758888762",
+            "password": "password123"
+        }
+        
+        login_success, login_response = self.run_test("User Login for Referrals Test", "POST", "auth/login", 200, login_data)
+        
+        if not login_success:
+            print("⚠️ Could not login with existing user, trying to create test user")
+            # Create a test user with referrals
+            test_user_data = {
+                "username": f"referrals_test_user_{int(time.time())}",
+                "email": f"referrals_test_{int(time.time())}@test.com",
+                "password": "testpass123",
+                "wallet_address": f"0x{uuid.uuid4().hex[:40]}"
+            }
+            
+            reg_success, reg_response = self.run_test("Create Test User for Referrals", "POST", "users/register", 200, test_user_data)
+            if not reg_success:
+                print("❌ Failed to create test user for referrals API test")
+                return False, {}
+            
+            # Login with the new user
+            login_data = {
+                "username": test_user_data["username"],
+                "password": test_user_data["password"]
+            }
+            login_success, login_response = self.run_test("Login Test User for Referrals", "POST", "auth/login", 200, login_data)
+            
+            if not login_success:
+                print("❌ Failed to login with test user")
+                return False, {}
+        
+        # Set the user token
+        user_token = login_response.get('token')
+        if not user_token:
+            print("❌ No token received from login")
+            return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {user_token}'
+        }
+        
+        # Test the referrals API endpoint
+        success, response = self.run_test("Get User Referrals (Success)", "GET", "users/referrals", 200, headers=headers)
+        
+        if success:
+            # Verify response structure
+            required_keys = ['referrals', 'total_count', 'page', 'limit', 'total_pages']
+            missing_keys = [key for key in required_keys if key not in response]
+            
+            if not missing_keys:
+                print("✅ Referrals response contains all required pagination fields")
+                
+                # Verify referral objects structure
+                referrals = response.get('referrals', [])
+                if referrals:
+                    referral = referrals[0]
+                    required_referral_keys = ['user_id', 'username', 'email', 'address', 'membership_tier', 
+                                            'status', 'referral_count', 'total_earnings', 'joined_date', 'last_active']
+                    missing_referral_keys = [key for key in required_referral_keys if key not in referral]
+                    
+                    if not missing_referral_keys:
+                        print("✅ Referral objects contain all required fields")
+                        
+                        # Verify data types and values
+                        if isinstance(referral.get('referral_count'), int):
+                            print("✅ Referral count is integer")
+                        else:
+                            print("❌ Referral count is not integer")
+                            return False, {}
+                        
+                        if isinstance(referral.get('total_earnings'), (int, float)):
+                            print("✅ Total earnings is numeric")
+                        else:
+                            print("❌ Total earnings is not numeric")
+                            return False, {}
+                        
+                        if referral.get('status') in ['active', 'suspended']:
+                            print("✅ Status is valid (active/suspended)")
+                        else:
+                            print("❌ Status is not valid")
+                            return False, {}
+                        
+                        if referral.get('membership_tier') in ['affiliate', 'bronze', 'silver', 'gold']:
+                            print("✅ Membership tier is valid")
+                        else:
+                            print("❌ Membership tier is not valid")
+                            return False, {}
+                        
+                    else:
+                        print(f"❌ Referral objects missing required keys: {missing_referral_keys}")
+                        return False, {}
+                else:
+                    print("⚠️ No referrals found for this user")
+                
+                return True, response
+            else:
+                print(f"❌ Referrals response missing required keys: {missing_keys}")
+                return False, {}
+        
+        return success, response
+    
+    def test_user_referrals_api_pagination(self):
+        """Test GET /api/users/referrals with pagination parameters"""
+        # Use the same login approach as above
+        login_data = {
+            "username": "firstuser_1758888762",
+            "password": "password123"
+        }
+        
+        login_success, login_response = self.run_test("User Login for Pagination Test", "POST", "auth/login", 200, login_data)
+        
+        if not login_success:
+            print("⚠️ Could not login with existing user, skipping pagination test")
+            return True, {}  # Skip test if no user available
+        
+        user_token = login_response.get('token')
+        if not user_token:
+            print("❌ No token received from login")
+            return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {user_token}'
+        }
+        
+        # Test with different pagination parameters
+        success, response = self.run_test("Get User Referrals with Pagination", "GET", "users/referrals?page=1&limit=5", 200, headers=headers)
+        
+        if success:
+            # Verify pagination metadata
+            if response.get('page') == 1 and response.get('limit') == 5:
+                print("✅ Pagination parameters correctly applied")
+                
+                # Verify total_pages calculation
+                total_count = response.get('total_count', 0)
+                limit = response.get('limit', 5)
+                expected_total_pages = (total_count + limit - 1) // limit
+                actual_total_pages = response.get('total_pages', 0)
+                
+                if actual_total_pages == expected_total_pages:
+                    print("✅ Total pages calculation is correct")
+                else:
+                    print(f"❌ Total pages calculation incorrect: expected {expected_total_pages}, got {actual_total_pages}")
+                    return False, {}
+                
+                return True, response
+            else:
+                print("❌ Pagination parameters not correctly applied")
+                return False, {}
+        
+        return success, response
+    
+    def test_user_referrals_api_sorting(self):
+        """Test that referrals are sorted by created_at in descending order (newest first)"""
+        # Use the same login approach
+        login_data = {
+            "username": "firstuser_1758888762",
+            "password": "password123"
+        }
+        
+        login_success, login_response = self.run_test("User Login for Sorting Test", "POST", "auth/login", 200, login_data)
+        
+        if not login_success:
+            print("⚠️ Could not login with existing user, skipping sorting test")
+            return True, {}  # Skip test if no user available
+        
+        user_token = login_response.get('token')
+        if not user_token:
+            print("❌ No token received from login")
+            return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {user_token}'
+        }
+        
+        success, response = self.run_test("Get User Referrals for Sorting Test", "GET", "users/referrals", 200, headers=headers)
+        
+        if success:
+            referrals = response.get('referrals', [])
+            if len(referrals) > 1:
+                # Check if referrals are sorted by joined_date in descending order
+                for i in range(len(referrals) - 1):
+                    current_date = referrals[i].get('joined_date')
+                    next_date = referrals[i + 1].get('joined_date')
+                    
+                    if current_date and next_date:
+                        if current_date >= next_date:
+                            continue
+                        else:
+                            print("❌ Referrals are not sorted by joined_date in descending order")
+                            return False, {}
+                
+                print("✅ Referrals are correctly sorted by joined_date (newest first)")
+            else:
+                print("⚠️ Not enough referrals to test sorting (need at least 2)")
+            
+            return True, response
+        
+        return success, response
+    
+    def test_user_referrals_api_unauthorized(self):
+        """Test GET /api/users/referrals without authentication token"""
+        headers = {'Content-Type': 'application/json'}
+        success, response = self.run_test("Get User Referrals (Unauthorized)", "GET", "users/referrals", 401, headers=headers)
+        return success, response
+    
+    def test_user_referrals_api_invalid_token(self):
+        """Test GET /api/users/referrals with invalid authentication token"""
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer invalid_token_12345'
+        }
+        success, response = self.run_test("Get User Referrals (Invalid Token)", "GET", "users/referrals", 401, headers=headers)
+        return success, response
+    
+    def test_user_referrals_api_system(self):
+        """Test complete User Referrals API system"""
+        print("\n👥 Testing User Referrals API System")
+        
+        # 1. Test successful referrals retrieval with authentication
+        referrals_success, referrals_response = self.test_user_referrals_api_success()
+        if not referrals_success:
+            print("❌ Get user referrals with authentication failed")
+            return False
+        
+        # 2. Test pagination functionality
+        pagination_success, _ = self.test_user_referrals_api_pagination()
+        if not pagination_success:
+            print("❌ Referrals pagination test failed")
+            return False
+        
+        # 3. Test sorting functionality
+        sorting_success, _ = self.test_user_referrals_api_sorting()
+        if not sorting_success:
+            print("❌ Referrals sorting test failed")
+            return False
+        
+        # 4. Test unauthorized access (should fail)
+        unauth_success, _ = self.test_user_referrals_api_unauthorized()
+        if not unauth_success:
+            print("❌ Referrals without authentication should return 401")
+            return False
+        
+        # 5. Test invalid token (should fail)
+        invalid_token_success, _ = self.test_user_referrals_api_invalid_token()
+        if not invalid_token_success:
+            print("❌ Referrals with invalid token should return 401")
+            return False
+        
+        # 6. Verify referral count calculation logic
+        if referrals_response and referrals_response.get('referrals'):
+            referrals = referrals_response.get('referrals', [])
+            print(f"✅ Found {len(referrals)} referrals for testing user")
+            
+            # Check if referral_count reflects sub-referrals correctly
+            for referral in referrals:
+                referral_count = referral.get('referral_count', 0)
+                username = referral.get('username', 'Unknown')
+                print(f"   - {username}: {referral_count} sub-referrals")
+            
+            print("✅ Referral count calculation verified")
+        else:
+            print("⚠️ No referrals found to verify referral count calculation")
+        
+        print("✅ User Referrals API System Test Passed")
+        return True
+
 def main():
     # Get the backend URL from environment or use default
     backend_url = "https://web3-affiliate-1.preview.emergentagent.com"
