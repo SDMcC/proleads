@@ -579,7 +579,9 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Admin Members Management Enhancement - Subscription Expiry & Suspend/Unsuspend"
+    - "Admin Members Management UI Enhancement - Expiry & Suspend/Unsuspend"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
