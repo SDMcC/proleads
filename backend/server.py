@@ -1396,6 +1396,35 @@ async def suspend_member(member_id: str, admin: dict = Depends(get_admin_user)):
         logger.error(f"Failed to suspend member: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to suspend member")
 
+@app.post("/api/admin/members/{member_id}/unsuspend")
+async def unsuspend_member(member_id: str, admin: dict = Depends(get_admin_user)):
+    """Unsuspend a member (restore access)"""
+    try:
+        # Check if member exists
+        member = await db.users.find_one({"address": member_id})
+        if not member:
+            raise HTTPException(status_code=404, detail="Member not found")
+        
+        # Check if member is actually suspended
+        if not member.get("suspended", False):
+            raise HTTPException(status_code=400, detail="Member is not suspended")
+        
+        # Unsuspend the member
+        result = await db.users.update_one(
+            {"address": member_id},
+            {"$set": {"suspended": False}, "$unset": {"suspended_at": ""}}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=400, detail="Failed to unsuspend member")
+        
+        return {"message": "Member unsuspended successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to unsuspend member: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to unsuspend member")
 # Admin payments management endpoints
 @app.get("/api/admin/payments")
 async def get_all_payments(
