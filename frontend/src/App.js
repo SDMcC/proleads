@@ -1176,7 +1176,7 @@ function OverviewTab({ stats, user }) {
         <div className="flex items-center space-x-4">
           <input
             type="text"
-            value={user?.referral_link || ''}
+            value={getShortenedReferralLink()}
             readOnly
             className="flex-1 px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white"
           />
