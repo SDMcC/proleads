@@ -5250,7 +5250,7 @@ class Web3MembershipTester:
 
 def main():
     # Get the backend URL from environment or use default
-    backend_url = "https://web3-affiliate-1.preview.emergentagent.com"
+    backend_url = "https://blockleads.preview.emergentagent.com"
     
     print("🚀 Starting Web3 Membership Platform API Tests")
     print("=============================")
@@ -5645,7 +5645,7 @@ if __name__ == "__main__":
         print("🎯 RUNNING SPECIFIC TEST: CSV Lead Upload Functionality")
         print("=" * 80)
         
-        backend_url = "https://web3-affiliate-1.preview.emergentagent.com"
+        backend_url = "https://blockleads.preview.emergentagent.com"
         tester = Web3MembershipTester(backend_url)
         
         # Run the specific CSV upload test
@@ -5661,7 +5661,7 @@ if __name__ == "__main__":
         print("🎯 RUNNING SPECIFIC TEST: Referral Relationship Fix Verification")
         print("=" * 80)
         
-        backend_url = "https://web3-affiliate-1.preview.emergentagent.com"
+        backend_url = "https://blockleads.preview.emergentagent.com"
         tester = Web3MembershipTester(backend_url)
         
         # Run the specific referral relationship fix test
@@ -5677,7 +5677,7 @@ if __name__ == "__main__":
         print("🎯 RUNNING SPECIFIC TEST: Corrected Lead Distribution Algorithm")
         print("=" * 80)
         
-        backend_url = "https://web3-affiliate-1.preview.emergentagent.com"
+        backend_url = "https://blockleads.preview.emergentagent.com"
         tester = Web3MembershipTester(backend_url)
         
         # Run the specific lead distribution test
