@@ -3644,6 +3644,28 @@ function AdminDashboard() {
       alert('Failed to suspend member: ' + (error.response?.data?.detail || error.message));
     }
   };
+  const unsuspendMember = async (memberId) => {
+    if (!window.confirm('Are you sure you want to unsuspend this member?')) {
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem('adminToken');
+      const headers = { Authorization: `Bearer ${token}` };
+      
+      await axios.post(`${API_URL}/api/admin/members/${memberId}/unsuspend`, {}, { headers });
+      
+      // Refresh members list
+      fetchMembers(memberFilter, memberPage);
+      setShowMemberModal(false);
+      setSelectedMember(null);
+      alert('Member unsuspended successfully');
+      
+    } catch (error) {
+      console.error('Failed to unsuspend member:', error);
+      alert('Failed to unsuspend member: ' + (error.response?.data?.detail || error.message));
+    }
+  };
 
   const handleEditMember = (member) => {
     setEditingMember(member);
