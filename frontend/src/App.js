@@ -3678,6 +3678,47 @@ function AdminDashboard() {
       setLoading(false);
     }
   };
+  const fetchAdminNotifications = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await axios.get(`${API_URL}/api/admin/notifications`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setAdminNotifications(response.data.notifications);
+      setAdminUnreadCount(response.data.unread_count);
+    } catch (error) {
+      console.error('Failed to fetch admin notifications:', error);
+    }
+  };
+
+  const clearAdminNotification = async (notificationId) => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      await axios.delete(`${API_URL}/api/admin/notifications/${notificationId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      // Remove from local state
+      setAdminNotifications(adminNotifications.filter(n => n.notification_id !== notificationId));
+      setAdminUnreadCount(Math.max(0, adminUnreadCount - 1));
+    } catch (error) {
+      console.error('Failed to clear admin notification:', error);
+      alert('Failed to clear notification');
+    }
+  };
+
+  const markAllAdminNotificationsRead = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      await axios.post(`${API_URL}/api/admin/notifications/mark-read`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      // Update local state
+      setAdminNotifications(adminNotifications.map(n => ({ ...n, read_status: true })));
+      setAdminUnreadCount(0);
+    } catch (error) {
+      console.error('Failed to mark admin notifications as read:', error);
+    }
+  };
 
   const fetchMembers = async (tier = '', page = 1) => {
     try {
