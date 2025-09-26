@@ -475,6 +475,18 @@ backend:
         agent: "testing"
         comment: "✅ ADMIN MEMBERS MANAGEMENT ENHANCEMENT TESTING COMPLETED SUCCESSFULLY: Comprehensive testing of the newly implemented subscription expiry tracking and suspend/unsuspend functionality confirms all features are working correctly. CRITICAL TEST RESULTS: 1) Unsuspend Endpoint Testing - ✅ POST /api/admin/members/{member_id}/unsuspend endpoint working perfectly, ✅ Requires admin authentication (returns 401 without token), ✅ Successfully unsuspends suspended members, ✅ Returns 404 for non-existent members, ✅ Returns 400 when trying to unsuspend non-suspended members. 2) Member Listing Enhancement - ✅ GET /api/admin/members includes subscription_expires_at and is_expired fields, ✅ Expiry logic correctly identifies expired members (subscription_expires_at < current date), ✅ Affiliate members correctly show no expiry date (None) and is_expired: false. 3) Member Details Enhancement - ✅ GET /api/admin/members/{member_id} includes subscription expiry information, ✅ Suspended status properly returned in member details, ✅ All required fields present: subscription_expires_at, is_expired, suspended. 4) Subscription Expiry Logic - ✅ Payment callback logic verified: paid tiers (bronze, silver, gold) get 1 year subscription, affiliate tier does not get expiry date, ✅ Expiry calculation: subscription_expires_at = datetime.utcnow() + timedelta(days=365). 5) Complete Suspend/Unsuspend Workflow - ✅ Full workflow tested: suspend member → verify suspension → unsuspend member → verify unsuspension, ✅ All status changes properly reflected in database and API responses. AUTHENTICATION VERIFIED: All endpoints properly secured with admin credentials (admin/admin123). ALL TESTS PASSED: 9/9 (100% success rate). The subscription expiry tracking and suspend/unsuspend functionality is fully operational and ready for production use."
 
+  - task: "Member Details API Enhancement - Sponsor Information"
+    implemented: true
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "IMPLEMENTATION COMPLETED: Enhanced GET /api/admin/members/{member_id} endpoint to include sponsor information in response. CHANGE MADE: Added sponsor data to API response including sponsor username, email, address, and membership tier. This supports the Member Details modal reorganization which now displays Sponsor Username. Ready for testing."
+
 frontend:
   - task: "Admin Login Interface"
     implemented: true
