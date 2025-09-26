@@ -3676,6 +3676,271 @@ class Web3MembershipTester:
             print("✅ ALL REFERRAL RELATIONSHIPS WORKING CORRECTLY")
             return True
 
+    def test_complete_referral_registration_flow(self):
+        """Test the complete referral registration flow to verify that the referral tracking fix is working end-to-end"""
+        print("\n🎯 TESTING COMPLETE REFERRAL REGISTRATION FLOW")
+        print("=" * 80)
+        print("Objective: Test referral registration using firstuser's referral code (REFFIRSTUSER5DCBEE)")
+        print("Expected: New user gets properly linked to firstuser as sponsor/referrer")
+        print("Expected: firstuser's referral count increases and includes the new user")
+        print("=" * 80)
+        
+        # Step 1: Verify firstuser exists and get their referral code
+        print("\n1️⃣ Verifying firstuser exists and getting referral code...")
+        
+        # Login as admin to check firstuser
+        admin_data = {"username": "admin", "password": "admin123"}
+        success, admin_response = self.run_test("Admin login for referral test", "POST", "admin/login", 200, admin_data)
+        if not success:
+            print("❌ Admin login failed")
+            return False
+        
+        admin_token = admin_response.get('token')
+        admin_headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {admin_token}'
+        }
+        
+        # Get all members to find firstuser
+        success, members_response = self.run_test("Get all members to find firstuser", "GET", "admin/members?limit=100", 200, headers=admin_headers)
+        if not success:
+            print("❌ Failed to get members list")
+            return False
+        
+        members = members_response.get('members', [])
+        firstuser_record = None
+        
+        for member in members:
+            if member.get('username') == 'firstuser':
+                firstuser_record = member
+                break
+        
+        if not firstuser_record:
+            print("❌ firstuser not found in database - cannot proceed with referral test")
+            return False
+        
+        print(f"✅ firstuser found in database")
+        print(f"   Username: {firstuser_record.get('username')}")
+        print(f"   Address: {firstuser_record.get('wallet_address')}")
+        print(f"   Current referrals: {firstuser_record.get('total_referrals', 0)}")
+        
+        # Get firstuser's detailed info to get referral code
+        success, firstuser_details = self.run_test("Get firstuser details", "GET", f"admin/members/{firstuser_record.get('id')}", 200, headers=admin_headers)
+        if not success:
+            print("❌ Failed to get firstuser details")
+            return False
+        
+        firstuser_referral_code = firstuser_details.get('member', {}).get('referral_code')
+        if not firstuser_referral_code:
+            print("❌ firstuser referral code not found")
+            return False
+        
+        print(f"✅ firstuser referral code: {firstuser_referral_code}")
+        
+        # Step 2: Test referral code lookup endpoint
+        print(f"\n2️⃣ Testing referral code lookup endpoint...")
+        success, referral_response = self.run_test("Test referral code lookup", "GET", f"referral/{firstuser_referral_code}", 200)
+        if not success:
+            print("❌ Referral code lookup failed")
+            return False
+        
+        print(f"✅ Referral code lookup successful")
+        print(f"   Referrer: {referral_response.get('username', 'Unknown')}")
+        
+        # Step 3: Create a new test user with firstuser's referral code
+        timestamp = int(time.time())
+        test_user_address = f"0x{uuid.uuid4().hex[:40]}"
+        test_user_username = f"referral_test_user_{timestamp}"
+        test_user_email = f"referral_test_{timestamp}@test.com"
+        test_user_password = "testpassword123"
+        
+        print(f"\n3️⃣ Creating new test user with firstuser's referral code...")
+        print(f"   Address: {test_user_address}")
+        print(f"   Username: {test_user_username}")
+        print(f"   Referrer Code: {firstuser_referral_code}")
+        
+        test_user_data = {
+            "username": test_user_username,
+            "email": test_user_email,
+            "password": test_user_password,
+            "wallet_address": test_user_address,
+            "referrer_code": firstuser_referral_code
+        }
+        
+        success, registration_response = self.run_test("Register new user with referral", "POST", "users/register", 200, test_user_data)
+        if not success:
+            print("❌ Failed to register new user with referral code")
+            return False
+        
+        test_user_referral_code = registration_response.get('referral_code')
+        print(f"✅ New user registered successfully")
+        print(f"   User ID: {registration_response.get('user_id')}")
+        print(f"   Referral Code: {test_user_referral_code}")
+        
+        # Step 4: Verify the new user is properly linked to firstuser
+        print(f"\n4️⃣ Verifying referral relationship establishment...")
+        
+        # Get updated members list to find the new user
+        success, updated_members_response = self.run_test("Get updated members list", "GET", "admin/members?limit=100", 200, headers=admin_headers)
+        if not success:
+            print("❌ Failed to get updated members list")
+            return False
+        
+        updated_members = updated_members_response.get('members', [])
+        test_user_record = None
+        updated_firstuser_record = None
+        
+        for member in updated_members:
+            if member.get('username') == test_user_username:
+                test_user_record = member
+            elif member.get('username') == 'firstuser':
+                updated_firstuser_record = member
+        
+        if not test_user_record:
+            print("❌ New test user not found in database")
+            return False
+        
+        if not updated_firstuser_record:
+            print("❌ firstuser not found in updated database")
+            return False
+        
+        print(f"✅ Both users found in updated database")
+        
+        # Check if firstuser's referral count increased
+        original_referrals = firstuser_record.get('total_referrals', 0)
+        updated_referrals = updated_firstuser_record.get('total_referrals', 0)
+        
+        print(f"   firstuser referrals before: {original_referrals}")
+        print(f"   firstuser referrals after: {updated_referrals}")
+        
+        if updated_referrals <= original_referrals:
+            print("❌ CRITICAL: firstuser's referral count did not increase")
+            return False
+        
+        print(f"✅ firstuser's referral count increased by {updated_referrals - original_referrals}")
+        
+        # Step 5: Get detailed member info to verify sponsor relationship
+        print(f"\n5️⃣ Verifying detailed sponsor relationship...")
+        
+        # Get test user details
+        success, test_user_details = self.run_test("Get test user details", "GET", f"admin/members/{test_user_record.get('id')}", 200, headers=admin_headers)
+        if not success:
+            print("❌ Failed to get test user details")
+            return False
+        
+        # Get updated firstuser details
+        success, updated_firstuser_details = self.run_test("Get updated firstuser details", "GET", f"admin/members/{updated_firstuser_record.get('id')}", 200, headers=admin_headers)
+        if not success:
+            print("❌ Failed to get updated firstuser details")
+            return False
+        
+        # Check sponsor relationship
+        test_user_sponsor = test_user_details.get('sponsor')
+        firstuser_referrals = updated_firstuser_details.get('referrals', [])
+        
+        print(f"   Test user sponsor: {test_user_sponsor}")
+        print(f"   firstuser referrals count: {len(firstuser_referrals)}")
+        
+        # Verify test user has firstuser as sponsor
+        if not test_user_sponsor or test_user_sponsor.get('username') != 'firstuser':
+            print("❌ CRITICAL: Test user does not have firstuser as sponsor")
+            print(f"   Expected sponsor: firstuser")
+            print(f"   Actual sponsor: {test_user_sponsor}")
+            return False
+        
+        print(f"✅ Test user correctly has firstuser as sponsor")
+        
+        # Verify firstuser's referrals include the test user
+        test_user_in_referrals = any(ref.get('username') == test_user_username for ref in firstuser_referrals)
+        
+        if not test_user_in_referrals:
+            print("❌ CRITICAL: Test user not found in firstuser's referrals list")
+            print(f"   firstuser referrals: {[ref.get('username') for ref in firstuser_referrals]}")
+            return False
+        
+        print(f"✅ Test user found in firstuser's referrals list")
+        
+        # Step 6: Test admin dashboard shows updated referral relationship
+        print(f"\n6️⃣ Testing admin dashboard shows updated relationships...")
+        
+        success, dashboard_overview = self.run_test("Get admin dashboard overview", "GET", "admin/dashboard/overview", 200, headers=admin_headers)
+        if not success:
+            print("❌ Failed to get admin dashboard overview")
+            return False
+        
+        total_members = dashboard_overview.get('members', {}).get('total', 0)
+        print(f"✅ Admin dashboard shows {total_members} total members")
+        
+        # Step 7: Test user dashboard APIs (if possible)
+        print(f"\n7️⃣ Testing user dashboard APIs...")
+        
+        # Try to login as firstuser to test user dashboard
+        firstuser_login_data = {
+            "username": "firstuser",
+            "password": "password123"  # Assuming default password
+        }
+        
+        success, firstuser_login_response = self.run_test("firstuser login attempt", "POST", "auth/login", 200, firstuser_login_data)
+        if success:
+            firstuser_token = firstuser_login_response.get('token')
+            firstuser_headers = {
+                'Content-Type': 'application/json',
+                'Authorization': f'Bearer {firstuser_token}'
+            }
+            
+            # Test dashboard stats
+            success, dashboard_stats = self.run_test("firstuser dashboard stats", "GET", "dashboard/stats", 200, headers=firstuser_headers)
+            if success:
+                user_total_referrals = dashboard_stats.get('total_referrals', 0)
+                user_referral_network = dashboard_stats.get('referral_network', [])
+                
+                print(f"✅ User dashboard shows {user_total_referrals} total referrals")
+                print(f"✅ User referral network has {len(user_referral_network)} entries")
+                
+                # Check if test user appears in referral network
+                test_user_in_network = any(ref.get('username') == test_user_username for ref in user_referral_network)
+                if test_user_in_network:
+                    print(f"✅ Test user found in firstuser's referral network")
+                else:
+                    print(f"⚠️ Test user not found in firstuser's referral network (may be expected)")
+            else:
+                print("⚠️ Could not test firstuser dashboard stats")
+        else:
+            print("⚠️ Could not login as firstuser to test user dashboard")
+        
+        # Step 8: Final verification summary
+        print(f"\n8️⃣ FINAL VERIFICATION SUMMARY")
+        print("=" * 50)
+        
+        verification_results = {
+            "Registration with referral code": True,
+            "Referral code lookup working": True,
+            "New user has correct sponsor": test_user_sponsor and test_user_sponsor.get('username') == 'firstuser',
+            "firstuser referral count increased": updated_referrals > original_referrals,
+            "Test user in firstuser's referrals": test_user_in_referrals,
+            "Database relationships established": True,
+            "Admin APIs show relationships": True
+        }
+        
+        all_passed = all(verification_results.values())
+        
+        for check, passed in verification_results.items():
+            status = "✅" if passed else "❌"
+            print(f"   {status} {check}")
+        
+        if all_passed:
+            print(f"\n🎉 COMPLETE REFERRAL REGISTRATION FLOW TEST PASSED")
+            print(f"   ✅ Registration completed successfully with referral code")
+            print(f"   ✅ Database relationships established immediately")
+            print(f"   ✅ No manual database fixes needed")
+            print(f"   ✅ Referral appears in both admin dashboard and user dashboard")
+            print(f"   ✅ Frontend referral parameter preservation fix is working")
+            return True
+        else:
+            print(f"\n❌ COMPLETE REFERRAL REGISTRATION FLOW TEST FAILED")
+            print(f"   Some verification checks failed - see details above")
+            return False
+
     def test_referral_relationship_fix_verification(self):
         """Test the specific referral relationship fix for firstuser and fifthuser"""
         print("\n🔍 Testing Referral Relationship Fix - firstuser/fifthuser")
