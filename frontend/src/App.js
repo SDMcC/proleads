@@ -4020,6 +4020,28 @@ function AdminDashboard() {
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-gray-300">Administrator</span>
+              
+              {/* Admin Notification Bell */}
+              <div className="relative notification-panel">
+                <button
+                  ref={setAdminBellButtonRef}
+                  onClick={() => {
+                    setAdminNotificationsPanelOpen(!adminNotificationsPanelOpen);
+                    if (!adminNotificationsPanelOpen && adminUnreadCount > 0) {
+                      markAllAdminNotificationsRead();
+                    }
+                  }}
+                  className="relative p-2 text-gray-300 hover:text-white rounded-lg hover:bg-white hover:bg-opacity-10 transition-all duration-300"
+                >
+                  <Bell className="h-6 w-6" />
+                  {adminUnreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                      {adminUnreadCount > 9 ? '9+' : adminUnreadCount}
+                    </span>
+                  )}
+                </button>
+              </div>
+              
               <button
                 onClick={handleLogout}
                 className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-300"
