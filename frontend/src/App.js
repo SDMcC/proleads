@@ -1176,7 +1176,7 @@ function Dashboard() {
           {activeTab === 'referrals' && <ReferralsTab />}
           {activeTab === 'autoresponder' && <AutoresponderTab />}
           {activeTab === 'tickets' && <TicketsTab />}
-          {activeTab === 'account' && <AccountTab user={user} accountSubTab={accountSubTab} setAccountSubTab={setAccountSubTab} />}
+          {activeTab === 'account' && <AccountTab user={user} />}
         </div>
       </div>
 
