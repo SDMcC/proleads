@@ -787,11 +787,22 @@ async def check_milestone_achievements(user_address: str):
                 })
                 
                 if not existing_notification:
+                    # Create user notification
                     await create_notification(
                         user_address=user_address,
                         notification_type="milestone",
                         title="Milestone Achievement!",
                         message=f"Congratulations! You've reached {threshold} referrals and earned a ${reward} milestone bonus!"
+                    )
+                    
+                    # Create admin notification for milestone
+                    user = await db.users.find_one({"address": user_address})
+                    username = user.get("username", "Unknown User") if user else "Unknown User"
+                    await create_admin_notification(
+                        notification_type="milestone",
+                        title="User Milestone Achieved",
+                        message=f"{username} reached {threshold} referrals milestone - ${reward} bonus earned!",
+                        related_user=user_address
                     )
                     
     except Exception as e:
