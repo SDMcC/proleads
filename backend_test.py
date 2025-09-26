@@ -5248,6 +5248,230 @@ class Web3MembershipTester:
         print("✅ User Referrals API System Test Passed")
         return True
 
+    def test_member_details_api_enhancement_sponsor_information(self):
+        """Test the updated member details API to verify sponsor information is included in the response"""
+        print("\n🔍 Testing Member Details API Enhancement - Sponsor Information")
+        
+        # Ensure admin token is available
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        # Step 1: Get list of members to find ones with and without sponsors
+        print("\n1️⃣ Getting member list to identify test subjects...")
+        members_success, members_response = self.run_test("Get Members List", "GET", "admin/members", 200, headers=headers)
+        
+        if not members_success or not members_response.get('members'):
+            print("❌ No members available to test member details API")
+            return False
+        
+        members = members_response.get('members', [])
+        print(f"   Found {len(members)} members in database")
+        
+        # Find members with and without sponsors
+        members_with_sponsors = [m for m in members if m.get('sponsor')]
+        members_without_sponsors = [m for m in members if not m.get('sponsor')]
+        
+        print(f"   Members with sponsors: {len(members_with_sponsors)}")
+        print(f"   Members without sponsors: {len(members_without_sponsors)}")
+        
+        test_results = []
+        
+        # Step 2: Test member details API for members WITH sponsors
+        if members_with_sponsors:
+            print(f"\n2️⃣ Testing member details API for members WITH sponsors...")
+            
+            for i, member in enumerate(members_with_sponsors[:3]):  # Test up to 3 members
+                member_id = member['id']
+                member_username = member['username']
+                expected_sponsor = member.get('sponsor', {})
+                
+                print(f"\n   Testing member: {member_username} (expected sponsor: {expected_sponsor.get('username', 'Unknown')})")
+                
+                success, response = self.run_test(
+                    f"Get Member Details - With Sponsor ({member_username})", 
+                    "GET", 
+                    f"admin/members/{member_id}", 
+                    200, 
+                    headers=headers
+                )
+                
+                if success:
+                    # Verify response structure includes sponsor information
+                    required_keys = ['member', 'sponsor', 'stats', 'referrals', 'recent_earnings']
+                    missing_keys = [key for key in required_keys if key not in response]
+                    
+                    if not missing_keys:
+                        print("   ✅ Response contains all required sections")
+                        
+                        # Verify sponsor information structure
+                        sponsor_info = response.get('sponsor')
+                        if sponsor_info:
+                            required_sponsor_keys = ['username', 'email', 'address', 'membership_tier']
+                            missing_sponsor_keys = [key for key in required_sponsor_keys if key not in sponsor_info]
+                            
+                            if not missing_sponsor_keys:
+                                print("   ✅ Sponsor information contains all required fields")
+                                print(f"      Sponsor username: {sponsor_info.get('username')}")
+                                print(f"      Sponsor email: {sponsor_info.get('email')}")
+                                print(f"      Sponsor tier: {sponsor_info.get('membership_tier')}")
+                                
+                                # Verify sponsor data accuracy
+                                if expected_sponsor.get('username') == sponsor_info.get('username'):
+                                    print("   ✅ Sponsor username matches expected value")
+                                else:
+                                    print(f"   ❌ Sponsor username mismatch: expected {expected_sponsor.get('username')}, got {sponsor_info.get('username')}")
+                                    test_results.append(False)
+                                    continue
+                                
+                                test_results.append(True)
+                            else:
+                                print(f"   ❌ Sponsor information missing required keys: {missing_sponsor_keys}")
+                                test_results.append(False)
+                        else:
+                            print("   ❌ No sponsor information in response (expected sponsor data)")
+                            test_results.append(False)
+                    else:
+                        print(f"   ❌ Response missing required keys: {missing_keys}")
+                        test_results.append(False)
+                else:
+                    print(f"   ❌ Failed to get member details for {member_username}")
+                    test_results.append(False)
+        else:
+            print("\n2️⃣ No members with sponsors found - skipping sponsor verification tests")
+        
+        # Step 3: Test member details API for members WITHOUT sponsors
+        if members_without_sponsors:
+            print(f"\n3️⃣ Testing member details API for members WITHOUT sponsors...")
+            
+            for i, member in enumerate(members_without_sponsors[:2]):  # Test up to 2 members
+                member_id = member['id']
+                member_username = member['username']
+                
+                print(f"\n   Testing member: {member_username} (expected no sponsor)")
+                
+                success, response = self.run_test(
+                    f"Get Member Details - Without Sponsor ({member_username})", 
+                    "GET", 
+                    f"admin/members/{member_id}", 
+                    200, 
+                    headers=headers
+                )
+                
+                if success:
+                    # Verify response structure
+                    required_keys = ['member', 'sponsor', 'stats', 'referrals', 'recent_earnings']
+                    missing_keys = [key for key in required_keys if key not in response]
+                    
+                    if not missing_keys:
+                        print("   ✅ Response contains all required sections")
+                        
+                        # Verify sponsor field is null for members without sponsors
+                        sponsor_info = response.get('sponsor')
+                        if sponsor_info is None:
+                            print("   ✅ Sponsor field correctly returns null for member without sponsor")
+                            test_results.append(True)
+                        else:
+                            print(f"   ❌ Sponsor field should be null but got: {sponsor_info}")
+                            test_results.append(False)
+                    else:
+                        print(f"   ❌ Response missing required keys: {missing_keys}")
+                        test_results.append(False)
+                else:
+                    print(f"   ❌ Failed to get member details for {member_username}")
+                    test_results.append(False)
+        else:
+            print("\n3️⃣ No members without sponsors found - skipping null sponsor verification tests")
+        
+        # Step 4: Verify all existing fields remain intact
+        print(f"\n4️⃣ Verifying all existing fields remain intact...")
+        
+        if members:
+            test_member = members[0]
+            member_id = test_member['id']
+            
+            success, response = self.run_test(
+                "Verify Existing Fields Intact", 
+                "GET", 
+                f"admin/members/{member_id}", 
+                200, 
+                headers=headers
+            )
+            
+            if success:
+                # Check stats section includes total_payments
+                stats = response.get('stats', {})
+                if 'total_payments' in stats:
+                    print("   ✅ Stats section includes total_payments field")
+                    test_results.append(True)
+                else:
+                    print("   ❌ Stats section missing total_payments field")
+                    test_results.append(False)
+                
+                # Verify other required fields
+                member_data = response.get('member', {})
+                required_member_fields = ['id', 'username', 'email', 'wallet_address', 'membership_tier']
+                missing_member_fields = [field for field in required_member_fields if field not in member_data]
+                
+                if not missing_member_fields:
+                    print("   ✅ All existing member fields are intact")
+                    test_results.append(True)
+                else:
+                    print(f"   ❌ Missing existing member fields: {missing_member_fields}")
+                    test_results.append(False)
+            else:
+                print("   ❌ Failed to verify existing fields")
+                test_results.append(False)
+        
+        # Step 5: Test authentication requirements
+        print(f"\n5️⃣ Testing authentication requirements...")
+        
+        if members:
+            test_member = members[0]
+            member_id = test_member['id']
+            
+            # Test without admin token
+            headers_no_auth = {'Content-Type': 'application/json'}
+            success, response = self.run_test(
+                "Member Details Without Auth", 
+                "GET", 
+                f"admin/members/{member_id}", 
+                401, 
+                headers=headers_no_auth
+            )
+            
+            if success:
+                print("   ✅ Properly requires admin authentication")
+                test_results.append(True)
+            else:
+                print("   ❌ Should require admin authentication")
+                test_results.append(False)
+        
+        # Calculate final result
+        total_tests = len(test_results)
+        passed_tests = sum(test_results)
+        
+        print(f"\n📊 Member Details API Enhancement Test Results:")
+        print(f"   Total tests: {total_tests}")
+        print(f"   Passed: {passed_tests}")
+        print(f"   Failed: {total_tests - passed_tests}")
+        print(f"   Success rate: {(passed_tests / total_tests * 100):.1f}%" if total_tests > 0 else "   No tests run")
+        
+        if passed_tests == total_tests and total_tests > 0:
+            print("✅ Member Details API Enhancement - Sponsor Information Test PASSED")
+            return True
+        else:
+            print("❌ Member Details API Enhancement - Sponsor Information Test FAILED")
+            return False
+
 def main():
     # Get the backend URL from environment or use default
     backend_url = "https://blockleads.preview.emergentagent.com"
