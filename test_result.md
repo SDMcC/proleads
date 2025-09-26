@@ -640,7 +640,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Member Details Modal Reorganization"
+    - "Member Details Modal Reorganization"  
+    - "Notification System Backend Implementation"
+    - "Notification System Frontend Implementation"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
