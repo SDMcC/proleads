@@ -460,6 +460,18 @@ backend:
         agent: "testing"
         comment: "✅ USER REFERRALS API TESTING COMPLETED SUCCESSFULLY: Comprehensive testing of the new GET /api/users/referrals endpoint confirms it is working perfectly and meets all requirements from the review request. CRITICAL VERIFICATION RESULTS: 1) Authentication & Authorization - ✅ Endpoint properly protected with JWT authentication, ✅ Returns 401 without authorization header, ✅ Returns 401 with invalid token, ✅ Successfully authenticates with valid user token (firstuser_1758888762). 2) Response Structure & Pagination - ✅ Response contains all required pagination fields: referrals, total_count, page, limit, total_pages, ✅ Pagination parameters work correctly (tested with page=1&limit=5), ✅ Total pages calculation is mathematically correct: (total_count + limit - 1) // limit. 3) Referral Data Fields - ✅ Each referral object contains ALL required fields: user_id, username, email, address, membership_tier, status, referral_count, total_earnings, joined_date, last_active, ✅ Data types validated: referral_count is integer, total_earnings is numeric, status values are 'active'/'suspended', membership_tier values are valid ('affiliate', 'bronze', 'silver', 'gold'). 4) Business Logic Verification - ✅ Referrals sorted by created_at in descending order (newest first), ✅ Referral count calculation includes sub-referrals correctly, ✅ Status calculation properly determines active vs suspended users, ✅ Total earnings calculated from paid commissions. 5) Real Data Testing - ✅ Successfully tested with real user data: firstuser_1758888762 has 1 referral (seconduser_1758888762), ✅ Referral shows status: active, referral_count: 0, proper membership_tier and earnings data. CONCLUSION: The User Referrals API endpoint is fully operational and ready for the new Affiliate -> Referrals page. All authentication, pagination, data validation, and business logic requirements are working correctly."
 
+  - task: "Admin Members Management Enhancement - Subscription Expiry & Suspend/Unsuspend"
+    implemented: true
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "IMPLEMENTATION COMPLETED: Enhanced Admin Members Management with subscription expiry tracking and suspend/unsuspend logic fixes. BACKEND CHANGES: 1) Added subscription expiry logic to payment callback - paid tiers get 1 year subscription, 2) Created unsuspend endpoint POST /api/admin/members/{member_id}/unsuspend, 3) Updated member listing and details endpoints to include subscription_expires_at and is_expired fields. FRONTEND CHANGES: 1) Added 'Expiry Date' column to members table, 2) Added 'Expired' badge display for expired members, 3) Fixed suspend/unsuspend button logic in modal to show correct action based on suspended status, 4) Added subscription expiry and status information to member details modal. Ready for testing."
+
 frontend:
   - task: "Admin Login Interface"
     implemented: true
