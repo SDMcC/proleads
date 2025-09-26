@@ -5621,9 +5621,10 @@ class Web3MembershipTester:
     
     def create_test_user_for_notifications(self):
         """Create a test user and simulate notifications for testing"""
-        # Create a unique test user
+        # Create a unique test user with UUID to avoid conflicts
+        unique_id = str(uuid.uuid4())[:8]
         test_address = f"0x{uuid.uuid4().hex[:40]}"
-        test_username = f"notif_user_{int(time.time())}"
+        test_username = f"notif_user_{int(time.time())}_{unique_id}"
         test_email = f"{test_username}@test.com"
         test_password = "testpass123"
         
