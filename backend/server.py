@@ -2692,14 +2692,23 @@ async def perform_lead_distribution(distribution_id: str):
     """Perform the actual lead distribution logic"""
     try:
         # Get eligible members (bronze, silver, gold - not suspended)
-        eligible_members = await db.users.find({
-            "$or": [
-                {"membership_tier": "bronze"},
-                {"membership_tier": "silver"}, 
-                {"membership_tier": "gold"}
-            ],
+        # Note: Using separate queries due to MongoDB $or/$in issues
+        bronze_members = await db.users.find({
+            "membership_tier": "bronze",
             "suspended": False
         }).to_list(None)
+        
+        silver_members = await db.users.find({
+            "membership_tier": "silver", 
+            "suspended": False
+        }).to_list(None)
+        
+        gold_members = await db.users.find({
+            "membership_tier": "gold",
+            "suspended": False
+        }).to_list(None)
+        
+        eligible_members = bronze_members + silver_members + gold_members
         
         if not eligible_members:
             logger.warning("No eligible members for lead distribution")
