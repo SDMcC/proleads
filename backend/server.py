@@ -680,6 +680,20 @@ async def register_user(user_data: UserRegistration):
         # Insert user
         result = await db.users.insert_one(user_doc)
         
+        # Create referral notification for sponsor if exists
+        if referrer_address:
+            referrer = await db.users.find_one({"address": referrer_address})
+            if referrer:
+                await create_notification(
+                    user_address=referrer_address,
+                    notification_type="referral",
+                    title="New Referral!",
+                    message=f"{user_data.username} has joined using your referral link!"
+                )
+                
+                # Check milestone achievements for referrer
+                await check_milestone_achievements(referrer_address)
+        
         logger.info(f"New user registered: {user_data.username} ({user_data.email})")
         
         return {
