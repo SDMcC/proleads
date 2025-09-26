@@ -402,15 +402,28 @@ function LandingPage() {
   );
 }
 
-// Wallet Connect Button
+// Wallet Connect Button (Legacy - kept for backward compatibility)
 function WalletConnectButton() {
-  const { address, isConnected } = useAccount();
-  const { user, login } = useAuth();
-  const { signMessageAsync } = useSignMessage();
+  const [walletError, setWalletError] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { user, login } = useAuth();
+
+  // Safely access wallet hooks with error handling
+  let address, isConnected, signMessageAsync;
+  
+  try {
+    const accountHook = useAccount();
+    const signHook = useSignMessage();
+    address = accountHook.address;
+    isConnected = accountHook.isConnected;
+    signMessageAsync = signHook.signMessageAsync;
+  } catch (error) {
+    console.warn('Wallet connection not available:', error.message);
+    setWalletError(true);
+  }
 
   const handleAuth = async () => {
-    if (!address) return;
+    if (!address || walletError) return;
     
     setLoading(true);
     try {
@@ -442,8 +455,9 @@ function WalletConnectButton() {
     }
   };
 
+  // Only attempt auto-authentication if wallet is properly connected and no errors
   useEffect(() => {
-    if (isConnected && address && !user && !loading) {
+    if (!walletError && isConnected && address && !user && !loading) {
       // Only auto-authenticate on specific pages, avoid during registration flow
       const currentPath = window.location.pathname;
       if (currentPath === '/' || currentPath === '/payment') {
@@ -455,7 +469,7 @@ function WalletConnectButton() {
         }, 1000);
       }
     }
-  }, [isConnected, address, user]);
+  }, [isConnected, address, user, walletError]);
 
   if (user) {
     return (
@@ -472,6 +486,18 @@ function WalletConnectButton() {
     return (
       <button className="px-6 py-3 bg-gray-600 text-white font-semibold rounded-lg">
         Authenticating...
+      </button>
+    );
+  }
+
+  // Show traditional login link if wallet connection has errors
+  if (walletError) {
+    return (
+      <button 
+        onClick={() => window.location.href = '/'}
+        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all duration-300"
+      >
+        Login with Email
       </button>
     );
   }
