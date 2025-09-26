@@ -1084,12 +1084,70 @@ function Dashboard() {
             <nav className="space-y-2">
               {sidebarItems.map((item) => {
                 const Icon = item.icon;
+                
+                // Handle nested menu items (like Affiliate)
+                if (item.isNested) {
+                  return (
+                    <div key={item.id} className="space-y-1">
+                      <button
+                        onClick={() => setAffiliateMenuOpen(!affiliateMenuOpen)}
+                        className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-300 ${
+                          ['affiliate-tools', 'network', 'referrals'].includes(activeTab)
+                            ? 'bg-blue-600 text-white'
+                            : 'text-gray-300 hover:bg-white hover:bg-opacity-10 hover:text-white'
+                        }`}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <Icon className="h-5 w-5" />
+                          <span className="font-medium">{item.label}</span>
+                        </div>
+                        {affiliateMenuOpen ? (
+                          <ChevronDown className="h-4 w-4" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4" />
+                        )}
+                      </button>
+                      
+                      {/* Nested menu items */}
+                      {affiliateMenuOpen && (
+                        <div className="pl-4 space-y-1">
+                          {item.subItems.map((subItem) => {
+                            const SubIcon = subItem.icon;
+                            return (
+                              <button
+                                key={subItem.id}
+                                onClick={() => {
+                                  setActiveTab(subItem.id);
+                                  setSidebarOpen(false);
+                                }}
+                                className={`w-full flex items-center space-x-3 px-4 py-2 rounded-lg transition-all duration-300 ${
+                                  activeTab === subItem.id
+                                    ? 'bg-blue-700 text-white'
+                                    : 'text-gray-400 hover:bg-white hover:bg-opacity-10 hover:text-white'
+                                }`}
+                              >
+                                <SubIcon className="h-4 w-4" />
+                                <span className="font-medium text-sm">{subItem.label}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+                
+                // Handle regular menu items
                 return (
                   <button
                     key={item.id}
                     onClick={() => {
                       setActiveTab(item.id);
                       setSidebarOpen(false);
+                      // Reset account sub-tab when clicking account
+                      if (item.id === 'account') {
+                        setAccountSubTab('settings');
+                      }
                     }}
                     className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-300 ${
                       activeTab === item.id
