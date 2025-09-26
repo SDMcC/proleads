@@ -1115,6 +1115,85 @@ function Dashboard() {
                 <p className="text-gray-300">Welcome back</p>
                 <p className="text-white font-medium">{user?.username}</p>
               </div>
+              
+              {/* Notification Bell */}
+              <div className="relative">
+                <button
+                  onClick={() => {
+                    setNotificationsPanelOpen(!notificationsPanelOpen);
+                    if (!notificationsPanelOpen && unreadCount > 0) {
+                      markAllNotificationsRead();
+                    }
+                  }}
+                  className="relative p-2 text-gray-300 hover:text-white rounded-lg hover:bg-white hover:bg-opacity-10 transition-all duration-300"
+                >
+                  <Bell className="h-6 w-6" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </button>
+                
+                {/* Notifications Dropdown */}
+                {notificationsPanelOpen && (
+                  <div className="absolute right-0 mt-2 w-80 bg-gray-900 rounded-xl shadow-xl border border-gray-700 z-50">
+                    <div className="p-4 border-b border-gray-700">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-semibold text-white">Notifications</h3>
+                        {notifications.length > 0 && (
+                          <button
+                            onClick={() => setNotificationsPanelOpen(false)}
+                            className="text-gray-400 hover:text-white"
+                          >
+                            <X className="h-5 w-5" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="max-h-96 overflow-y-auto">
+                      {notifications.length === 0 ? (
+                        <div className="p-4 text-center text-gray-400">
+                          <Bell className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          <p>No notifications yet</p>
+                        </div>
+                      ) : (
+                        notifications.map((notification) => (
+                          <div 
+                            key={notification.notification_id}
+                            className={`p-4 border-b border-gray-700 last:border-b-0 ${
+                              !notification.read_status ? 'bg-blue-900 bg-opacity-20' : ''
+                            }`}
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center space-x-2 mb-1">
+                                  {notification.type === 'referral' && <Users className="h-4 w-4 text-blue-500" />}
+                                  {notification.type === 'milestone' && <Award className="h-4 w-4 text-yellow-500" />}
+                                  {notification.type === 'commission' && <DollarSign className="h-4 w-4 text-green-500" />}
+                                  <h4 className="text-sm font-medium text-white">{notification.title}</h4>
+                                </div>
+                                <p className="text-sm text-gray-300">{notification.message}</p>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  {new Date(notification.created_at).toLocaleDateString()} {new Date(notification.created_at).toLocaleTimeString()}
+                                </p>
+                              </div>
+                              <button
+                                onClick={() => clearNotification(notification.notification_id)}
+                                className="ml-2 text-gray-400 hover:text-red-400 transition-colors"
+                              >
+                                <X className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+              
               <button
                 onClick={logout}
                 className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-300"
