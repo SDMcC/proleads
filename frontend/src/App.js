@@ -5588,8 +5588,8 @@ function MemberModal({ member, editingMember, onClose, onUpdate, onSuspend, onUn
                     <span className="text-white ml-2">${(member?.stats?.total_earnings || memberData.total_earnings || 0).toFixed(2)}</span>
                   </div>
                   <div>
-                    <span className="text-gray-400">Referral Code:</span>
-                    <span className="text-white ml-2 font-mono text-sm">{memberData.referral_code}</span>
+                    <span className="text-gray-400">Total Payments:</span>
+                    <span className="text-white ml-2">{member?.stats?.total_payments || 0}</span>
                   </div>
                 </div>
               </div>
