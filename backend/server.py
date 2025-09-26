@@ -718,6 +718,119 @@ async def get_profile(current_user: dict = Depends(get_current_user)):
         "total_earnings": earnings,
         "referral_link": f"{APP_URL}/r/{current_user['referral_code']}"
     }
+# Notification system functions
+async def create_notification(user_address: str, notification_type: str, title: str, message: str):
+    """Create a notification for a user"""
+    try:
+        notification_doc = {
+            "notification_id": str(uuid.uuid4()),
+            "user_address": user_address,
+            "type": notification_type,
+            "title": title,
+            "message": message,
+            "created_at": datetime.utcnow(),
+            "read_status": False
+        }
+        
+        await db.notifications.insert_one(notification_doc)
+        logger.info(f"Notification created for {user_address}: {title}")
+        
+    except Exception as e:
+        logger.error(f"Failed to create notification: {str(e)}")
+
+async def check_milestone_achievements(user_address: str):
+    """Check and create milestone notifications for user based on referral count"""
+    try:
+        # Get current referral count
+        referral_count = await db.users.count_documents({"referrer_address": user_address})
+        
+        # Define milestone thresholds and rewards
+        milestones = {
+            25: 25,
+            100: 100, 
+            250: 250,
+            1000: 1000,
+            5000: 2500,
+            10000: 5000
+        }
+        
+        # Check which milestones have been achieved
+        for threshold, reward in milestones.items():
+            if referral_count >= threshold:
+                # Check if notification already exists for this milestone
+                existing_notification = await db.notifications.find_one({
+                    "user_address": user_address,
+                    "type": "milestone",
+                    "message": {"$regex": f"{threshold} referrals"}
+                })
+                
+                if not existing_notification:
+                    await create_notification(
+                        user_address=user_address,
+                        notification_type="milestone",
+                        title="Milestone Achievement!",
+                        message=f"Congratulations! You've reached {threshold} referrals and earned a ${reward} milestone bonus!"
+                    )
+                    
+    except Exception as e:
+        logger.error(f"Failed to check milestone achievements: {str(e)}")
+
+@app.get("/api/users/notifications")
+async def get_user_notifications(current_user: dict = Depends(get_current_user)):
+    """Get notifications for the current user"""
+    try:
+        notifications = await db.notifications.find(
+            {"user_address": current_user["address"]}
+        ).sort("created_at", -1).to_list(None)
+        
+        # Convert ObjectId and datetime for JSON serialization
+        for notification in notifications:
+            notification["_id"] = str(notification["_id"])
+            notification["created_at"] = notification["created_at"].isoformat()
+        
+        return {
+            "notifications": notifications,
+            "unread_count": len([n for n in notifications if not n["read_status"]])
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to fetch notifications: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch notifications")
+
+@app.delete("/api/users/notifications/{notification_id}")
+async def clear_notification(notification_id: str, current_user: dict = Depends(get_current_user)):
+    """Clear/delete a specific notification"""
+    try:
+        result = await db.notifications.delete_one({
+            "notification_id": notification_id,
+            "user_address": current_user["address"]
+        })
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Notification not found")
+        
+        return {"message": "Notification cleared successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to clear notification: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to clear notification")
+
+@app.post("/api/users/notifications/mark-read")
+async def mark_notifications_read(current_user: dict = Depends(get_current_user)):
+    """Mark all notifications as read for the current user"""
+    try:
+        result = await db.notifications.update_many(
+            {"user_address": current_user["address"], "read_status": False},
+            {"$set": {"read_status": True}}
+        )
+        
+        return {"message": f"Marked {result.modified_count} notifications as read"}
+        
+    except Exception as e:
+        logger.error(f"Failed to mark notifications as read: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to mark notifications as read")
 
 # Payment endpoints
 @app.post("/api/payments/create")
