@@ -1131,7 +1131,7 @@ function Dashboard() {
               </div>
               
               {/* Notification Bell */}
-              <div className="relative">
+              <div className="relative notification-panel">
                 <button
                   onClick={() => {
                     setNotificationsPanelOpen(!notificationsPanelOpen);
