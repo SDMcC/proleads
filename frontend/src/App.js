@@ -1173,7 +1173,10 @@ function Dashboard() {
           {activeTab === 'payments' && <PaymentHistoryTab />}
           {activeTab === 'milestones' && <MilestonesTab />}
           {activeTab === 'leads' && <LeadsTab />}
-          {activeTab === 'account' && <AccountSettingsTab user={user} />}
+          {activeTab === 'referrals' && <ReferralsTab />}
+          {activeTab === 'autoresponder' && <AutoresponderTab />}
+          {activeTab === 'tickets' && <TicketsTab />}
+          {activeTab === 'account' && <AccountTab user={user} accountSubTab={accountSubTab} setAccountSubTab={setAccountSubTab} />}
         </div>
       </div>
 
