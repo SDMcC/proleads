@@ -5662,8 +5662,9 @@ class Web3MembershipTester:
         print("\n🔔 Testing Referral Notification Creation")
         
         # Create referrer user
+        unique_id = str(uuid.uuid4())[:8]
         referrer_address = f"0x{uuid.uuid4().hex[:40]}"
-        referrer_username = f"referrer_{int(time.time())}"
+        referrer_username = f"referrer_{int(time.time())}_{unique_id}"
         referrer_email = f"{referrer_username}@test.com"
         referrer_password = "testpass123"
         
