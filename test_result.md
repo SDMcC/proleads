@@ -462,15 +462,18 @@ backend:
 
   - task: "Admin Members Management Enhancement - Subscription Expiry & Suspend/Unsuspend"
     implemented: true
-    working: "NA"
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "IMPLEMENTATION COMPLETED: Enhanced Admin Members Management with subscription expiry tracking and suspend/unsuspend logic fixes. BACKEND CHANGES: 1) Added subscription expiry logic to payment callback - paid tiers get 1 year subscription, 2) Created unsuspend endpoint POST /api/admin/members/{member_id}/unsuspend, 3) Updated member listing and details endpoints to include subscription_expires_at and is_expired fields. FRONTEND CHANGES: 1) Added 'Expiry Date' column to members table, 2) Added 'Expired' badge display for expired members, 3) Fixed suspend/unsuspend button logic in modal to show correct action based on suspended status, 4) Added subscription expiry and status information to member details modal. Ready for testing."
+      - working: true
+        agent: "testing"
+        comment: "✅ ADMIN MEMBERS MANAGEMENT ENHANCEMENT TESTING COMPLETED SUCCESSFULLY: Comprehensive testing of the newly implemented subscription expiry tracking and suspend/unsuspend functionality confirms all features are working correctly. CRITICAL TEST RESULTS: 1) Unsuspend Endpoint Testing - ✅ POST /api/admin/members/{member_id}/unsuspend endpoint working perfectly, ✅ Requires admin authentication (returns 401 without token), ✅ Successfully unsuspends suspended members, ✅ Returns 404 for non-existent members, ✅ Returns 400 when trying to unsuspend non-suspended members. 2) Member Listing Enhancement - ✅ GET /api/admin/members includes subscription_expires_at and is_expired fields, ✅ Expiry logic correctly identifies expired members (subscription_expires_at < current date), ✅ Affiliate members correctly show no expiry date (None) and is_expired: false. 3) Member Details Enhancement - ✅ GET /api/admin/members/{member_id} includes subscription expiry information, ✅ Suspended status properly returned in member details, ✅ All required fields present: subscription_expires_at, is_expired, suspended. 4) Subscription Expiry Logic - ✅ Payment callback logic verified: paid tiers (bronze, silver, gold) get 1 year subscription, affiliate tier does not get expiry date, ✅ Expiry calculation: subscription_expires_at = datetime.utcnow() + timedelta(days=365). 5) Complete Suspend/Unsuspend Workflow - ✅ Full workflow tested: suspend member → verify suspension → unsuspend member → verify unsuspension, ✅ All status changes properly reflected in database and API responses. AUTHENTICATION VERIFIED: All endpoints properly secured with admin credentials (admin/admin123). ALL TESTS PASSED: 9/9 (100% success rate). The subscription expiry tracking and suspend/unsuspend functionality is fully operational and ready for production use."
 
 frontend:
   - task: "Admin Login Interface"
