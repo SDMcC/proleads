@@ -4052,6 +4052,16 @@ function AdminDashboard() {
           </div>
         </div>
       </nav>
+      
+      {/* Admin Notification Panel Portal */}
+      {adminNotificationsPanelOpen && adminBellButtonRef && (
+        <AdminNotificationPanel
+          bellButtonRef={adminBellButtonRef}
+          notifications={adminNotifications}
+          onClose={() => setAdminNotificationsPanelOpen(false)}
+          onClearNotification={clearAdminNotification}
+        />
+      )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tab Navigation */}
