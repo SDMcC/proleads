@@ -430,6 +430,21 @@ backend:
         agent: "testing"
         comment: "✅ COMPREHENSIVE REFERRAL LINK SYSTEM TESTING COMPLETED: Both major fixes have been successfully implemented and verified working correctly. FIX 1 - REFERRAL LINK FLOW: ✅ /r/{code} redirect to homepage working (uses window.location.href in ReferralRedirect component), ✅ Homepage preserves referral codes in Join Now and Learn More buttons, ✅ Registration page displays referrer information correctly, ✅ Complete flow from /r/ link → homepage → registration preserves referral codes. FIX 2 - MEMBER DASHBOARD AFFILIATE LINK FORMAT: ✅ Backend API updated to use /r/{code} format (server.py line 719), ✅ Overview tab shows correct /r/{code} format links, ✅ Affiliate Tools tab shows correct /r/{code} format links, ✅ Copy functionality working with new format, ✅ QR code generation uses new /r/{code} format (URL encoded in QR data). TESTING RESULTS: Successfully logged into member dashboard with user 'firstuser_1758888762', verified both Overview and Affiliate Tools tabs display affiliate links in format 'https://web3-affiliate-1.preview.emergentagent.com/r/REFFIRSTUSER_175888876249EC8E', confirmed QR code contains properly encoded /r/{code} URL, tested copy functionality works correctly. BACKEND VERIFICATION: Referral API working correctly, user profile API returns /r/{code} format, database relationships intact. All requested functionality is working as expected."
 
+  - task: "Corrected Lead Distribution Algorithm Testing"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "REVIEW REQUEST: Test the corrected lead distribution algorithm to verify it works as intended. Check if there are distributions that can be re-triggered or have status 'queued', trigger distribution and verify new algorithm works correctly."
+      - working: true
+        agent: "testing"
+        comment: "✅ CORRECTED LEAD DISTRIBUTION ALGORITHM TEST COMPLETED SUCCESSFULLY: Comprehensive testing of the corrected lead distribution algorithm confirms it is working exactly as intended per the review request. CRITICAL VERIFICATION RESULTS: 1) Distribution Triggering - ✅ Successfully found and re-triggered completed distribution c1b108b9-9805-4500-b1d6-50a571272d2e with 104 leads, ✅ Distribution completed successfully with proper status management. 2) Bronze Member Allocation - ✅ All 7 Bronze members received exactly 100 leads each (verified in database), ✅ Total demand: 7 × 100 = 700 assignments fulfilled completely, ✅ Each Bronze member has their own CSV file with exactly 100 unique leads. 3) Lead Distribution Logic - ✅ Total capacity: 104 × 10 = 1,040 assignments available, ✅ Algorithm correctly distributed leads to multiple users (up to 10 per lead), ✅ Average 6.7 distributions per lead (within expected 6-7 range), ✅ No user gets the same lead more than once (verified by algorithm logic). 4) Database Verification - ✅ 7 member CSV files created (one per Bronze member), ✅ All Bronze members: firstuser, seconduser, seconduser_1758468049, fourthuser, sixthuser, seconduser_1758886218, seventhuser each have exactly 100 leads, ✅ Lead distribution counts properly tracked in database, ✅ Distribution marked as completed when done. 5) Algorithm Correctness - ✅ Each lead can be distributed to up to 10 different users, ✅ No duplicate leads within any single member's allocation, ✅ All eligible Bronze members get their full 100 leads allocation, ✅ Fair distribution across all Bronze members achieved. CONCLUSION: The corrected lead distribution algorithm is working perfectly and meets all requirements specified in the review request. The algorithm successfully handles the scenario with 104 leads and 7 Bronze members, ensuring fair distribution while respecting the constraints of maximum 10 distributions per lead and no duplicates per member."
+
 frontend:
   - task: "Admin Login Interface"
     implemented: true
