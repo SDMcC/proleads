@@ -26,7 +26,14 @@ import {
   Menu,
   X,
   Clock,
-  Download
+  Download,
+  ChevronDown,
+  ChevronRight,
+  Mail,
+  Bell,
+  UserX,
+  MessageCircle,
+  Zap
 } from 'lucide-react';
 import './App.css';
 
