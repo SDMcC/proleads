@@ -2623,10 +2623,7 @@ async def get_lead_distributions(
             
             # Get leads remaining
             total_leads = dist.get("total_leads", 0)
-            remaining_leads = await db.leads.count_documents({
-                "distribution_id": dist["distribution_id"],
-                "distribution_count": {"$lt": 10}  # Less than max distribution count
-            })
+            remaining_leads = max(0, total_leads - distributed_count)  # Ensure it's not negative
             
             enriched_dist = {
                 "distribution_id": dist["distribution_id"],
