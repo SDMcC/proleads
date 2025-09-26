@@ -5570,12 +5570,21 @@ function MemberModal({ member, editingMember, onClose, onUpdate, onSuspend, onUn
               >
                 Edit Member
               </button>
-              <button
-                onClick={handleSuspend}
-                className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-all duration-300"
-              >
-                Suspend Member
-              </button>
+              {memberData.suspended ? (
+                <button
+                  onClick={handleUnsuspend}
+                  className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-all duration-300"
+                >
+                  Unsuspend Member
+                </button>
+              ) : (
+                <button
+                  onClick={handleSuspend}
+                  className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-all duration-300"
+                >
+                  Suspend Member
+                </button>
+              )}
               <button
                 onClick={onClose}
                 className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition-all duration-300"
