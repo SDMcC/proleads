@@ -1111,9 +1111,17 @@ function Dashboard() {
 
 // Dashboard Tab Components
 function OverviewTab({ stats, user }) {
+  const getShortenedReferralLink = () => {
+    if (!user?.referral_code) return '';
+    // Create a shortened version using referral code
+    const baseUrl = window.location.origin;
+    return `${baseUrl}/r/${user.referral_code}`;
+  };
+
   const copyReferralLink = () => {
-    if (user?.referral_link) {
-      navigator.clipboard.writeText(user.referral_link);
+    const referralLink = getShortenedReferralLink();
+    if (referralLink) {
+      navigator.clipboard.writeText(referralLink);
       alert('Referral link copied to clipboard!');
     }
   };
