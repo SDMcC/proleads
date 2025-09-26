@@ -349,6 +349,14 @@ async def calculate_commissions(new_member_address: str, new_member_tier: str, n
                 await db.commissions.insert_one(commission_doc)
                 commissions_paid.append(commission_doc)
                 
+                # Create commission notification
+                await create_notification(
+                    user_address=current_referrer_address,
+                    notification_type="commission",
+                    title="Commission Earned!",
+                    message=f"You earned ${commission_amount:.2f} commission from {new_member.get('username', 'new member')}'s {new_member_tier} membership!"
+                )
+                
                 logger.info(f"Commission Level {level + 1}: {referrer_tier} earns {commission_rate*100}% of ${new_member_amount} = ${commission_amount}")
                 
                 # Initiate instant payout
