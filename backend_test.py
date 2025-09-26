@@ -5398,5 +5398,21 @@ if __name__ == "__main__":
         print("=" * 80)
         
         sys.exit(0 if success else 1)
+    elif len(sys.argv) > 1 and sys.argv[1] == "lead_distribution":
+        print("🎯 RUNNING SPECIFIC TEST: Corrected Lead Distribution Algorithm")
+        print("=" * 80)
+        
+        backend_url = "https://web3-affiliate-1.preview.emergentagent.com"
+        tester = Web3MembershipTester(backend_url)
+        
+        # Run the specific lead distribution test
+        success = tester.test_corrected_lead_distribution_algorithm()
+        
+        print("\n" + "=" * 80)
+        print(f"🎯 FINAL RESULT: {'✅ PASSED' if success else '❌ FAILED'}")
+        print(f"📊 Tests passed: {tester.tests_passed}/{tester.tests_run}")
+        print("=" * 80)
+        
+        sys.exit(0 if success else 1)
     else:
         sys.exit(main())
