@@ -5903,6 +5903,13 @@ def main():
     else:
         print("\n✅ Commissions Management API system test passed")
     
+    # Test Admin Notification System (Priority 1e)
+    admin_notifications_success = tester.test_admin_notification_system()
+    if not admin_notifications_success:
+        print("\n⚠️ Admin Notification System test failed")
+    else:
+        print("\n✅ Admin Notification System test passed")
+    
     # Test Priority 2: User Experience APIs
     priority2_success = tester.test_priority2_user_experience_apis()
     if not priority2_success:
