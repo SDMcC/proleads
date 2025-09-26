@@ -1251,6 +1251,12 @@ async def get_member_details(member_id: str, admin: dict = Depends(get_admin_use
                     "membership_tier": sponsor["membership_tier"]
                 }
         
+        # Check if subscription is expired
+        subscription_expires_at = member.get("subscription_expires_at")
+        is_expired = False
+        if subscription_expires_at and subscription_expires_at < datetime.utcnow():
+            is_expired = True
+        
         return {
             "member": {
                 "id": member["address"],
@@ -1261,7 +1267,9 @@ async def get_member_details(member_id: str, admin: dict = Depends(get_admin_use
                 "referral_code": member["referral_code"],
                 "created_at": member["created_at"],
                 "last_active": member.get("last_active"),
-                "suspended": member.get("suspended", False)
+                "suspended": member.get("suspended", False),
+                "subscription_expires_at": subscription_expires_at,
+                "is_expired": is_expired
             },
             "stats": {
                 "total_referrals": len(referrals),
