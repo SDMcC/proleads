@@ -2862,10 +2862,6 @@ async def perform_lead_distribution(distribution_id: str):
                 )
             
             distributions_made += len(member_leads)
-            
-            # Remove distributed leads from available_leads to avoid duplicates
-            distributed_lead_ids = {lead["lead_id"] for lead in member_leads}
-            available_leads = [lead for lead in available_leads if lead["lead_id"] not in distributed_lead_ids]
         
         # Mark distribution as completed
         await db.lead_distributions.update_one(
