@@ -3637,6 +3637,12 @@ function AdminDashboard() {
   const [commissionDateTo, setCommissionDateTo] = useState('');
   const [commissionPage, setCommissionPage] = useState(1);
   const [commissionTotalPages, setCommissionTotalPages] = useState(1);
+  
+  // Admin notification states
+  const [adminNotifications, setAdminNotifications] = useState([]);
+  const [adminUnreadCount, setAdminUnreadCount] = useState(0);
+  const [adminNotificationsPanelOpen, setAdminNotificationsPanelOpen] = useState(false);
+  const [adminBellButtonRef, setAdminBellButtonRef] = useState(null);
 
   useEffect(() => {
     fetchAdminData();
