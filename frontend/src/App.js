@@ -5423,6 +5423,12 @@ function MemberModal({ member, editingMember, onClose, onUpdate, onSuspend, onUn
     }
   };
 
+  const handleUnsuspend = () => {
+    if (memberData) {
+      onUnsuspend(memberData.id || memberData.wallet_address);
+    }
+  };
+
   const handleEditClick = () => {
     onEdit(memberData);
   };
