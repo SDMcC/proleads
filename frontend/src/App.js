@@ -1004,6 +1004,7 @@ function Dashboard() {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notificationsPanelOpen, setNotificationsPanelOpen] = useState(false);
+  const [bellButtonRef, setBellButtonRef] = useState(null);
 
   useEffect(() => {
     fetchDashboardStats();
