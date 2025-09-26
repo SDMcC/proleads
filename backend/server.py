@@ -2724,77 +2724,46 @@ async def perform_lead_distribution(distribution_id: str):
             logger.info("No available leads for distribution")
             return
         
-        # Distribution logic: create CSV files based on membership tier with fair distribution
+        # Distribution logic: Each lead can be distributed to up to 10 different users
+        # No user should receive the same lead more than once
         leads_per_member = {
             "bronze": 100,
             "silver": 250,
             "gold": 500
         }
         
-        # Calculate fair distribution based on available leads and eligible members
+        MAX_DISTRIBUTIONS_PER_LEAD = 10
+        
         total_available_leads = len(available_leads)
+        total_capacity = total_available_leads * MAX_DISTRIBUTIONS_PER_LEAD
         total_demand = sum(leads_per_member.get(member.get("membership_tier", "bronze"), 100) 
                           for member in eligible_members)
         
-        logger.info(f"Distribution planning: {total_available_leads} leads available, {total_demand} total demand from {len(eligible_members)} members")
+        logger.info(f"Distribution planning:")
+        logger.info(f"  - Available leads: {total_available_leads}")
+        logger.info(f"  - Max distributions per lead: {MAX_DISTRIBUTIONS_PER_LEAD}")
+        logger.info(f"  - Total capacity: {total_capacity}")
+        logger.info(f"  - Total demand: {total_demand} from {len(eligible_members)} members")
+        logger.info(f"  - Can fulfill all requests: {total_capacity >= total_demand}")
         
-        # If we don't have enough leads, distribute proportionally
-        if total_available_leads < total_demand:
-            logger.warning(f"Insufficient leads for full distribution. Implementing proportional distribution.")
-            # Calculate proportional allocation
-            allocation_ratio = total_available_leads / total_demand
-            
-            # Pre-calculate how many leads each member will get
-            member_allocations = []
-            leads_allocated = 0
-            
-            for member in eligible_members:
-                member_tier = member.get("membership_tier", "bronze")
-                desired_leads = leads_per_member.get(member_tier, 100)
-                allocated_leads = min(int(desired_leads * allocation_ratio), 
-                                    total_available_leads - leads_allocated)
-                
-                member_allocations.append({
-                    "member": member,
-                    "allocated_leads": allocated_leads,
-                    "tier": member_tier
-                })
-                
-                leads_allocated += allocated_leads
-                
-                if leads_allocated >= total_available_leads:
-                    break
-            
-            logger.info(f"Proportional allocation: {leads_allocated} leads will be distributed")
-        else:
-            # We have enough leads for everyone
-            member_allocations = []
-            for member in eligible_members:
-                member_tier = member.get("membership_tier", "bronze")
-                allocated_leads = leads_per_member.get(member_tier, 100)
-                
-                member_allocations.append({
-                    "member": member,
-                    "allocated_leads": allocated_leads,
-                    "tier": member_tier
-                })
-        
-        # Now distribute leads based on pre-calculated allocations
         distributions_made = 0
-        current_lead_index = 0
         
-        for allocation in member_allocations:
-            member = allocation["member"]
-            allocated_count = allocation["allocated_leads"]
-            member_tier = allocation["tier"]
+        # Track which leads have been assigned to which members to prevent duplicates
+        lead_assignments = {}  # lead_id -> set of member addresses who received it
+        for lead in available_leads:
+            lead_assignments[lead["lead_id"]] = set()
+        
+        # Process each member and give them their full allocation
+        for member in eligible_members:
+            member_tier = member.get("membership_tier", "bronze")
+            desired_leads = leads_per_member.get(member_tier, 100)
+            member_address = member["address"]
             
-            if allocated_count == 0:
-                logger.info(f"No leads allocated for member {member['username']}")
-                continue
+            logger.info(f"Processing {member['username']} ({member_tier} tier): needs {desired_leads} leads")
             
             # Check if member already has a CSV file for this distribution
             existing_csv = await db.member_csv_files.find_one({
-                "member_address": member["address"],
+                "member_address": member_address,
                 "distribution_id": distribution_id
             })
             
@@ -2802,15 +2771,29 @@ async def perform_lead_distribution(distribution_id: str):
                 logger.info(f"Member {member['username']} already has CSV file for distribution {distribution_id}")
                 continue
             
-            # Get the allocated leads for this member
-            member_leads = available_leads[current_lead_index:current_lead_index + allocated_count]
-            current_lead_index += allocated_count
+            # Find leads for this member (avoiding duplicates)
+            member_leads = []
+            for lead in available_leads:
+                if len(member_leads) >= desired_leads:
+                    break
+                    
+                lead_id = lead["lead_id"]
+                
+                # Check if this lead has been assigned to this member already
+                if member_address not in lead_assignments[lead_id]:
+                    # Check if this lead hasn't exceeded max distributions
+                    if len(lead_assignments[lead_id]) < MAX_DISTRIBUTIONS_PER_LEAD:
+                        member_leads.append(lead)
+                        lead_assignments[lead_id].add(member_address)
+            
+            if len(member_leads) < desired_leads:
+                logger.warning(f"Could only allocate {len(member_leads)} leads to {member['username']} (wanted {desired_leads})")
+            else:
+                logger.info(f"Successfully allocated {len(member_leads)} leads to {member['username']}")
             
             if not member_leads:
-                logger.info(f"No leads remaining for member {member['username']}")
+                logger.info(f"No leads available for member {member['username']}")
                 continue
-            
-            logger.info(f"Distributing {len(member_leads)} leads to {member['username']} ({member_tier} tier)")
             
             # Generate CSV content
             csv_content = "Name,Email,Address\n"
@@ -2820,7 +2803,7 @@ async def perform_lead_distribution(distribution_id: str):
             # Create CSV file record
             csv_file_doc = {
                 "file_id": str(uuid.uuid4()),
-                "member_address": member["address"],
+                "member_address": member_address,
                 "member_username": member["username"],
                 "member_tier": member_tier,
                 "distribution_id": distribution_id,
