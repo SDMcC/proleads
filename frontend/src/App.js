@@ -5390,7 +5390,7 @@ function ConfigurationTab() {
   );
 }
 // Member Modal Component
-function MemberModal({ member, editingMember, onClose, onUpdate, onSuspend, onEdit }) {
+function MemberModal({ member, editingMember, onClose, onUpdate, onSuspend, onUnsuspend, onEdit }) {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
