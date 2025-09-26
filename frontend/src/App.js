@@ -994,6 +994,8 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [affiliateMenuOpen, setAffiliateMenuOpen] = useState(false);
+  const [accountSubTab, setAccountSubTab] = useState('settings');
 
   useEffect(() => {
     fetchDashboardStats();
