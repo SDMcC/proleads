@@ -5541,6 +5541,30 @@ function MemberModal({ member, editingMember, onClose, onUpdate, onSuspend, onUn
                       {new Date(memberData.created_at).toLocaleDateString()}
                     </span>
                   </div>
+                  <div>
+                    <span className="text-gray-400">Subscription Expires:</span>
+                    <span className="text-white ml-2">
+                      {memberData.subscription_expires_at ? 
+                        new Date(memberData.subscription_expires_at).toLocaleDateString() : 
+                        'N/A'
+                      }
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Status:</span>
+                    <div className="ml-2 flex gap-2 items-center">
+                      {memberData.is_expired && (
+                        <span className="px-2 py-1 rounded text-xs bg-yellow-600 text-yellow-100">
+                          Expired
+                        </span>
+                      )}
+                      <span className={`px-2 py-1 rounded text-xs ${
+                        memberData.suspended ? 'bg-red-600 text-red-100' : 'bg-green-600 text-green-100'
+                      }`}>
+                        {memberData.suspended ? 'Suspended' : 'Active'}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
