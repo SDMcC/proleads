@@ -2966,97 +2966,90 @@ async def get_user_leads(
     limit: int = 50,
     current_user: dict = Depends(get_current_user)
 ):
-    """Get leads assigned to the current user"""
+    """Get user's lead CSV files"""
     try:
-        skip = (page - 1) * limit
         user_address = current_user["address"]
+        offset = (page - 1) * limit
         
-        # Get total count of user's leads
-        total_count = await db.member_leads.count_documents({"member_address": user_address})
+        # Get CSV files for this user
+        csv_files = await db.member_csv_files.find({
+            "member_address": user_address
+        }).sort("created_at", -1).skip(offset).limit(limit).to_list(length=limit)
         
-        # Get user's leads with pagination
-        leads_cursor = db.member_leads.find({"member_address": user_address}).skip(skip).limit(limit).sort("assigned_at", -1)
-        user_leads = await leads_cursor.to_list(length=None)
+        total_files = await db.member_csv_files.count_documents({
+            "member_address": user_address
+        })
         
-        # Format lead data
-        formatted_leads = []
-        for lead_assignment in user_leads:
-            formatted_lead = {
-                "assignment_id": lead_assignment["assignment_id"],
-                "lead_name": lead_assignment["lead_name"],
-                "lead_email": lead_assignment["lead_email"],
-                "lead_address": lead_assignment["lead_address"],
-                "assigned_at": lead_assignment["assigned_at"],
-                "downloaded": lead_assignment.get("downloaded", False),
-                "downloaded_at": lead_assignment.get("downloaded_at")
-            }
-            formatted_leads.append(formatted_lead)
+        # Format CSV file data
+        formatted_files = []
+        for csv_file in csv_files:
+            formatted_files.append({
+                "file_id": csv_file["file_id"],
+                "filename": csv_file["filename"],
+                "lead_count": csv_file["lead_count"],
+                "member_tier": csv_file["member_tier"],
+                "distribution_id": csv_file["distribution_id"],
+                "created_at": csv_file["created_at"].isoformat() if csv_file.get("created_at") else None,
+                "downloaded": csv_file.get("downloaded", False),
+                "downloaded_at": csv_file["downloaded_at"].isoformat() if csv_file.get("downloaded_at") else None,
+                "download_count": csv_file.get("download_count", 0)
+            })
         
         return {
-            "leads": formatted_leads,
-            "total_count": total_count,
+            "csv_files": formatted_files,
+            "total_count": total_files,
             "page": page,
             "limit": limit,
-            "total_pages": (total_count + limit - 1) // limit
+            "total_pages": (total_files + limit - 1) // limit
         }
         
     except Exception as e:
-        logger.error(f"Failed to fetch user leads: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to fetch leads")
+        logger.error(f"Failed to get user leads: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve leads")
 
-@app.get("/api/users/leads/download")
-async def download_user_leads_csv(current_user: dict = Depends(get_current_user)):
-    """Download all assigned leads as CSV"""
+@app.get("/api/users/leads/download/{file_id}")
+async def download_user_leads_csv(
+    file_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Download user's lead CSV file"""
     try:
         user_address = current_user["address"]
         
-        # Get all user's leads
-        user_leads = await db.member_leads.find({"member_address": user_address}).to_list(None)
+        # Get CSV file record
+        csv_file = await db.member_csv_files.find_one({
+            "file_id": file_id,
+            "member_address": user_address
+        })
         
-        if not user_leads:
-            raise HTTPException(status_code=404, detail="No leads assigned to you")
+        if not csv_file:
+            raise HTTPException(status_code=404, detail="CSV file not found")
         
-        # Create CSV content
-        output = io.StringIO()
-        writer = csv.writer(output)
-        
-        # Write headers
-        writer.writerow(['Name', 'Email', 'Address', 'Assigned Date', 'Downloaded'])
-        
-        # Write lead data
-        for lead_assignment in user_leads:
-            writer.writerow([
-                lead_assignment["lead_name"],
-                lead_assignment["lead_email"],
-                lead_assignment["lead_address"],
-                lead_assignment["assigned_at"].strftime("%Y-%m-%d %H:%M:%S"),
-                "Yes" if lead_assignment.get("downloaded", False) else "No"
-            ])
-        
-        # Mark all leads as downloaded
-        await db.member_leads.update_many(
-            {"member_address": user_address, "downloaded": False},
-            {"$set": {
-                "downloaded": True,
-                "downloaded_at": datetime.utcnow()
-            }}
+        # Update download tracking
+        await db.member_csv_files.update_one(
+            {"file_id": file_id},
+            {
+                "$set": {
+                    "downloaded": True,
+                    "downloaded_at": datetime.utcnow()
+                },
+                "$inc": {"download_count": 1}
+            }
         )
         
-        csv_content = output.getvalue()
-        output.close()
-        
-        # Return CSV as streaming response
+        # Return CSV content as downloadable file
         return StreamingResponse(
-            io.StringIO(csv_content),
+            io.StringIO(csv_file["csv_content"]),
             media_type="text/csv",
-            headers={"Content-Disposition": f"attachment; filename=my_leads_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.csv"}
+            headers={"Content-Disposition": f"attachment; filename={csv_file['filename']}"}
         )
         
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Failed to download user leads: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to download leads")
+        logger.error(f"Failed to download CSV file: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to download CSV file")
+
 
 if __name__ == "__main__":
     import uvicorn
