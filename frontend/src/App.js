@@ -3962,12 +3962,25 @@ function AdminDashboard() {
                         <td className="py-3 text-gray-400">
                           {new Date(member.created_at).toLocaleDateString()}
                         </td>
+                        <td className="py-3 text-gray-400">
+                          {member.subscription_expires_at ? 
+                            new Date(member.subscription_expires_at).toLocaleDateString() : 
+                            'N/A'
+                          }
+                        </td>
                         <td className="py-3">
-                          <span className={`px-2 py-1 rounded text-xs ${
-                            member.suspended ? 'bg-red-600 text-red-100' : 'bg-green-600 text-green-100'
-                          }`}>
-                            {member.suspended ? 'Suspended' : 'Active'}
-                          </span>
+                          <div className="flex flex-wrap gap-1">
+                            {member.is_expired && (
+                              <span className="px-2 py-1 rounded text-xs bg-yellow-600 text-yellow-100">
+                                Expired
+                              </span>
+                            )}
+                            <span className={`px-2 py-1 rounded text-xs ${
+                              member.suspended ? 'bg-red-600 text-red-100' : 'bg-green-600 text-green-100'
+                            }`}>
+                              {member.suspended ? 'Suspended' : 'Active'}
+                            </span>
+                          </div>
                         </td>
                         <td className="py-3">
                           <div className="flex gap-2">
