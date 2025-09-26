@@ -4249,6 +4249,15 @@ def main():
     else:
         print("\n✅ Complete registration flow test passed")
     
+    # PRIORITY: Complete Referral Registration Flow Test (Review Request)
+    print("\n🎯 PRIORITY: COMPLETE REFERRAL REGISTRATION FLOW TEST (REVIEW REQUEST)")
+    print("=" * 70)
+    referral_flow_success = tester.test_complete_referral_registration_flow()
+    if not referral_flow_success:
+        print("\n⚠️ CRITICAL: Complete referral registration flow test FAILED")
+    else:
+        print("\n✅ Complete referral registration flow test PASSED")
+    
     # Test commission calculation
     tester.test_commission_calculation()
     
