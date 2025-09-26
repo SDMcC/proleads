@@ -257,7 +257,7 @@ function LandingPage() {
   const generateReferralLink = () => {
     if (user && user.referral_code) {
       const baseUrl = window.location.origin;
-      return `${baseUrl}/register?ref=${user.referral_code}`;
+      return `${baseUrl}/r/${user.referral_code}`;
     }
     return '';
   };
