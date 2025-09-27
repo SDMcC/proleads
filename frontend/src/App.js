@@ -1547,8 +1547,16 @@ function OverviewTab({ stats, user }) {
         <StatCard
           icon={<Award className="h-8 w-8 text-purple-400" />}
           title="Membership Tier"
-          value={user?.membership_tier?.toUpperCase() || 'AFFILIATE'}
-          subtitle={`${user?.membership_tier === 'affiliate' ? 'Free' : '$' + (user?.membership_tier === 'bronze' ? '20' : user?.membership_tier === 'silver' ? '50' : '100')}/month`}
+          value={getTierDisplayName(user?.membership_tier || 'affiliate').toUpperCase()}
+          subtitle={(() => {
+            const tier = user?.membership_tier;
+            if (tier === 'affiliate' || tier === 'vip_affiliate') return 'Free';
+            if (tier === 'test') return '$2/month';
+            if (tier === 'bronze') return '$20/month';
+            if (tier === 'silver') return '$50/month';
+            if (tier === 'gold') return '$100/month';
+            return 'Free';
+          })()}
           action={
             <button
               onClick={() => window.location.href = '/payment'}
