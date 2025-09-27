@@ -4492,6 +4492,54 @@ async def get_ticket_attachment(attachment_id: str, current_user: dict = Depends
         logger.error(f"Failed to download attachment: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to download attachment")
 
+# Generate temporary view URL for attachment
+@app.get("/api/tickets/attachment/{attachment_id}/view-url")
+async def generate_attachment_view_url(attachment_id: str, current_user: dict = Depends(get_current_user)):
+    """Generate a temporary authenticated URL for viewing attachment"""
+    try:
+        # Get attachment info
+        attachment = await db.ticket_attachments.find_one({"attachment_id": attachment_id})
+        if not attachment:
+            raise HTTPException(status_code=404, detail="Attachment not found")
+        
+        # Verify access (same logic as download)
+        user_identifier = current_user.get("address") or current_user.get("username")
+        uploader_identifier = attachment.get("uploaded_by")
+        
+        if uploader_identifier != user_identifier:
+            # Check if user is involved in any tickets with this attachment
+            ticket_messages = await db.ticket_messages.find({
+                "attachment_urls": f"/api/tickets/attachment/{attachment_id}"
+            }).to_list(None)
+            
+            has_access = False
+            for message in ticket_messages:
+                ticket = await db.tickets.find_one({"ticket_id": message["ticket_id"]})
+                if ticket:
+                    # Check if user is sender or recipient using flexible identifiers
+                    if (ticket.get("sender_address") == current_user.get("address") or 
+                        ticket.get("sender_username") == current_user.get("username") or
+                        ticket.get("recipient_address") == current_user.get("address") or
+                        ticket.get("recipient_username") == current_user.get("username")):
+                        has_access = True
+                        break
+            
+            if not has_access:
+                raise HTTPException(status_code=403, detail="Access denied")
+        
+        # For now, return the view URL - we'll handle auth differently
+        return {
+            "view_url": f"/api/tickets/attachment/{attachment_id}/view",
+            "filename": attachment["filename"],
+            "content_type": attachment["content_type"]
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to generate view URL: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to generate view URL")
+
 # View attachment in browser (for images, PDFs, etc.)
 @app.get("/api/tickets/attachment/{attachment_id}/view")
 async def view_ticket_attachment(attachment_id: str, current_user: dict = Depends(get_current_user)):
