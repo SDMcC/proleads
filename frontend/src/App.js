@@ -4817,9 +4817,6 @@ function AdminDashboard() {
                   ref={setAdminBellButtonRef}
                   onClick={() => {
                     setAdminNotificationsPanelOpen(!adminNotificationsPanelOpen);
-                    if (!adminNotificationsPanelOpen && adminUnreadCount > 0) {
-                      markAllAdminNotificationsRead();
-                    }
                   }}
                   className="relative p-2 text-gray-300 hover:text-white rounded-lg hover:bg-white hover:bg-opacity-10 transition-all duration-300"
                 >
