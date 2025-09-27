@@ -3059,7 +3059,7 @@ function ReferralsTab() {
                       <td className="py-4 px-4 text-gray-300">{referral.email || 'N/A'}</td>
                       <td className="py-4 px-4">
                         <span className={`px-2 py-1 rounded text-sm font-medium capitalize ${getTierBadgeClass(referral.membership_tier)}`}>
-                          {referral.membership_tier}
+                          {getTierDisplayName(referral.membership_tier)}
                         </span>
                       </td>
                       <td className="py-4 px-4">
