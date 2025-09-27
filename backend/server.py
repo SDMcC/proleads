@@ -4222,7 +4222,7 @@ async def update_ticket_status(
 @app.post("/api/admin/tickets/{ticket_id}/reply")
 async def admin_reply_to_ticket(
     ticket_id: str,
-    reply_data: TicketReply,
+    message: str = Form(...),
     attachment_ids: Optional[str] = Form(None),
     admin: dict = Depends(get_admin_user)
 ):
@@ -4255,7 +4255,7 @@ async def admin_reply_to_ticket(
             "sender_address": "admin",
             "sender_username": admin["username"],
             "sender_role": "admin",
-            "message": reply_data.message,
+            "message": message,
             "attachment_urls": attachment_urls,
             "created_at": datetime.utcnow()
         }
