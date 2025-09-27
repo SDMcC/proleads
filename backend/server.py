@@ -3907,7 +3907,7 @@ async def get_ticket_details(ticket_id: str, current_user: dict = Depends(get_cu
 @app.post("/api/tickets/{ticket_id}/reply")
 async def reply_to_ticket(
     ticket_id: str,
-    reply_data: TicketReply,
+    message: str = Form(...),
     attachment_ids: Optional[str] = Form(None),
     current_user: dict = Depends(get_current_user)
 ):
@@ -3919,8 +3919,10 @@ async def reply_to_ticket(
             raise HTTPException(status_code=404, detail="Ticket not found")
         
         # Verify user has access to this ticket
-        if (ticket["sender_address"] != current_user["address"] and 
-            ticket.get("recipient_address") != current_user["address"]):
+        if (ticket["sender_address"] != current_user.get("address") and 
+            ticket.get("recipient_address") != current_user.get("address") and
+            ticket["sender_username"] != current_user.get("username") and 
+            ticket.get("recipient_username") != current_user.get("username")):
             raise HTTPException(status_code=403, detail="Access denied")
         
         # Handle attachments if provided
@@ -3932,7 +3934,7 @@ async def reply_to_ticket(
                     # Verify attachment exists and belongs to user
                     attachment = await db.ticket_attachments.find_one({
                         "attachment_id": attachment_id,
-                        "uploaded_by": current_user["address"]
+                        "uploaded_by": current_user.get("address") or current_user.get("username")
                     })
                     if attachment:
                         attachment_urls.append(f"/api/tickets/attachment/{attachment_id}")
@@ -3940,13 +3942,16 @@ async def reply_to_ticket(
                 pass
         
         # Create reply message
+        sender_address = current_user.get("address") or current_user.get("username")
+        sender_username = current_user.get("username") or current_user.get("address")
+        
         message_doc = {
             "message_id": str(uuid.uuid4()),
             "ticket_id": ticket_id,
-            "sender_address": current_user["address"],
-            "sender_username": current_user["username"],
+            "sender_address": sender_address,
+            "sender_username": sender_username,
             "sender_role": "user",
-            "message": reply_data.message,
+            "message": message,
             "attachment_urls": attachment_urls,
             "created_at": datetime.utcnow()
         }
@@ -3964,14 +3969,17 @@ async def reply_to_ticket(
         )
         
         # Create notification for the other party
-        if current_user["address"] == ticket["sender_address"]:
+        current_user_identifier = current_user.get("address") or current_user.get("username")
+        sender_identifier = ticket.get("sender_address") or ticket.get("sender_username")
+        
+        if current_user_identifier == sender_identifier:
             # Reply from ticket sender, notify recipient
             if ticket.get("recipient_address"):
                 await create_notification(
                     user_address=ticket["recipient_address"],
                     notification_type="ticket",
                     title="Ticket Reply",
-                    message=f"{current_user['username']} replied to: {ticket['subject']}"
+                    message=f"{sender_username} replied to: {ticket['subject']}"
                 )
         else:
             # Reply from recipient, notify sender
@@ -3979,7 +3987,7 @@ async def reply_to_ticket(
                 user_address=ticket["sender_address"],
                 notification_type="ticket", 
                 title="Ticket Reply",
-                message=f"{current_user['username']} replied to: {ticket['subject']}"
+                message=f"{sender_username} replied to: {ticket['subject']}"
             )
         
         return {"message": "Reply sent successfully"}
