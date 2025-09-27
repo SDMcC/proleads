@@ -3606,19 +3606,24 @@ async def upload_ticket_attachment(file: UploadFile = File(...), current_user: d
 # Create a new ticket
 @app.post("/api/tickets/create")
 async def create_ticket(
-    ticket_data: TicketCreate,
-    attachment_ids: Optional[str] = Form(None),  # JSON string of attachment IDs
+    contact_type: str = Form(...),
+    category: str = Form(...),
+    priority: str = Form(...),
+    subject: str = Form(...),
+    message: str = Form(...),
+    recipient_address: Optional[str] = Form(None),
+    attachment_ids: Optional[str] = Form(None),
     current_user: dict = Depends(get_current_user)
 ):
     """Create a new support ticket"""
     try:
         # Validate contact type and recipients
-        if ticket_data.contact_type == "downline_individual" and not ticket_data.recipient_address:
+        if contact_type == "downline_individual" and not recipient_address:
             raise HTTPException(status_code=400, detail="Recipient address required for individual downline messages")
         
         # For sponsor messages, verify user has a sponsor
         recipient_username = None
-        if ticket_data.contact_type == "sponsor":
+        if contact_type == "sponsor":
             # Find user by either address or username depending on auth method
             user_query = {}
             if current_user.get("address"):
@@ -3634,10 +3639,10 @@ async def create_ticket(
             sponsor = await db.users.find_one({"address": user["referrer_address"]})
             if sponsor:
                 recipient_username = sponsor.get("username")
-                ticket_data.recipient_address = sponsor["address"]
+                recipient_address = sponsor["address"]
         
         # For individual downline messages, verify recipient is a direct referral
-        elif ticket_data.contact_type == "downline_individual":
+        elif contact_type == "downline_individual":
             # Find user by either address or username depending on auth method
             user_query = {}
             if current_user.get("address"):
@@ -3651,7 +3656,7 @@ async def create_ticket(
             # Check if recipient is in direct referrals
             recipient_found = False
             for referral in referrals:
-                if referral.get("address") == ticket_data.recipient_address:
+                if referral.get("address") == recipient_address:
                     recipient_found = True
                     recipient_username = referral.get("username")
                     break
@@ -3660,7 +3665,7 @@ async def create_ticket(
                 raise HTTPException(status_code=400, detail="Recipient is not your direct referral")
         
         # For mass downline messages, get all direct referrals
-        elif ticket_data.contact_type == "downline_mass":
+        elif contact_type == "downline_mass":
             # Find user by either address or username depending on auth method
             user_query = {}
             if current_user.get("address"):
@@ -3684,12 +3689,12 @@ async def create_ticket(
             "ticket_id": ticket_id,
             "sender_address": sender_address,
             "sender_username": sender_username,
-            "contact_type": ticket_data.contact_type,
-            "recipient_address": ticket_data.recipient_address,
+            "contact_type": contact_type,
+            "recipient_address": recipient_address,
             "recipient_username": recipient_username,
-            "category": ticket_data.category,
-            "priority": ticket_data.priority,
-            "subject": ticket_data.subject,
+            "category": category,
+            "priority": priority,
+            "subject": subject,
             "status": "open",
             "created_at": datetime.utcnow(),
             "updated_at": datetime.utcnow(),
@@ -3723,7 +3728,7 @@ async def create_ticket(
             "sender_address": sender_address,
             "sender_username": sender_username,
             "sender_role": "user",
-            "message": ticket_data.message,
+            "message": message,
             "attachment_urls": attachment_urls,
             "created_at": datetime.utcnow()
         }
@@ -3731,7 +3736,7 @@ async def create_ticket(
         await db.ticket_messages.insert_one(message_doc)
         
         # Handle mass messaging for downline_mass
-        if ticket_data.contact_type == "downline_mass":
+        if contact_type == "downline_mass":
             # Find user by either address or username depending on auth method
             user_query = {}
             if current_user.get("address"):
@@ -3752,9 +3757,9 @@ async def create_ticket(
                     "contact_type": "downline_individual",
                     "recipient_address": referral.get("address"),
                     "recipient_username": referral.get("username"),
-                    "category": ticket_data.category,
-                    "priority": ticket_data.priority,
-                    "subject": f"[Mass Message] {ticket_data.subject}",
+                    "category": category,
+                    "priority": priority,
+                    "subject": f"[Mass Message] {subject}",
                     "status": "open",
                     "created_at": datetime.utcnow(),
                     "updated_at": datetime.utcnow(),
@@ -3770,7 +3775,7 @@ async def create_ticket(
                     "sender_address": sender_address,
                     "sender_username": sender_username,
                     "sender_role": "user",
-                    "message": ticket_data.message,
+                    "message": message,
                     "attachment_urls": attachment_urls,
                     "created_at": datetime.utcnow()
                 }
@@ -3782,13 +3787,13 @@ async def create_ticket(
                     user_address=referral.get("address"),
                     notification_type="ticket",
                     title="Message from Sponsor",
-                    message=f"{sender_username} sent you a message: {ticket_data.subject}"
+                    message=f"{sender_username} sent you a message: {subject}"
                 )
         
         # Create notifications
         await create_ticket_notification(
             ticket_id, sender_address, sender_username, 
-            ticket_data.contact_type, ticket_data.subject
+            contact_type, subject
         )
         
         return {"ticket_id": ticket_id, "status": "created", "message": "Ticket created successfully"}
