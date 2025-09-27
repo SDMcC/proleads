@@ -3993,8 +3993,8 @@ async def get_admin_tickets(
 ):
     """Get all tickets for admin dashboard"""
     try:
-        # Build query
-        query = {}
+        # Build query - exclude individual news tickets from admin view
+        query = {"contact_type": {"$ne": "news"}}  # Hide individual news tickets
         
         if status_filter:
             query["status"] = status_filter
@@ -4003,7 +4003,11 @@ async def get_admin_tickets(
             query["category"] = category_filter
             
         if contact_type_filter:
-            query["contact_type"] = contact_type_filter
+            if contact_type_filter == "news":
+                # If admin specifically filters for news, show broadcast tickets
+                query["contact_type"] = "broadcast"
+            else:
+                query["contact_type"] = contact_type_filter
         
         if user_filter:
             # Search by username or email
