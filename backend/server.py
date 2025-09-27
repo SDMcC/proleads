@@ -64,9 +64,11 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin123")  # Change in production
 # Default membership tiers and commission rates (will be overridden by database config)
 DEFAULT_MEMBERSHIP_TIERS = {
     "affiliate": {"price": 0, "commissions": [0.25, 0.05]},
+    "test": {"price": 2, "commissions": [0.25, 0.05, 0.03, 0.02]},
     "bronze": {"price": 20, "commissions": [0.25, 0.05, 0.03, 0.02]},
     "silver": {"price": 50, "commissions": [0.27, 0.10, 0.05, 0.03]},
-    "gold": {"price": 100, "commissions": [0.30, 0.15, 0.10, 0.05]}
+    "gold": {"price": 100, "commissions": [0.30, 0.15, 0.10, 0.05]},
+    "vip_affiliate": {"price": 0, "commissions": [0.30, 0.15, 0.10, 0.05]}
 }
 
 # Global variable to hold current membership tiers (loaded from database)
