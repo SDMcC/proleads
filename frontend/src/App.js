@@ -2642,8 +2642,7 @@ function MilestonesTab() {
               </div>
             ))}
           </div>
-        </div>
-      )}
+        )}
 
       {/* All Milestones Overview */}
       <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
