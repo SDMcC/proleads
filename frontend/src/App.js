@@ -7411,13 +7411,8 @@ function MemberModal({ member, editingMember, onClose, onUpdate, onSuspend, onUn
                 <div className="space-y-3">
                   <div>
                     <span className="text-gray-400">Tier:</span>
-                    <span className={`ml-2 px-2 py-1 rounded text-xs uppercase font-medium ${
-                      memberData.membership_tier === 'gold' ? 'bg-yellow-600 text-yellow-100' :
-                      memberData.membership_tier === 'silver' ? 'bg-gray-600 text-gray-100' :
-                      memberData.membership_tier === 'bronze' ? 'bg-orange-600 text-orange-100' :
-                      'bg-blue-600 text-blue-100'
-                    }`}>
-                      {memberData.membership_tier}
+                    <span className={`ml-2 px-2 py-1 rounded text-xs uppercase font-medium ${getTierBadgeClass(memberData.membership_tier)}`}>
+                      {getTierDisplayName(memberData.membership_tier)}
                     </span>
                   </div>
                   <div>
