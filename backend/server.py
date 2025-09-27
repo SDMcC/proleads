@@ -3654,10 +3654,15 @@ async def create_ticket(
         
         # Create ticket document
         ticket_id = str(uuid.uuid4())
+        
+        # Handle both authentication methods (address for Web3, username for traditional)
+        sender_address = current_user.get("address") or current_user.get("username")
+        sender_username = current_user.get("username") or current_user.get("address")
+        
         ticket_doc = {
             "ticket_id": ticket_id,
-            "sender_address": current_user["address"],
-            "sender_username": current_user["username"],
+            "sender_address": sender_address,
+            "sender_username": sender_username,
             "contact_type": ticket_data.contact_type,
             "recipient_address": ticket_data.recipient_address,
             "recipient_username": recipient_username,
