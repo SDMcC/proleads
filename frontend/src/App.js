@@ -5641,13 +5641,8 @@ function AdminDashboard() {
                         <td className="py-3">
                           <div>
                             <p className="text-white font-medium">{commission.new_member_username}</p>
-                            <span className={`inline-block px-2 py-1 rounded text-xs uppercase font-medium mt-1 ${
-                              commission.new_member_tier === 'gold' ? 'bg-yellow-600 text-yellow-100' :
-                              commission.new_member_tier === 'silver' ? 'bg-gray-600 text-gray-100' :
-                              commission.new_member_tier === 'bronze' ? 'bg-orange-600 text-orange-100' :
-                              'bg-blue-600 text-blue-100'
-                            }`}>
-                              {commission.new_member_tier}
+                            <span className={`inline-block px-2 py-1 rounded text-xs uppercase font-medium mt-1 ${getTierBadgeClass(commission.new_member_tier)}`}>
+                              {getTierDisplayName(commission.new_member_tier)}
                             </span>
                           </div>
                         </td>
