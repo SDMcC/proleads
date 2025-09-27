@@ -1354,9 +1354,22 @@ function NotificationPanel({ bellButtonRef, notifications, onClose, onClearNotif
                     {notification.type === 'referral' && <Users className="h-4 w-4 text-blue-500" />}
                     {notification.type === 'milestone' && <Award className="h-4 w-4 text-yellow-500" />}
                     {notification.type === 'commission' && <DollarSign className="h-4 w-4 text-green-500" />}
+                    {notification.type === 'ticket' && <MessageCircle className="h-4 w-4 text-purple-500" />}
                     <h4 className="text-sm font-medium text-white">{notification.title}</h4>
                   </div>
                   <p className="text-sm text-gray-300">{notification.message}</p>
+                  {notification.type === 'ticket' && (
+                    <button
+                      onClick={() => {
+                        onClose(); // Close notification panel
+                        // Navigate to tickets tab - this would need to be passed as a prop
+                        window.location.hash = '#tickets'; // Simple navigation
+                      }}
+                      className="mt-2 text-xs text-blue-400 hover:text-blue-300 underline"
+                    >
+                      View Message →
+                    </button>
+                  )}
                   <p className="text-xs text-gray-500 mt-1">
                     {new Date(notification.created_at).toLocaleDateString()} {new Date(notification.created_at).toLocaleTimeString()}
                   </p>
