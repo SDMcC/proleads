@@ -6408,16 +6408,14 @@ function AdminTicketsTab({
                 {message.attachment_urls && message.attachment_urls.length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-2">
                     {message.attachment_urls.map((url, i) => (
-                      <a
+                      <button
                         key={i}
-                        href={`${process.env.REACT_APP_BACKEND_URL}${url}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center space-x-1 px-2 py-1 bg-gray-700 text-gray-300 rounded text-sm hover:bg-gray-600"
+                        onClick={() => downloadAttachment(url, `attachment-${i + 1}`)}
+                        className="inline-flex items-center space-x-1 px-2 py-1 bg-gray-700 text-gray-300 rounded text-sm hover:bg-gray-600 cursor-pointer"
                       >
                         <Paperclip className="h-3 w-3" />
-                        <span>Attachment</span>
-                      </a>
+                        <span>Download Attachment {i + 1}</span>
+                      </button>
                     ))}
                   </div>
                 )}
