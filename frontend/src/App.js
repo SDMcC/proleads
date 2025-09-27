@@ -6517,7 +6517,7 @@ function AdminTicketsTab({
                         className="inline-flex items-center space-x-1 px-2 py-1 bg-gray-700 text-gray-300 rounded text-sm hover:bg-gray-600 cursor-pointer"
                       >
                         <Paperclip className="h-3 w-3" />
-                        <span>Download Attachment {i + 1}</span>
+                        <span>View Attachment {i + 1}</span>
                       </button>
                     ))}
                   </div>
