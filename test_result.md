@@ -103,13 +103,20 @@
 #====================================================================================================
 
 user_problem_statement: |
-  Enhanced the Web3 membership platform with a comprehensive Internal Ticketing System as Priority 1 feature. The system includes:
-  1. **Member Ticketing Interface**: Contact Admin, Sponsor, Individual Downlines, or Mass Message All Downlines with file attachments, priority levels (Low/Medium/High), categories (General/Billing/Leads/Technical), and conversation threading.
-  2. **Admin Ticket Management**: View, reply to, and manage all user tickets with filtering by status/category/user/date, change ticket status, and send mass news messages to all users or specific tiers.
-  3. **Notification Integration**: Bell notifications for new tickets on both member and admin dashboards with in-app notifications.
-  4. **File Attachment Support**: Upload and download ticket attachments with proper security controls.
-  5. **Conversation Threading**: Back-and-forth ticket conversations with status tracking (Open/In Progress/Closed).
-  Previously completed: Admin Members Management with subscription expiry tracking, Member Details modal reorganization, and comprehensive notification systems.
+  Implementing new membership tiers for testing environment before integrating Atlos.io payment processor. Adding 2 new membership levels:
+  1. **Test Membership**: $2/month subscription, commissions 25%, 5%, 3%, 2%, no weekly leads, publicly available
+  2. **VIP Affiliate**: Free lifetime access, commissions 30%, 15%, 10%, 5%, no weekly leads, admin-only assignment
+  
+  Complete updated tier structure:
+  - Affiliate tier: $0/month (lifetime), commissions 25%, 5%, no weekly leads
+  - Test tier: $2/month, commissions 25%, 5%, 3%, 2%, no weekly leads  
+  - Bronze tier: $20/month, commissions 25%, 5%, 3%, 2%, 100 weekly leads
+  - Silver tier: $50/month, commissions 27%, 10%, 5%, 3%, 250 weekly leads
+  - Gold tier: $100/month, commissions 30%, 15%, 10%, 5%, 500 weekly leads
+  - VIP Affiliate tier: $0/month (lifetime), commissions 30%, 15%, 10%, 5%, no weekly leads
+  
+  VIP Affiliate tier will be assignable only via Admin Members Management Edit modal, with purple badge indicator.
+  Previously completed: Comprehensive Internal Ticketing System, Admin Members Management, and notification systems.
 
 backend:
   - task: "Admin Authentication System"
