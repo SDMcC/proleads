@@ -4000,15 +4000,26 @@ async def delete_ticket(ticket_id: str, current_user: dict = Depends(get_current
         if not ticket:
             raise HTTPException(status_code=404, detail="Ticket not found")
         
-        # Verify user is the sender (handle both address and username-based auth)
+        # Verify user has access to delete this ticket
         user_identifier = current_user.get("address") or current_user.get("username")
-        ticket_sender = ticket.get("sender_address") or ticket.get("sender_username")
         
-        if ticket_sender != user_identifier:
-            # Try alternative comparison - sender_address vs current_user address or username  
-            if (ticket.get("sender_address") != current_user.get("address") and 
-                ticket.get("sender_username") != current_user.get("username")):
-                raise HTTPException(status_code=403, detail="You can only delete your own tickets")
+        # Allow deletion if:
+        # 1. User is the sender (their own tickets)
+        # 2. User is the recipient (news messages sent to them)
+        can_delete = False
+        
+        # Check if user is sender
+        if (ticket.get("sender_address") == current_user.get("address") or 
+            ticket.get("sender_username") == current_user.get("username")):
+            can_delete = True
+        
+        # Check if user is recipient (for news messages)
+        elif (ticket.get("recipient_address") == current_user.get("address") or
+              ticket.get("recipient_username") == current_user.get("username")):
+            can_delete = True
+        
+        if not can_delete:
+            raise HTTPException(status_code=403, detail="You can only delete your own tickets or messages sent to you")
         
         # Only allow deletion of closed tickets
         if ticket["status"] != "closed":
