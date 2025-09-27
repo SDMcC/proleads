@@ -78,7 +78,7 @@ def test_payment_creation_new_tiers(base_url):
         
         payment_data = {
             "tier": tier,
-            "currency": "BTC"
+            "currency": "USDC"  # Use USDC which should have lower minimum
         }
         
         response = requests.post(f"{base_url}/api/payments/create", json=payment_data, headers=headers)
