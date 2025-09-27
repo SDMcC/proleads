@@ -3619,7 +3619,14 @@ async def create_ticket(
         # For sponsor messages, verify user has a sponsor
         recipient_username = None
         if ticket_data.contact_type == "sponsor":
-            user = await db.users.find_one({"address": current_user["address"]})
+            # Find user by either address or username depending on auth method
+            user_query = {}
+            if current_user.get("address"):
+                user_query = {"address": current_user["address"]}
+            else:
+                user_query = {"username": current_user["username"]}
+            
+            user = await db.users.find_one(user_query)
             if not user.get("referrer_address"):
                 raise HTTPException(status_code=400, detail="You don't have a sponsor to message")
             
@@ -3631,7 +3638,14 @@ async def create_ticket(
         
         # For individual downline messages, verify recipient is a direct referral
         elif ticket_data.contact_type == "downline_individual":
-            user = await db.users.find_one({"address": current_user["address"]})
+            # Find user by either address or username depending on auth method
+            user_query = {}
+            if current_user.get("address"):
+                user_query = {"address": current_user["address"]}
+            else:
+                user_query = {"username": current_user["username"]}
+            
+            user = await db.users.find_one(user_query)
             referrals = user.get("referrals", [])
             
             # Check if recipient is in direct referrals
@@ -3647,7 +3661,14 @@ async def create_ticket(
         
         # For mass downline messages, get all direct referrals
         elif ticket_data.contact_type == "downline_mass":
-            user = await db.users.find_one({"address": current_user["address"]})
+            # Find user by either address or username depending on auth method
+            user_query = {}
+            if current_user.get("address"):
+                user_query = {"address": current_user["address"]}
+            else:
+                user_query = {"username": current_user["username"]}
+            
+            user = await db.users.find_one(user_query)
             referrals = user.get("referrals", [])
             if not referrals:
                 raise HTTPException(status_code=400, detail="You don't have any referrals to message")
