@@ -3859,7 +3859,7 @@ function TicketsTab() {
                   </div>
                 </div>
               </div>
-            )}
+            ))}
           </div>
         )}
       </div>
