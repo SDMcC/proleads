@@ -106,7 +106,7 @@ def test_payment_creation_new_tiers(base_url):
                 else:
                     print(f"❌ {tier} tier should create payment but none was created")
                     all_tests_passed = False
-            elif response.status_code == 400:
+            else:
                 # Check if it's a payment processor minimum amount error
                 error_detail = response.json().get('detail', '')
                 print(f"   Error detail: {error_detail}")
