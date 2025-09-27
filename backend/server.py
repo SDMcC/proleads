@@ -3797,9 +3797,12 @@ async def get_user_tickets(
         
         # Convert ObjectId and datetime for JSON serialization
         for ticket in tickets:
-            ticket["_id"] = str(ticket["_id"])
-            ticket["created_at"] = ticket["created_at"].isoformat()
-            ticket["updated_at"] = ticket["updated_at"].isoformat()
+            if "_id" in ticket:
+                del ticket["_id"]  # Remove MongoDB ObjectId
+            if "created_at" in ticket:
+                ticket["created_at"] = ticket["created_at"].isoformat()
+            if "updated_at" in ticket:
+                ticket["updated_at"] = ticket["updated_at"].isoformat()
         
         return {
             "tickets": tickets,
