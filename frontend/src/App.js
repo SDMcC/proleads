@@ -1737,13 +1737,8 @@ function NetworkTreeTab() {
               <div className="text-center">
                 <h4 className="text-white font-bold text-lg">YOU</h4>
                 <p className="text-blue-200">{networkData.network_tree.root.username}</p>
-                <span className={`inline-block px-3 py-1 rounded text-sm uppercase font-medium mt-2 ${
-                  networkData.network_tree.root.membership_tier === 'gold' ? 'bg-yellow-600 text-yellow-100' :
-                  networkData.network_tree.root.membership_tier === 'silver' ? 'bg-gray-600 text-gray-100' :
-                  networkData.network_tree.root.membership_tier === 'bronze' ? 'bg-orange-600 text-orange-100' :
-                  'bg-blue-600 text-blue-100'
-                }`}>
-                  {networkData.network_tree.root.membership_tier}
+                <span className={`inline-block px-3 py-1 rounded text-sm uppercase font-medium mt-2 ${getTierBadgeClass(networkData.network_tree.root.membership_tier)}`}>
+                  {getTierDisplayName(networkData.network_tree.root.membership_tier)}
                 </span>
               </div>
             </div>
