@@ -3379,63 +3379,90 @@ function TicketsTab() {
 
   const openAttachmentModal = async (url, filename) => {
     try {
-      const attachmentId = url.split('/').pop();
       const token = localStorage.getItem('token');
-      const viewUrl = `${process.env.REACT_APP_BACKEND_URL}/api/tickets/attachment/${attachmentId}/view?token=${token}`;
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}${url}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to load attachment');
+      }
+
+      const blob = await response.blob();
+      const fileUrl = URL.createObjectURL(blob);
+      const contentType = response.headers.get('content-type') || '';
       
-      // Open in new window for viewing
+      // Open in new window with the blob URL
       const newWindow = window.open('', '_blank');
       newWindow.document.write(`
         <html>
           <head>
             <title>${filename || 'Attachment'}</title>
             <style>
-              body { margin: 0; padding: 20px; font-family: Arial, sans-serif; background: #f5f5f5; }
-              .container { max-width: 100%; text-align: center; }
-              .header { margin-bottom: 20px; }
-              .content { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-              iframe, img { max-width: 100%; border: none; }
+              body { 
+                margin: 0; padding: 20px; font-family: Arial, sans-serif; 
+                background: #f5f5f5; text-align: center;
+              }
+              .container { max-width: 100%; }
+              .header { 
+                background: white; padding: 15px; margin-bottom: 20px; 
+                border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+              }
+              .content { 
+                background: white; padding: 20px; border-radius: 8px; 
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1); min-height: 70vh;
+              }
               .download-btn { 
                 background: #3b82f6; color: white; padding: 10px 20px; 
-                border: none; border-radius: 4px; cursor: pointer; margin: 10px;
+                border: none; border-radius: 4px; cursor: pointer; margin: 5px;
+                text-decoration: none; display: inline-block;
               }
               .download-btn:hover { background: #2563eb; }
+              .close-btn { background: #6b7280; }
+              .close-btn:hover { background: #4b5563; }
+              img { max-width: 100%; height: auto; }
+              iframe { width: 100%; height: 70vh; border: none; }
+              .file-info { color: #6b7280; font-size: 14px; margin-bottom: 15px; }
             </style>
           </head>
           <body>
             <div class="container">
               <div class="header">
-                <h2>${filename || 'Attachment'}</h2>
-                <button class="download-btn" onclick="downloadFile()">Download File</button>
-                <button class="download-btn" onclick="window.close()">Close</button>
+                <h2 style="margin: 0 0 10px 0;">${filename || 'Attachment'}</h2>
+                <div class="file-info">Type: ${contentType}</div>
+                <a href="${fileUrl}" download="${filename || 'attachment'}" class="download-btn">
+                  📥 Download
+                </a>
+                <button onclick="window.close()" class="download-btn close-btn">
+                  ❌ Close
+                </button>
               </div>
               <div class="content">
-                <iframe src="${viewUrl}" width="100%" height="600px" frameborder="0">
-                  <p>Unable to display file. <a href="${viewUrl}" target="_blank">Click here to open directly</a></p>
-                </iframe>
+                ${contentType.startsWith('image/') ? 
+                  `<img src="${fileUrl}" alt="${filename}" />` :
+                  contentType === 'application/pdf' ?
+                  `<iframe src="${fileUrl}" type="application/pdf"></iframe>` :
+                  contentType.startsWith('text/') ?
+                  `<iframe src="${fileUrl}"></iframe>` :
+                  `<div style="padding: 40px;">
+                     <h3>Preview not available for this file type</h3>
+                     <p>Click the download button above to save the file.</p>
+                   </div>`
+                }
               </div>
             </div>
-            <script>
-              function downloadFile() {
-                fetch('${process.env.REACT_APP_BACKEND_URL}${url}', {
-                  headers: { 'Authorization': 'Bearer ${token}' }
-                })
-                .then(response => response.blob())
-                .then(blob => {
-                  const url = window.URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = '${filename || 'attachment'}';
-                  a.click();
-                  window.URL.revokeObjectURL(url);
-                })
-                .catch(error => alert('Download failed'));
-              }
-            </script>
           </body>
         </html>
       `);
       newWindow.document.close();
+      
+      // Clean up the blob URL after a delay
+      setTimeout(() => {
+        URL.revokeObjectURL(fileUrl);
+      }, 60000); // Clean up after 1 minute
+      
     } catch (error) {
       console.error('Failed to open attachment:', error);
       alert('Failed to open attachment');
