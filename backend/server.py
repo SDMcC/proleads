@@ -3699,8 +3699,8 @@ async def create_ticket(
         message_doc = {
             "message_id": str(uuid.uuid4()),
             "ticket_id": ticket_id,
-            "sender_address": current_user["address"],
-            "sender_username": current_user["username"],
+            "sender_address": sender_address,
+            "sender_username": sender_username,
             "sender_role": "user",
             "message": ticket_data.message,
             "attachment_urls": attachment_urls,
