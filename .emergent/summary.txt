@@ -1,88 +1,99 @@
 <analysis>
-The previous AI engineer significantly evolved the Web3 membership application from its MVP state. Key accomplishments include resolving a payment discrepancy by enhancing the  component and successfully implementing a comprehensive Leads Distribution System, spanning backend APIs, admin dashboard management, and user access. A major architectural shift occurred by transitioning from a problematic WalletConnect-based authentication to a traditional username/email/password system, including editable wallet addresses, which streamlined the user experience. Persistent issues with referral tracking and preview environment synchronization were meticulously debugged and resolved, often requiring manual database corrections and focused troubleshooting. The application now features robust administrative controls and an improved user journey, with core Web3 features like commission calculation and membership tiers fully functional, albeit with simplified authentication.
+The AI engineer's work focused on extending the Web3 membership platform. Initially, the engineer addressed user requests for Admin Members Management, adding subscription expiry tracking and refining the suspend/unsuspend functionality. This involved backend updates to  for  storage, new  endpoints, and modifying member listing/detail APIs. Frontend changes in  introduced an Expiry Date column, Expired badges, and dynamic suspend/unsuspend buttons in the . A frontend React hooks error related to  was resolved by ensuring unconditional hook calls. Subsequently, the Member Details modal was reorganized as requested, adjusting field order and adding sponsor username and total payments.
+
+The most recent and significant feature implemented is a comprehensive notification system for both member and admin dashboards. This involved creating backend API endpoints for notifications (, , and clear/read functions), integrating notification creation into user registration, commission payouts, and payment/milestone events. The frontend implementation included a  icon, state management for notifications, and  components. A persistent UI issue where dropdowns appeared behind content was critically resolved by using React Portals to render notification panels directly to the document body, ensuring correct z-index and visibility for both member and admin notifications.
 </analysis>
+
 <product_requirements>
-The application is a Web3 membership platform supporting a 4-tier affiliate system (Affiliate, Bronze, Silver, Gold). Users initially connected wallets, registered, and selected tiers, with a multi-level commission system ensuring instant USDC payouts via NOWPayments. User dashboards displayed earnings, referrals, and a network diagram. The AI engineer successfully implemented core features: Web3 wallet authentication (later transitioned to traditional username/password), user registration, membership tier selection, corrected multi-level commission engine, payment processing with ETH via NOWPayments, instant USDC payouts, and a real-time user dashboard.
+The application is a Web3 membership platform supporting a 4-tier affiliate system (Affiliate, Bronze, Silver, Gold), multi-level commissions, and instant USDC payouts. It features user registration, tier selection, NOWPayments processing, and real-time user dashboards.
 
-Recent enhancements and fixes include:
--   **Admin Dashboard:** Overview with real-time stats (members, payments, commissions), Members Management (view, edit, suspend, filter, sort, paginate), Payments Listing (filter, paginate, CSV export), Commissions Listing (filter, paginate, CSV export), and a Leads Management tab for CSV upload and distribution.
--   **User Experience:** Redesigned user dashboard with sidebar, Affiliate tools (link, QR, social share, promotional text), Earnings history (filter, paginate, CSV), Payment history (filter, paginate, CSV) showing all statuses, Milestones (bonus system), Account Settings (including cancel account and editable wallet address), and a My Leads tab for assigned lead downloads.
+Initial implementations included: an Admin Configuration System for dynamic management of membership tiers and payment processors; resolution of MetaMask connection errors; fixes for the referral system (correct registration reflection, preserving referral codes, standardizing  format); an Admin CSV Lead Upload fix for header validation; and an enhanced Lead Distribution System (CSV-based, fair distribution up to 10 times per lead). The Member Sidebar Navigation was reorganized with a nested Affiliate menu and a tabbed Account page. A paginated list of user's referrals was added to the Affiliate - Member in the details modal for suspended members.
+2.  **Member Details Modal Reorganization:**
+    *   Reorder Member Information fields (Tier, Username, Email, Sponsor Username, Joined, Subscription Expiry Date, Wallet).
+    *   Reorder Statistics fields (Total Referrals, Total Earnings, Total Payments) and remove Referral Code.
+3.  **Notification System (Member Dashboard):**
+    *   Add a Notification Bell icon to the member dashboard header for new referrals, milestone bonuses, and commission payouts.
+    *   Clicking the icon should open a list of notifications, persisting until manually cleared.
+    *   Notifications should be triggered by actual events and fetched on page load via a dropdown.
+4.  **Notification System (Admin Dashboard):**
+    *   Implement the same notification bell icon and functionality for the admin dashboard.
+    *   Display user payment and user milestone alerts.
 </product_requirements>
+
 <key_technical_concepts>
--   **Backend:** FastAPI (Python), MongoDB (Motor)
--   **Frontend:** React 18, Tailwind CSS, Axios, React Router
--   **Authentication:** JWT, bcrypt (for password hashing)
--   **Payment Gateway:** NOWPayments API
--   **Affiliate Logic:** Multi-level commission calculation
--   **Data Handling:** Pagination, Sorting, CSV export
+- **Backend:** FastAPI, MongoDB (Motor), Pydantic, JWT authentication, bcrypt, NOWPayments API.
+- **Frontend:** React 18, Tailwind CSS, Axios, React Router, Lucide-React.
+- **Data Handling:** Pagination, ISO date strings, UUIDs (instead of MongoDB ObjectIDs).
+- **UI/UX:** React Portals for modal/dropdown layering, conditional rendering, z-index management.
 </key_technical_concepts>
+
 <code_architecture>
-The application follows a full-stack architecture, utilizing a React frontend, a FastAPI backend, and a MongoDB database.
+The application uses a React frontend, FastAPI backend, and MongoDB database.
 
 
 
--   **/app/backend/requirements.txt**:
+-   ****:
     -   **Importance:** Lists Python dependencies for the FastAPI backend.
-    -   **Changes:** Implicitly updated with new libraries if needed for password hashing (e.g., ) or other new features.
--   **/app/backend/server.py**:
+    -   **Changes:** Implicitly updated with new libraries as needed.
+-   ****:
     -   **Importance:** Contains the main FastAPI application, backend logic, API endpoints, database interactions, and authentication.
     -   **Changes:**
-        -   **Authentication Rework:** Replaced WalletConnect-related endpoints (, ) with traditional password-based authentication.
-        -   **New Auth Endpoints:** Added  (username, email, password, wallet address, referrer code),  (username/email, password), and  (update email, password, wallet address). Implemented  for password hashing and  for token generation.
-        -   **Admin Endpoints:**  updated to include leads statistics. New endpoints for Leads Distribution System: , , .
-        -   **User Endpoints:**  (now used by frontend),  for accessing assigned leads.
-        -   **Referral System:**  endpoint () fixed to properly format s from MongoDB documents for JSON serialization and correctly fetch referral data.
-        -   Database cleanup functions were added and executed for debugging historical referral data.
--   **/app/backend/.env**:
-    -   **Importance:** Stores backend environment variables.
-    -   **Changes:** No explicit changes mentioned beyond initial setup, but  and  are critical for the new authentication.
--   **/app/frontend/package.json**:
-    -   **Importance:** Defines Node.js dependencies for React.
-    -   **Changes:** Implicitly updated with any new React libraries (e.g.,  for new routes), but no explicit changes reported.
--   **/app/frontend/.env**:
-    -   **Importance:** Stores frontend environment variables.
-    -   **Changes:** Updated to include  and  (though WalletConnect was later removed).
--   **/app/frontend/src/App.js**:
+        -   **Admin Members Management:**
+            -   Added  field to user documents (set during payment confirmation).
+            -   Added  flag to user documents, managed by new  and  endpoints.
+            -   Modified  and  to return , , , and .
+            -   Added  (updates ) and  (updates ).
+        -   **Notification System:**
+            -   Created  and  MongoDB collections.
+            -   Added  and  Pydantic models.
+            -   Implemented helper functions  and .
+            -   Added user notification endpoints: , , , .
+            -   Added admin notification endpoints: , , , .
+            -   Integrated notification creation into user registration (), commission payout logic (), and payment confirmation callback ().
+            -   Integrated admin notification creation into payment confirmation and milestone checking.
+-   ****:
     -   **Importance:** Main React component for UI, routing, authentication, and all application features.
     -   **Changes:**
-        -   **Authentication Rework:** Removed all WalletConnect (Web3Modal/Wagmi) integration, , , . Implemented password-based login and registration forms. Updated global authentication context.
-        -   **Registration & Login Forms:** Redesigned to accept username, email, password, and wallet address. Improved error handling and user feedback.
-        -   **Admin Dashboard:** Added Leads tab to navigation. Implemented  component for CSV upload and distribution management.
-        -   **User Dashboard:** Redesigned  for full functionality (fetching from , filtering, pagination, CSV export, Pay Now buttons for  payments). Added My Leads tab to sidebar navigation. Implemented  component for users to view/download leads. Updated  to allow editing of email, password, and wallet address.
-        -   **Referral System:** Added  component and a new  () to handle referral links, redirecting to the registration page with the  parameter.
-        -   Fixed username placeholder typo in registration form.
-        -   Added  and  icons from .
+        -   **Wallet Hooks Fix:** Moved , , ,  hook calls to the top level to resolve conditional call errors.
+        -   **Admin Members Management Table:**
+            -   Added Expiry Date column to the members table in .
+            -   Implemented logic to display Expired badge for members with passed .
+        -   **MemberModal (Admin):**
+            -   Updated  to dynamically show Suspend Member or Unsuspend Member button based on the member's  status.
+            -   Added  function.
+            -   Reordered Member Information fields to (Tier, Username, Email, Sponsor Username, Joined, Subscription Expiry Date, Wallet).
+            -   Reordered Statistics fields to (Total Referrals, Total Earnings, Total Payments) and removed Referral Code.
+        -   **Member Dashboard Notification System:**
+            -   Imported  icon and .
+            -   Added  state,  state,  (for bell button position), and .
+            -   Implemented , ,  functions.
+            -   Integrated  to fetch notifications on component load.
+            -   Added  icon with click handler to the  header.
+            -   Created a new  functional component, utilizing  to render the notification dropdown at the document  level, ensuring correct layering using the calculated .
+        -   **Admin Dashboard Notification System:**
+            -   Added  state,  state, , and  to .
+            -   Implemented , ,  functions.
+            -   Integrated  to fetch admin notifications on component load.
+            -   Added  icon with click handler to the  header.
+            -   Created  functional component (similar to ), also using  for proper rendering.
 </code_architecture>
+
 <pending_tasks>
--   **Admin Dashboard:**
-    -   Payment Analytics (detailed revenue reporting).
-    -   Configuration page for membership plans and payment processors.
--   **User Experience:**
-    -   Network Genealogy Tree: Visual referral network diagrams with interactive tree/network visualization (frontend placeholders exist).
--   **Priority 3: Advanced Features:**
-    -   Advanced Analytics.
-    -   Alternative Payment Processor (Atlos.io) integration.
-    -   SSO login.
-    -   Internal ticketing system.
--   **Priority 4: Scalability:**
-    -   Redis Caching.
-    -   CDN Integration.
-    -   Database Optimization.
-    -   Load Balancing.
+-   **Admin Dashboard:** Payment Analytics (detailed revenue reporting).
+-   **User Experience:** Network Genealogy Tree (visual referral network diagrams).
+-   **Priority 3: Advanced Features:** Advanced Analytics, Alternative Payment Processor (Atlos.io) integration, SSO login, Internal ticketing system.
+-   **Priority 4: Scalability:** Redis Caching, CDN Integration, Database Optimization, Load Balancing.
+-   Test remaining features: Commission calculations.
 </pending_tasks>
+
 <current_work>
-The application currently features a fully functional Web3 membership platform with traditional authentication. WalletConnect has been removed in favor of a username/email/password system, and users can now edit their wallet address in their account settings.
+The most recent work involved implementing a notification system for both the Member and Admin dashboards.
 
-The admin dashboard includes an overview, members management (with editing and suspension), payments listing, and commissions listing, all with filtering, sorting, pagination, and CSV export. A new Leads tab has been implemented, allowing admins to upload CSVs and manage lead distributions.
+For the **Member Dashboard**, a  icon was added to the header. When clicked, a dropdown list of notifications appears, showing new referrals, milestone bonuses, and commission payouts. Notifications are fetched on page load, persist until manually cleared, and can be cleared individually. The backend () now includes endpoints for fetching, reading, and clearing user notifications, with integration into user registration and commission payout flows. The frontend () manages notification states, fetches data, and renders the notifications. A key architectural decision was the use of  for the  component to ensure the dropdown renders correctly on top of all other content, resolving previous z-index issues.
 
-For the user experience, the dashboard has been redesigned with sidebar navigation. Key tabs include:
--   **Payment History:** Now comprehensively displays all payment statuses (including waiting) with filtering, pagination, CSV export, and Pay Now buttons.
--   **My Leads:** A new tab for users to view and download their assigned leads.
--   **Affiliate Tools:** Includes referral link generation, QR code, social sharing, and promotional text.
--   **Account Settings:** Allows users to update their email, password, and wallet address.
-
-The referral system has been rigorously debugged and is now working properly, with correct tracking of referred users and the  referral link routing to the registration page. Manual database cleanups were performed to ensure accurate testing of new referral relationships. The system has been validated for traditional registration and login, as well as the functionality of referral links and dashboard reflection.
+For the **Admin Dashboard**, the same notification system has been extended. The  icon is present in the admin header, displaying user payment and milestone alerts. Backend changes in  introduced specific admin notification endpoints and integrated notification creation into payment confirmation and milestone checking logic. The frontend () handles admin notification states and renders an  component, also using  for proper UI layering.
 </current_work>
+
 <optional_next_step>
-Add an admin configuration page to edit and add membership plans, Test the remaining features: Leads Distribution System (CSV upload and distribution), Payment processing, and Commission calculations.
+No explicit next step was requested, as the last task was confirmed as working.
 </optional_next_step>
