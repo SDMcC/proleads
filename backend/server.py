@@ -1141,7 +1141,7 @@ async def payment_callback(request: Request):
             
             # Calculate subscription expiry (1 year from now for paid tiers)
             subscription_expires_at = None
-            if tier != "affiliate":  # Paid tiers get 1 year subscription
+            if tier != "affiliate" and tier != "vip_affiliate":  # Paid tiers get 1 year subscription
                 subscription_expires_at = datetime.utcnow() + timedelta(days=365)
             
             # Upgrade membership with expiry date
