@@ -34,7 +34,19 @@ import {
   Bell,
   UserX,
   MessageCircle,
-  Zap
+  Zap,
+  Send,
+  Paperclip,
+  Search,
+  Filter,
+  Eye,
+  ArrowLeft,
+  Plus,
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+  Circle,
+  MoreVertical
 } from 'lucide-react';
 import './App.css';
 
