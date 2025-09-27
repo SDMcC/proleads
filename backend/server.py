@@ -3711,7 +3711,14 @@ async def create_ticket(
         
         # Handle mass messaging for downline_mass
         if ticket_data.contact_type == "downline_mass":
-            user = await db.users.find_one({"address": current_user["address"]})
+            # Find user by either address or username depending on auth method
+            user_query = {}
+            if current_user.get("address"):
+                user_query = {"address": current_user["address"]}
+            else:
+                user_query = {"username": current_user["username"]}
+            
+            user = await db.users.find_one(user_query)
             referrals = user.get("referrals", [])
             
             for referral in referrals:
@@ -3719,8 +3726,8 @@ async def create_ticket(
                 individual_ticket_id = str(uuid.uuid4())
                 individual_ticket_doc = {
                     "ticket_id": individual_ticket_id,
-                    "sender_address": current_user["address"],
-                    "sender_username": current_user["username"],
+                    "sender_address": sender_address,
+                    "sender_username": sender_username,
                     "contact_type": "downline_individual",
                     "recipient_address": referral.get("address"),
                     "recipient_username": referral.get("username"),
@@ -3739,8 +3746,8 @@ async def create_ticket(
                 individual_message_doc = {
                     "message_id": str(uuid.uuid4()),
                     "ticket_id": individual_ticket_id,
-                    "sender_address": current_user["address"],
-                    "sender_username": current_user["username"],
+                    "sender_address": sender_address,
+                    "sender_username": sender_username,
                     "sender_role": "user",
                     "message": ticket_data.message,
                     "attachment_urls": attachment_urls,
