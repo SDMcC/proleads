@@ -153,6 +153,54 @@ class SystemConfig(BaseModel):
     updated_at: Optional[datetime] = None
     updated_by: Optional[str] = None
 
+# Ticket system Pydantic models
+class TicketCreate(BaseModel):
+    contact_type: str  # 'admin', 'sponsor', 'downline_individual', 'downline_mass'
+    recipient_address: Optional[str] = None  # For individual downline messages
+    category: str  # 'general', 'billing', 'leads', 'technical'
+    priority: str  # 'low', 'medium', 'high'
+    subject: str
+    message: str
+
+class TicketReply(BaseModel):
+    ticket_id: str
+    message: str
+
+class TicketStatusUpdate(BaseModel):
+    status: str  # 'open', 'in_progress', 'closed'
+
+class MassNewsMessage(BaseModel):
+    target_type: str  # 'all_users', 'specific_tiers', 'specific_users'
+    target_tiers: Optional[List[str]] = None  # ['bronze', 'silver', 'gold']
+    target_users: Optional[List[str]] = None  # List of user addresses
+    subject: str
+    message: str
+
+class Ticket(BaseModel):
+    ticket_id: str
+    sender_address: str
+    sender_username: str
+    contact_type: str
+    recipient_address: Optional[str] = None
+    recipient_username: Optional[str] = None
+    category: str
+    priority: str
+    subject: str
+    status: str  # 'open', 'in_progress', 'closed'
+    created_at: datetime
+    updated_at: datetime
+    attachment_count: Optional[int] = 0
+
+class TicketMessage(BaseModel):
+    message_id: str
+    ticket_id: str
+    sender_address: str
+    sender_username: str
+    sender_role: str  # 'user', 'admin'
+    message: str
+    attachment_urls: Optional[List[str]] = []
+    created_at: datetime
+
 # WebSocket connection manager
 class ConnectionManager:
     def __init__(self):
