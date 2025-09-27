@@ -5898,9 +5898,11 @@ function LeadsTab() {
                         <span className={`px-2 py-1 rounded text-sm capitalize ${
                           file.member_tier === 'gold' ? 'bg-yellow-600 bg-opacity-20 text-yellow-300' :
                           file.member_tier === 'silver' ? 'bg-gray-600 bg-opacity-20 text-gray-300' :
+                          file.member_tier === 'test' ? 'bg-green-600 bg-opacity-20 text-green-300' :
+                          file.member_tier === 'vip_affiliate' ? 'bg-purple-600 bg-opacity-20 text-purple-300' :
                           'bg-orange-600 bg-opacity-20 text-orange-300'
                         }`}>
-                          {file.member_tier}
+                          {getTierDisplayName(file.member_tier)}
                         </span>
                       </td>
                       <td className="py-4 px-4 text-gray-300">
