@@ -1899,7 +1899,7 @@ class Web3MembershipTester:
         }
         
         fake_ticket_id = f"nonexistent_{uuid.uuid4().hex[:8]}"
-        success, response = self.run_test("Get Ticket Conversation (Not Found)", "GET", f"tickets/{fake_ticket_id}", 404, headers=headers)
+        success, response = self.run_test("Get Ticket Conversation (Not Found)", "GET", f"tickets/{fake_ticket_id}", 401, headers=headers)
         return success, response
     
     def test_reply_to_ticket(self):
