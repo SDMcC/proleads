@@ -5570,9 +5570,11 @@ function AdminDashboard() {
                       >
                         <option value="">All Tiers</option>
                         <option value="affiliate">Affiliate</option>
+                        <option value="test">Test</option>
                         <option value="bronze">Bronze</option>
                         <option value="silver">Silver</option>
                         <option value="gold">Gold</option>
+                        <option value="vip_affiliate">VIP Affiliate</option>
                       </select>
                     </div>
                     <div>
