@@ -1364,7 +1364,7 @@ function NotificationPanel({ bellButtonRef, notifications, onClose, onClearNotif
                       onClick={() => {
                         onClose(); // Close notification panel
                         // Navigate to tickets tab
-                        setSidebarActiveItem('tickets');
+                        setActiveTab('tickets');
                       }}
                       className="mt-2 text-xs text-blue-400 hover:text-blue-300 underline"
                     >
