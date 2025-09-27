@@ -1139,9 +1139,6 @@ function Dashboard() {
                   ref={setBellButtonRef}
                   onClick={() => {
                     setNotificationsPanelOpen(!notificationsPanelOpen);
-                    if (!notificationsPanelOpen && unreadCount > 0) {
-                      markAllNotificationsRead();
-                    }
                   }}
                   className="relative p-2 text-gray-300 hover:text-white rounded-lg hover:bg-white hover:bg-opacity-10 transition-all duration-300"
                 >
