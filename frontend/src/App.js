@@ -3356,6 +3356,26 @@ function TicketsTab() {
     }
   };
 
+  const deleteTicket = async (ticketId) => {
+    if (!window.confirm('Are you sure you want to delete this ticket? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(
+        `${process.env.REACT_APP_BACKEND_URL}/api/tickets/${ticketId}`,
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+
+      alert('Ticket deleted successfully');
+      fetchTickets();
+    } catch (error) {
+      console.error('Failed to delete ticket:', error);
+      alert('Failed to delete ticket. Only closed tickets can be deleted.');
+    }
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'open': return 'bg-blue-600 text-blue-100';
