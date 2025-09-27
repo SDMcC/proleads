@@ -318,7 +318,17 @@ async def get_current_user(authorization: Optional[str] = Header(None)):
     try:
         token = authorization.replace("Bearer ", "")
         payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-        user = await db.users.find_one({"address": payload["address"]})
+        
+        # Handle different token formats
+        if "address" in payload:
+            # Web3 authentication
+            user = await db.users.find_one({"address": payload["address"]})
+        elif "username" in payload and payload.get("role") != "admin":
+            # Traditional authentication
+            user = await db.users.find_one({"username": payload["username"]})
+        else:
+            raise HTTPException(status_code=401, detail="Invalid token format")
+            
         if not user:
             raise HTTPException(status_code=401, detail="User not found")
         return user
