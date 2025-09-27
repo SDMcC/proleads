@@ -6622,6 +6622,13 @@ def main():
     else:
         print("\n✅ Admin Notification System test passed")
     
+    # Test Internal Ticketing System (Priority 1f)
+    ticketing_success = tester.test_internal_ticketing_system()
+    if not ticketing_success:
+        print("\n⚠️ Internal Ticketing System test failed")
+    else:
+        print("\n✅ Internal Ticketing System test passed")
+    
     # Test Priority 2: User Experience APIs
     priority2_success = tester.test_priority2_user_experience_apis()
     if not priority2_success:
