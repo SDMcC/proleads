@@ -7311,5 +7311,21 @@ if __name__ == "__main__":
         print("=" * 80)
         
         sys.exit(0 if success else 1)
+    elif len(sys.argv) > 1 and sys.argv[1] == "ticketing_system":
+        print("🎯 RUNNING SPECIFIC TEST: Internal Ticketing System Backend Implementation")
+        print("=" * 80)
+        
+        backend_url = "https://affiliate-hub-80.preview.emergentagent.com"
+        tester = Web3MembershipTester(backend_url)
+        
+        # Run the specific ticketing system test
+        success = tester.test_internal_ticketing_system()
+        
+        print("\n" + "=" * 80)
+        print(f"🎯 FINAL RESULT: {'✅ PASSED' if success else '❌ FAILED'}")
+        print(f"📊 Tests passed: {tester.tests_passed}/{tester.tests_run}")
+        print("=" * 80)
+        
+        sys.exit(0 if success else 1)
     else:
         sys.exit(main())
