@@ -6157,7 +6157,7 @@ function AdminTicketsTab({
       setLoading(true);
       const token = localStorage.getItem('adminToken');
       const response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/api/tickets/${ticketId}`,
+        `${process.env.REACT_APP_BACKEND_URL}/api/admin/tickets/${ticketId}`,
         { headers: { Authorization: `Bearer ${token}` }}
       );
       
