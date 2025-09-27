@@ -876,8 +876,10 @@ async def get_user_notifications(current_user: dict = Depends(get_current_user))
         
         # Convert ObjectId and datetime for JSON serialization
         for notification in notifications:
-            notification["_id"] = str(notification["_id"])
-            notification["created_at"] = notification["created_at"].isoformat()
+            if "_id" in notification:
+                del notification["_id"]  # Remove MongoDB ObjectId
+            if "created_at" in notification:
+                notification["created_at"] = notification["created_at"].isoformat()
         
         return {
             "notifications": notifications,
