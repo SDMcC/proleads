@@ -102,9 +102,10 @@ class Web3MembershipTester:
     def test_register_user(self, with_referrer=False):
         """Test user registration"""
         data = {
-            "address": self.user_address,
+            "wallet_address": self.user_address,
             "username": self.username,
-            "email": self.email
+            "email": self.email,
+            "password": "testpassword123"
         }
         
         if with_referrer and self.referrer_user:
