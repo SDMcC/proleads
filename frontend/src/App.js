@@ -5589,6 +5589,28 @@ function AdminDashboard() {
         {activeTab === 'configuration' && (
           <ConfigurationTab />
         )}
+
+        {/* Admin Tickets Tab */}
+        {activeTab === 'tickets' && (
+          <AdminTicketsTab 
+            tickets={adminTickets}
+            setTickets={setAdminTickets}
+            selectedTicket={selectedAdminTicket}
+            setSelectedTicket={setSelectedAdminTicket}
+            page={adminTicketPage}
+            setPage={setAdminTicketPage}
+            totalPages={adminTicketTotalPages}
+            setTotalPages={setAdminTicketTotalPages}
+            filters={adminTicketFilters}
+            setFilters={setAdminTicketFilters}
+            showMassMessageModal={showMassMessageModal}
+            setShowMassMessageModal={setShowMassMessageModal}
+            massMessageForm={massMessageForm}
+            setMassMessageForm={setMassMessageForm}
+            adminReplyMessage={adminReplyMessage}
+            setAdminReplyMessage={setAdminReplyMessage}
+          />
+        )}
       </div>
 
       {/* Member Details/Edit Modal */}
