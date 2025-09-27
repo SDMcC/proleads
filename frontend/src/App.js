@@ -3793,13 +3793,15 @@ function TicketsTab() {
             {tickets.map((ticket) => (
               <div
                 key={ticket.ticket_id}
-                className="p-6 hover:bg-white hover:bg-opacity-5 cursor-pointer"
-                onClick={() => fetchTicketDetails(ticket.ticket_id)}
+                className="p-6 hover:bg-white hover:bg-opacity-5 transition-all duration-200"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center space-x-3 mb-2">
-                      <h3 className="text-lg font-medium text-white">{ticket.subject}</h3>
+                      <h3 className="text-lg font-medium text-white hover:text-blue-300 cursor-pointer"
+                          onClick={() => fetchTicketDetails(ticket.ticket_id)}>
+                        {ticket.subject}
+                      </h3>
                       <span className={`px-2 py-1 rounded text-xs uppercase font-medium ${getStatusColor(ticket.status)}`}>
                         {ticket.status.replace('_', ' ')}
                       </span>
@@ -3808,13 +3810,14 @@ function TicketsTab() {
                       </span>
                     </div>
                     
-                    <div className="flex items-center space-x-4 text-sm text-gray-400">
+                    <div className="flex items-center space-x-4 text-sm text-gray-400 mb-2">
                       <span>#{ticket.ticket_id.slice(0, 8)}</span>
                       <span className="capitalize">{ticket.category}</span>
                       <span>
                         {ticket.contact_type === 'admin' ? 'To Admin' : 
                          ticket.contact_type === 'sponsor' ? 'To Sponsor' :
                          ticket.contact_type === 'downline_individual' ? 'To Downline' :
+                         ticket.contact_type === 'news' ? 'News Message' :
                          'Mass Message'}
                       </span>
                       {ticket.recipient_username && (
@@ -3822,20 +3825,42 @@ function TicketsTab() {
                       )}
                     </div>
                     
-                    <p className="text-gray-300 text-sm mt-2">
+                    <p className="text-gray-300 text-sm">
                       Updated {new Date(ticket.updated_at).toLocaleString()}
                     </p>
                   </div>
                   
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-3">
                     {ticket.attachment_count > 0 && (
                       <Paperclip className="h-4 w-4 text-gray-400" />
                     )}
-                    <Eye className="h-4 w-4 text-gray-400" />
+                    
+                    {/* View Button */}
+                    <button
+                      onClick={() => fetchTicketDetails(ticket.ticket_id)}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center space-x-2 transition-all duration-200"
+                    >
+                      <Eye className="h-4 w-4" />
+                      <span>View Details</span>
+                    </button>
+                    
+                    {/* Delete Button - Only for closed tickets */}
+                    {ticket.status === 'closed' && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent triggering the row click
+                          deleteTicket(ticket.ticket_id);
+                        }}
+                        className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg flex items-center space-x-2 transition-all duration-200"
+                      >
+                        <XCircle className="h-4 w-4" />
+                        <span>Delete</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
-            ))}
+            )}}
           </div>
         )}
       </div>
