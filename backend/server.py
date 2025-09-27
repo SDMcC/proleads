@@ -4008,6 +4008,46 @@ async def get_downline_contacts(current_user: dict = Depends(get_current_user)):
         logger.error(f"Failed to fetch downline contacts: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to fetch contacts")
 
+# Admin-specific ticket details endpoint
+@app.get("/api/admin/tickets/{ticket_id}")
+async def get_admin_ticket_details(ticket_id: str, admin: dict = Depends(get_admin_user)):
+    """Get ticket details for admin (admin can view any ticket)"""
+    try:
+        # Get ticket
+        ticket = await db.tickets.find_one({"ticket_id": ticket_id})
+        if not ticket:
+            raise HTTPException(status_code=404, detail="Ticket not found")
+        
+        # Get messages
+        messages = await db.ticket_messages.find(
+            {"ticket_id": ticket_id}
+        ).sort("created_at", 1).to_list(None)
+        
+        # Convert ObjectId and datetime for JSON serialization
+        if "_id" in ticket:
+            del ticket["_id"]  # Remove MongoDB ObjectId
+        if "created_at" in ticket:
+            ticket["created_at"] = ticket["created_at"].isoformat()
+        if "updated_at" in ticket:
+            ticket["updated_at"] = ticket["updated_at"].isoformat()
+        
+        for message in messages:
+            if "_id" in message:
+                del message["_id"]  # Remove MongoDB ObjectId
+            if "created_at" in message:
+                message["created_at"] = message["created_at"].isoformat()
+        
+        return {
+            "ticket": ticket,
+            "messages": messages
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to fetch admin ticket details: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch ticket details")
+
 # =============================================================================
 # ADMIN TICKET MANAGEMENT API ENDPOINTS
 # =============================================================================
