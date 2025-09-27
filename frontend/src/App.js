@@ -1362,8 +1362,8 @@ function NotificationPanel({ bellButtonRef, notifications, onClose, onClearNotif
                     <button
                       onClick={() => {
                         onClose(); // Close notification panel
-                        // Navigate to tickets tab - this would need to be passed as a prop
-                        window.location.hash = '#tickets'; // Simple navigation
+                        // Navigate to tickets tab
+                        setSidebarActiveItem('tickets');
                       }}
                       className="mt-2 text-xs text-blue-400 hover:text-blue-300 underline"
                     >
