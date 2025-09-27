@@ -7406,9 +7406,11 @@ function MemberModal({ member, editingMember, onClose, onUpdate, onSuspend, onUn
                 className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-red-400"
               >
                 <option value="affiliate">Affiliate</option>
+                <option value="test">Test</option>
                 <option value="bronze">Bronze</option>
                 <option value="silver">Silver</option>
                 <option value="gold">Gold</option>
+                <option value="vip_affiliate">VIP Affiliate</option>
               </select>
             </div>
 
