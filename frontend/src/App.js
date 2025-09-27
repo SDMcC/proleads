@@ -1659,13 +1659,8 @@ function NetworkTreeTab() {
               <h4 className="text-white font-medium">{node.username}</h4>
               <p className="text-gray-400 text-sm">{node.email}</p>
               <div className="flex items-center space-x-4 mt-1">
-                <span className={`px-2 py-1 rounded text-xs uppercase font-medium ${
-                  node.membership_tier === 'gold' ? 'bg-yellow-600 text-yellow-100' :
-                  node.membership_tier === 'silver' ? 'bg-gray-600 text-gray-100' :
-                  node.membership_tier === 'bronze' ? 'bg-orange-600 text-orange-100' :
-                  'bg-blue-600 text-blue-100'
-                }`}>
-                  {node.membership_tier}
+                <span className={`px-2 py-1 rounded text-xs uppercase font-medium ${getTierBadgeClass(node.membership_tier)}`}>
+                  {getTierDisplayName(node.membership_tier)}
                 </span>
                 <span className="text-gray-400 text-xs">Level {node.level}</span>
               </div>
