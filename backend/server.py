@@ -4198,7 +4198,44 @@ async def send_mass_message(
         if not target_users:
             raise HTTPException(status_code=400, detail="No target users found")
         
-        # Create tickets for each target user
+        # Create a single broadcast ticket instead of individual tickets
+        broadcast_ticket_id = str(uuid.uuid4())
+        broadcast_ticket_doc = {
+            "ticket_id": broadcast_ticket_id,
+            "sender_address": "admin",
+            "sender_username": admin["username"],
+            "contact_type": "broadcast",
+            "recipient_address": None,
+            "recipient_username": f"{len(target_users)} recipients",
+            "category": "general",
+            "priority": "medium",
+            "subject": f"[BROADCAST] {message_data.subject}",
+            "status": "closed",  # Broadcast messages are closed by default
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow(),
+            "attachment_count": 0,
+            "recipient_count": len(target_users),
+            "target_type": message_data.target_type,
+            "target_tiers": message_data.target_tiers if message_data.target_type == "specific_tiers" else None
+        }
+        
+        await db.tickets.insert_one(broadcast_ticket_doc)
+        
+        # Create a single broadcast message
+        broadcast_message_doc = {
+            "message_id": str(uuid.uuid4()),
+            "ticket_id": broadcast_ticket_id,
+            "sender_address": "admin",
+            "sender_username": admin["username"],
+            "sender_role": "admin",
+            "message": message_data.message,
+            "attachment_urls": [],
+            "created_at": datetime.utcnow()
+        }
+        
+        await db.ticket_messages.insert_one(broadcast_message_doc)
+        
+        # Create individual user-specific news tickets that reference the broadcast
         created_count = 0
         for user in target_users:
             # Create news ticket
@@ -4216,7 +4253,8 @@ async def send_mass_message(
                 "status": "closed",  # News messages are closed by default
                 "created_at": datetime.utcnow(),
                 "updated_at": datetime.utcnow(),
-                "attachment_count": 0
+                "attachment_count": 0,
+                "broadcast_id": broadcast_ticket_id  # Reference to the original broadcast
             }
             
             await db.tickets.insert_one(ticket_doc)
