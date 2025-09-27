@@ -252,7 +252,12 @@ class NewMembershipTiersTest:
             print("❌ Failed to get system configuration")
             return False
         
-        membership_tiers = response.get('membership_tiers', {})
+        # Check both config.membership_tiers and current_membership_tiers
+        config_membership_tiers = response.get('config', {}).get('membership_tiers', {})
+        current_membership_tiers = response.get('current_membership_tiers', {})
+        
+        # Use current_membership_tiers as it contains the live configuration
+        membership_tiers = current_membership_tiers
         
         if not membership_tiers:
             print("❌ No membership_tiers section found in system config")
