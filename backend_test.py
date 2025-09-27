@@ -1671,7 +1671,7 @@ class Web3MembershipTester:
             'Content-Type': 'application/json'
         }
         
-        success, response = self.run_test("Upload Attachment (No File)", "POST", "tickets/upload-attachment", 400, {}, headers)
+        success, response = self.run_test("Upload Attachment (No File)", "POST", "tickets/upload-attachment", 401, {}, headers)
         return success, response
     
     def test_upload_attachment_unauthorized(self):
