@@ -5434,13 +5434,8 @@ function AdminDashboard() {
                           </div>
                         </td>
                         <td className="py-3">
-                          <span className={`px-2 py-1 rounded text-xs uppercase font-medium ${
-                            payment.tier === 'gold' ? 'bg-yellow-600 text-yellow-100' :
-                            payment.tier === 'silver' ? 'bg-gray-600 text-gray-100' :
-                            payment.tier === 'bronze' ? 'bg-orange-600 text-orange-100' :
-                            'bg-blue-600 text-blue-100'
-                          }`}>
-                            {payment.tier}
+                          <span className={`px-2 py-1 rounded text-xs uppercase font-medium ${getTierBadgeClass(payment.tier)}`}>
+                            {getTierDisplayName(payment.tier)}
                           </span>
                         </td>
                         <td className="py-3">
