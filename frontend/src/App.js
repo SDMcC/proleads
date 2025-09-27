@@ -4844,6 +4844,7 @@ function AdminDashboard() {
             { id: 'payments', label: 'Payments', icon: DollarSign },
             { id: 'commissions', label: 'Commissions', icon: TrendingUp },
             { id: 'leads', label: 'Leads Distribution', icon: FileText },
+            { id: 'tickets', label: 'Tickets', icon: MessageCircle },
             { id: 'configuration', label: 'Configuration', icon: Settings }
           ].map(({ id, label, icon: Icon }) => (
             <button
