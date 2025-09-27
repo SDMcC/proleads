@@ -3729,13 +3729,22 @@ function TicketsTab() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-white">Support Tickets</h2>
-        <button
-          onClick={() => setActiveView('create')}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center space-x-2"
-        >
-          <Plus className="h-4 w-4" />
-          <span>New Ticket</span>
-        </button>
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={() => fetchTickets()}
+            className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg flex items-center space-x-2"
+          >
+            <Circle className="h-4 w-4" />
+            <span>Refresh</span>
+          </button>
+          <button
+            onClick={() => setActiveView('create')}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center space-x-2"
+          >
+            <Plus className="h-4 w-4" />
+            <span>New Ticket</span>
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
