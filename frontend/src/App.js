@@ -5180,13 +5180,8 @@ function AdminDashboard() {
                           </div>
                         </td>
                         <td className="py-3">
-                          <span className={`px-2 py-1 rounded text-xs uppercase font-medium ${
-                            member.membership_tier === 'gold' ? 'bg-yellow-600 text-yellow-100' :
-                            member.membership_tier === 'silver' ? 'bg-gray-600 text-gray-100' :
-                            member.membership_tier === 'bronze' ? 'bg-orange-600 text-orange-100' :
-                            'bg-blue-600 text-blue-100'
-                          }`}>
-                            {member.membership_tier}
+                          <span className={`px-2 py-1 rounded text-xs uppercase font-medium ${getTierBadgeClass(member.membership_tier)}`}>
+                            {getTierDisplayName(member.membership_tier)}
                           </span>
                         </td>
                         <td className="py-3 text-white">{member.total_referrals || 0}</td>
