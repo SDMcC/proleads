@@ -3761,12 +3761,12 @@ async def create_ticket(
                     user_address=referral.get("address"),
                     notification_type="ticket",
                     title="Message from Sponsor",
-                    message=f"{current_user['username']} sent you a message: {ticket_data.subject}"
+                    message=f"{sender_username} sent you a message: {ticket_data.subject}"
                 )
         
         # Create notifications
         await create_ticket_notification(
-            ticket_id, current_user["address"], current_user["username"], 
+            ticket_id, sender_address, sender_username, 
             ticket_data.contact_type, ticket_data.subject
         )
         
