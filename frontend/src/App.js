@@ -6348,29 +6348,66 @@ function AdminTicketsTab({
 
   const downloadAttachment = async (url, filename) => {
     try {
+      const attachmentId = url.split('/').pop();
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}${url}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to download attachment');
-      }
-
-      const blob = await response.blob();
-      const downloadUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.download = filename || 'attachment';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(downloadUrl);
+      const viewUrl = `${process.env.REACT_APP_BACKEND_URL}/api/tickets/attachment/${attachmentId}/view?token=${token}`;
+      
+      // Open in new window for viewing
+      const newWindow = window.open('', '_blank');
+      newWindow.document.write(`
+        <html>
+          <head>
+            <title>${filename || 'Attachment'}</title>
+            <style>
+              body { margin: 0; padding: 20px; font-family: Arial, sans-serif; background: #f5f5f5; }
+              .container { max-width: 100%; text-align: center; }
+              .header { margin-bottom: 20px; }
+              .content { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+              iframe, img { max-width: 100%; border: none; }
+              .download-btn { 
+                background: #dc2626; color: white; padding: 10px 20px; 
+                border: none; border-radius: 4px; cursor: pointer; margin: 10px;
+              }
+              .download-btn:hover { background: #b91c1c; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h2>${filename || 'Attachment'}</h2>
+                <button class="download-btn" onclick="downloadFile()">Download File</button>
+                <button class="download-btn" onclick="window.close()">Close</button>
+              </div>
+              <div class="content">
+                <iframe src="${viewUrl}" width="100%" height="600px" frameborder="0">
+                  <p>Unable to display file. <a href="${viewUrl}" target="_blank">Click here to open directly</a></p>
+                </iframe>
+              </div>
+            </div>
+            <script>
+              function downloadFile() {
+                fetch('${process.env.REACT_APP_BACKEND_URL}${url}', {
+                  headers: { 'Authorization': 'Bearer ${token}' }
+                })
+                .then(response => response.blob())
+                .then(blob => {
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = '${filename || 'attachment'}';
+                  a.click();
+                  window.URL.revokeObjectURL(url);
+                })
+                .catch(error => alert('Download failed'));
+              }
+            </script>
+          </body>
+        </html>
+      `);
+      newWindow.document.close();
     } catch (error) {
-      console.error('Failed to download attachment:', error);
-      alert('Failed to download attachment. Please try again.');
+      console.error('Failed to open attachment:', error);
+      alert('Failed to open attachment');
     }
   };
 
