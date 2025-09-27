@@ -4415,6 +4415,27 @@ function AdminDashboard() {
   const [adminUnreadCount, setAdminUnreadCount] = useState(0);
   const [adminNotificationsPanelOpen, setAdminNotificationsPanelOpen] = useState(false);
   const [adminBellButtonRef, setAdminBellButtonRef] = useState(null);
+  
+  // Admin tickets management state
+  const [adminTickets, setAdminTickets] = useState([]);
+  const [selectedAdminTicket, setSelectedAdminTicket] = useState(null);
+  const [adminTicketPage, setAdminTicketPage] = useState(1);
+  const [adminTicketTotalPages, setAdminTicketTotalPages] = useState(1);
+  const [adminTicketFilters, setAdminTicketFilters] = useState({
+    status: '',
+    category: '',
+    contact_type: '',
+    user: ''
+  });
+  const [showMassMessageModal, setShowMassMessageModal] = useState(false);
+  const [massMessageForm, setMassMessageForm] = useState({
+    target_type: 'all_users',
+    target_tiers: [],
+    target_users: [],
+    subject: '',
+    message: ''
+  });
+  const [adminReplyMessage, setAdminReplyMessage] = useState('');
 
   useEffect(() => {
     fetchAdminData();
