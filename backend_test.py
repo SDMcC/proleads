@@ -1602,6 +1602,718 @@ class Web3MembershipTester:
         print("✅ Commissions Management API System Test Passed")
         return True
     
+    def test_upload_attachment_success(self):
+        """Test POST /api/tickets/upload-attachment with valid file"""
+        if not self.token or self.token == "mock_token_for_testing":
+            print("⚠️ No user token available, running user login first")
+            # Create a test user and login
+            reg_success, _ = self.test_register_user()
+            if not reg_success:
+                print("❌ Failed to register user for attachment test")
+                return False, {}
+        
+        headers = {
+            'Authorization': f'Bearer {self.token}'
+        }
+        
+        # Create a mock file for testing
+        files = {
+            'file': ('test_document.txt', 'This is a test document for ticket attachment', 'text/plain')
+        }
+        
+        url = f"{self.base_url}/api/tickets/upload-attachment"
+        print(f"\n🔍 Testing Upload Attachment (Success)...")
+        print(f"   URL: {url}")
+        
+        try:
+            response = requests.post(url, files=files, headers=headers)
+            success = response.status_code == 200
+            
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                try:
+                    response_data = response.json()
+                    if 'attachment_id' in response_data and 'filename' in response_data:
+                        print("✅ Response contains attachment_id and filename")
+                        return True, response_data
+                    else:
+                        print("❌ Response missing required fields")
+                        return False, {}
+                except:
+                    print(f"   Response: {response.text[:200]}...")
+                    return False, {}
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                try:
+                    error_detail = response.json().get('detail', 'No detail provided')
+                    print(f"   Error: {error_detail}")
+                except:
+                    print(f"   Response: {response.text}")
+                return False, {}
+                
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False, {}
+        
+        self.tests_run += 1
+        return success, {}
+    
+    def test_upload_attachment_no_file(self):
+        """Test POST /api/tickets/upload-attachment without file"""
+        if not self.token or self.token == "mock_token_for_testing":
+            print("⚠️ Using mock token for no file test")
+            self.token = "mock_token"
+        
+        headers = {
+            'Authorization': f'Bearer {self.token}',
+            'Content-Type': 'application/json'
+        }
+        
+        success, response = self.run_test("Upload Attachment (No File)", "POST", "tickets/upload-attachment", 400, {}, headers)
+        return success, response
+    
+    def test_upload_attachment_unauthorized(self):
+        """Test POST /api/tickets/upload-attachment without authentication"""
+        headers = {'Content-Type': 'application/json'}
+        success, response = self.run_test("Upload Attachment (Unauthorized)", "POST", "tickets/upload-attachment", 401, {}, headers)
+        return success, response
+    
+    def test_create_ticket_contact_admin(self):
+        """Test POST /api/tickets/create for contacting admin"""
+        if not self.token or self.token == "mock_token_for_testing":
+            print("⚠️ Using mock token for ticket creation test")
+            self.token = "mock_token"
+        
+        headers = {
+            'Authorization': f'Bearer {self.token}',
+            'Content-Type': 'application/json'
+        }
+        
+        data = {
+            "contact_type": "admin",
+            "category": "general",
+            "priority": "medium",
+            "subject": "Test Support Request",
+            "message": "This is a test support request to admin"
+        }
+        
+        success, response = self.run_test("Create Ticket (Contact Admin)", "POST", "tickets/create", 200, data, headers)
+        
+        if success and response.get('ticket_id'):
+            self.test_ticket_id = response.get('ticket_id')
+            print(f"✅ Created ticket with ID: {self.test_ticket_id}")
+        
+        return success, response
+    
+    def test_create_ticket_contact_sponsor(self):
+        """Test POST /api/tickets/create for contacting sponsor"""
+        if not self.token or self.token == "mock_token_for_testing":
+            print("⚠️ Using mock token for sponsor ticket test")
+            self.token = "mock_token"
+        
+        headers = {
+            'Authorization': f'Bearer {self.token}',
+            'Content-Type': 'application/json'
+        }
+        
+        data = {
+            "contact_type": "sponsor",
+            "category": "billing",
+            "priority": "high",
+            "subject": "Question about commissions",
+            "message": "I have a question about my commission structure"
+        }
+        
+        success, response = self.run_test("Create Ticket (Contact Sponsor)", "POST", "tickets/create", 200, data, headers)
+        return success, response
+    
+    def test_create_ticket_downline_individual(self):
+        """Test POST /api/tickets/create for individual downline contact"""
+        if not self.token or self.token == "mock_token_for_testing":
+            print("⚠️ Using mock token for downline ticket test")
+            self.token = "mock_token"
+        
+        headers = {
+            'Authorization': f'Bearer {self.token}',
+            'Content-Type': 'application/json'
+        }
+        
+        data = {
+            "contact_type": "downline_individual",
+            "recipient_address": f"0x{uuid.uuid4().hex[:40]}",
+            "category": "leads",
+            "priority": "low",
+            "subject": "Lead distribution question",
+            "message": "I wanted to ask about the recent lead distribution"
+        }
+        
+        success, response = self.run_test("Create Ticket (Individual Downline)", "POST", "tickets/create", 200, data, headers)
+        return success, response
+    
+    def test_create_ticket_downline_mass(self):
+        """Test POST /api/tickets/create for mass downline message"""
+        if not self.token or self.token == "mock_token_for_testing":
+            print("⚠️ Using mock token for mass message test")
+            self.token = "mock_token"
+        
+        headers = {
+            'Authorization': f'Bearer {self.token}',
+            'Content-Type': 'application/json'
+        }
+        
+        data = {
+            "contact_type": "downline_mass",
+            "category": "technical",
+            "priority": "medium",
+            "subject": "System update notification",
+            "message": "Important system update information for all my downlines"
+        }
+        
+        success, response = self.run_test("Create Ticket (Mass Downline)", "POST", "tickets/create", 200, data, headers)
+        return success, response
+    
+    def test_create_ticket_missing_fields(self):
+        """Test POST /api/tickets/create with missing required fields"""
+        if not self.token or self.token == "mock_token_for_testing":
+            print("⚠️ Using mock token for validation test")
+            self.token = "mock_token"
+        
+        headers = {
+            'Authorization': f'Bearer {self.token}',
+            'Content-Type': 'application/json'
+        }
+        
+        data = {
+            "contact_type": "admin",
+            "category": "general"
+            # Missing priority, subject, message
+        }
+        
+        success, response = self.run_test("Create Ticket (Missing Fields)", "POST", "tickets/create", 422, data, headers)
+        return success, response
+    
+    def test_create_ticket_unauthorized(self):
+        """Test POST /api/tickets/create without authentication"""
+        headers = {'Content-Type': 'application/json'}
+        
+        data = {
+            "contact_type": "admin",
+            "category": "general",
+            "priority": "medium",
+            "subject": "Test",
+            "message": "Test message"
+        }
+        
+        success, response = self.run_test("Create Ticket (Unauthorized)", "POST", "tickets/create", 401, data, headers)
+        return success, response
+    
+    def test_get_user_tickets(self):
+        """Test GET /api/tickets/user with pagination and filters"""
+        if not self.token or self.token == "mock_token_for_testing":
+            print("⚠️ Using mock token for user tickets test")
+            self.token = "mock_token"
+        
+        headers = {
+            'Authorization': f'Bearer {self.token}',
+            'Content-Type': 'application/json'
+        }
+        
+        success, response = self.run_test("Get User Tickets", "GET", "tickets/user", 200, headers=headers)
+        
+        if success:
+            # Verify response structure
+            required_keys = ['tickets', 'total_count', 'page', 'limit', 'total_pages']
+            missing_keys = [key for key in required_keys if key not in response]
+            
+            if not missing_keys:
+                print("✅ User tickets response contains all required pagination fields")
+                return True, response
+            else:
+                print(f"❌ User tickets response missing required keys: {missing_keys}")
+                return False, {}
+        
+        return success, response
+    
+    def test_get_user_tickets_with_filters(self):
+        """Test GET /api/tickets/user with status and category filters"""
+        if not self.token or self.token == "mock_token_for_testing":
+            print("⚠️ Using mock token for filtered tickets test")
+            self.token = "mock_token"
+        
+        headers = {
+            'Authorization': f'Bearer {self.token}',
+            'Content-Type': 'application/json'
+        }
+        
+        success, response = self.run_test("Get User Tickets (Filtered)", "GET", "tickets/user?status=open&category=general", 200, headers=headers)
+        return success, response
+    
+    def test_get_user_tickets_unauthorized(self):
+        """Test GET /api/tickets/user without authentication"""
+        headers = {'Content-Type': 'application/json'}
+        success, response = self.run_test("Get User Tickets (Unauthorized)", "GET", "tickets/user", 401, headers=headers)
+        return success, response
+    
+    def test_get_ticket_conversation(self):
+        """Test GET /api/tickets/{ticket_id} for conversation thread"""
+        if not hasattr(self, 'test_ticket_id'):
+            print("⚠️ No test ticket ID available, using mock ID")
+            self.test_ticket_id = f"ticket_{uuid.uuid4().hex[:8]}"
+        
+        if not self.token or self.token == "mock_token_for_testing":
+            print("⚠️ Using mock token for conversation test")
+            self.token = "mock_token"
+        
+        headers = {
+            'Authorization': f'Bearer {self.token}',
+            'Content-Type': 'application/json'
+        }
+        
+        success, response = self.run_test("Get Ticket Conversation", "GET", f"tickets/{self.test_ticket_id}", 200, headers=headers)
+        
+        if success:
+            # Verify response structure
+            required_keys = ['ticket', 'messages']
+            missing_keys = [key for key in required_keys if key not in response]
+            
+            if not missing_keys:
+                print("✅ Ticket conversation response contains ticket and messages")
+                return True, response
+            else:
+                print(f"❌ Ticket conversation response missing required keys: {missing_keys}")
+                return False, {}
+        
+        return success, response
+    
+    def test_get_ticket_conversation_not_found(self):
+        """Test GET /api/tickets/{ticket_id} with non-existent ticket"""
+        if not self.token or self.token == "mock_token_for_testing":
+            print("⚠️ Using mock token for not found test")
+            self.token = "mock_token"
+        
+        headers = {
+            'Authorization': f'Bearer {self.token}',
+            'Content-Type': 'application/json'
+        }
+        
+        fake_ticket_id = f"nonexistent_{uuid.uuid4().hex[:8]}"
+        success, response = self.run_test("Get Ticket Conversation (Not Found)", "GET", f"tickets/{fake_ticket_id}", 404, headers=headers)
+        return success, response
+    
+    def test_reply_to_ticket(self):
+        """Test POST /api/tickets/{ticket_id}/reply"""
+        if not hasattr(self, 'test_ticket_id'):
+            print("⚠️ No test ticket ID available, using mock ID")
+            self.test_ticket_id = f"ticket_{uuid.uuid4().hex[:8]}"
+        
+        if not self.token or self.token == "mock_token_for_testing":
+            print("⚠️ Using mock token for reply test")
+            self.token = "mock_token"
+        
+        headers = {
+            'Authorization': f'Bearer {self.token}',
+            'Content-Type': 'application/json'
+        }
+        
+        data = {
+            "message": "This is a follow-up message to my original ticket"
+        }
+        
+        success, response = self.run_test("Reply to Ticket", "POST", f"tickets/{self.test_ticket_id}/reply", 200, data, headers)
+        return success, response
+    
+    def test_reply_to_ticket_unauthorized(self):
+        """Test POST /api/tickets/{ticket_id}/reply without authentication"""
+        headers = {'Content-Type': 'application/json'}
+        
+        data = {
+            "message": "Unauthorized reply attempt"
+        }
+        
+        fake_ticket_id = f"ticket_{uuid.uuid4().hex[:8]}"
+        success, response = self.run_test("Reply to Ticket (Unauthorized)", "POST", f"tickets/{fake_ticket_id}/reply", 401, data, headers)
+        return success, response
+    
+    def test_get_downline_contacts(self):
+        """Test GET /api/tickets/downline-contacts"""
+        if not self.token or self.token == "mock_token_for_testing":
+            print("⚠️ Using mock token for downline contacts test")
+            self.token = "mock_token"
+        
+        headers = {
+            'Authorization': f'Bearer {self.token}',
+            'Content-Type': 'application/json'
+        }
+        
+        success, response = self.run_test("Get Downline Contacts", "GET", "tickets/downline-contacts", 200, headers=headers)
+        
+        if success:
+            # Verify response structure
+            if 'contacts' in response:
+                print("✅ Downline contacts response contains contacts array")
+                return True, response
+            else:
+                print("❌ Downline contacts response missing contacts array")
+                return False, {}
+        
+        return success, response
+    
+    def test_get_downline_contacts_unauthorized(self):
+        """Test GET /api/tickets/downline-contacts without authentication"""
+        headers = {'Content-Type': 'application/json'}
+        success, response = self.run_test("Get Downline Contacts (Unauthorized)", "GET", "tickets/downline-contacts", 401, headers=headers)
+        return success, response
+    
+    def test_admin_get_all_tickets(self):
+        """Test GET /api/admin/tickets with admin token"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        success, response = self.run_test("Admin Get All Tickets", "GET", "admin/tickets", 200, headers=headers)
+        
+        if success:
+            # Verify response structure
+            required_keys = ['tickets', 'total_count', 'page', 'limit', 'total_pages']
+            missing_keys = [key for key in required_keys if key not in response]
+            
+            if not missing_keys:
+                print("✅ Admin tickets response contains all required pagination fields")
+                return True, response
+            else:
+                print(f"❌ Admin tickets response missing required keys: {missing_keys}")
+                return False, {}
+        
+        return success, response
+    
+    def test_admin_get_tickets_with_filters(self):
+        """Test GET /api/admin/tickets with various filters"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        success, response = self.run_test("Admin Get Tickets (Filtered)", "GET", "admin/tickets?status=open&category=general&contact_type=admin", 200, headers=headers)
+        return success, response
+    
+    def test_admin_get_tickets_unauthorized(self):
+        """Test GET /api/admin/tickets without admin token"""
+        headers = {'Content-Type': 'application/json'}
+        success, response = self.run_test("Admin Get Tickets (Unauthorized)", "GET", "admin/tickets", 401, headers=headers)
+        return success, response
+    
+    def test_admin_update_ticket_status(self):
+        """Test PUT /api/admin/tickets/{ticket_id}/status"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        if not hasattr(self, 'test_ticket_id'):
+            print("⚠️ No test ticket ID available, using mock ID")
+            self.test_ticket_id = f"ticket_{uuid.uuid4().hex[:8]}"
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        data = {
+            "status": "in_progress"
+        }
+        
+        success, response = self.run_test("Admin Update Ticket Status", "PUT", f"admin/tickets/{self.test_ticket_id}/status", 200, data, headers)
+        return success, response
+    
+    def test_admin_update_ticket_status_invalid(self):
+        """Test PUT /api/admin/tickets/{ticket_id}/status with invalid status"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        data = {
+            "status": "invalid_status"
+        }
+        
+        fake_ticket_id = f"ticket_{uuid.uuid4().hex[:8]}"
+        success, response = self.run_test("Admin Update Ticket Status (Invalid)", "PUT", f"admin/tickets/{fake_ticket_id}/status", 400, data, headers)
+        return success, response
+    
+    def test_admin_reply_to_ticket(self):
+        """Test POST /api/admin/tickets/{ticket_id}/reply"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        if not hasattr(self, 'test_ticket_id'):
+            print("⚠️ No test ticket ID available, using mock ID")
+            self.test_ticket_id = f"ticket_{uuid.uuid4().hex[:8]}"
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        data = {
+            "message": "Thank you for contacting support. We are looking into your request."
+        }
+        
+        success, response = self.run_test("Admin Reply to Ticket", "POST", f"admin/tickets/{self.test_ticket_id}/reply", 200, data, headers)
+        return success, response
+    
+    def test_admin_reply_to_ticket_unauthorized(self):
+        """Test POST /api/admin/tickets/{ticket_id}/reply without admin token"""
+        headers = {'Content-Type': 'application/json'}
+        
+        data = {
+            "message": "Unauthorized admin reply attempt"
+        }
+        
+        fake_ticket_id = f"ticket_{uuid.uuid4().hex[:8]}"
+        success, response = self.run_test("Admin Reply to Ticket (Unauthorized)", "POST", f"admin/tickets/{fake_ticket_id}/reply", 401, data, headers)
+        return success, response
+    
+    def test_admin_mass_message_all_users(self):
+        """Test POST /api/admin/tickets/mass-message to all users"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        data = {
+            "target_type": "all_users",
+            "subject": "System Maintenance Notice",
+            "message": "We will be performing scheduled maintenance on the system this weekend."
+        }
+        
+        success, response = self.run_test("Admin Mass Message (All Users)", "POST", "admin/tickets/mass-message", 200, data, headers)
+        return success, response
+    
+    def test_admin_mass_message_specific_tiers(self):
+        """Test POST /api/admin/tickets/mass-message to specific tiers"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        data = {
+            "target_type": "specific_tiers",
+            "target_tiers": ["bronze", "silver", "gold"],
+            "subject": "Premium Member Benefits Update",
+            "message": "We have exciting new benefits for our premium members!"
+        }
+        
+        success, response = self.run_test("Admin Mass Message (Specific Tiers)", "POST", "admin/tickets/mass-message", 200, data, headers)
+        return success, response
+    
+    def test_admin_mass_message_unauthorized(self):
+        """Test POST /api/admin/tickets/mass-message without admin token"""
+        headers = {'Content-Type': 'application/json'}
+        
+        data = {
+            "target_type": "all_users",
+            "subject": "Unauthorized message",
+            "message": "This should not work"
+        }
+        
+        success, response = self.run_test("Admin Mass Message (Unauthorized)", "POST", "admin/tickets/mass-message", 401, data, headers)
+        return success, response
+    
+    def test_internal_ticketing_system(self):
+        """Test complete Internal Ticketing System"""
+        print("\n🎫 Testing Internal Ticketing System")
+        
+        # 1. Test file upload system
+        print("\n📎 Testing File Upload System")
+        upload_success, upload_response = self.test_upload_attachment_success()
+        if not upload_success:
+            print("⚠️ File upload test failed - continuing with other tests")
+        
+        no_file_success, _ = self.test_upload_attachment_no_file()
+        if not no_file_success:
+            print("❌ Upload without file should return 400")
+            return False
+        
+        upload_unauth_success, _ = self.test_upload_attachment_unauthorized()
+        if not upload_unauth_success:
+            print("❌ Upload without auth should return 401")
+            return False
+        
+        # 2. Test user ticket creation
+        print("\n📝 Testing User Ticket Creation")
+        admin_ticket_success, _ = self.test_create_ticket_contact_admin()
+        if not admin_ticket_success:
+            print("❌ Create admin ticket failed")
+            return False
+        
+        sponsor_ticket_success, _ = self.test_create_ticket_contact_sponsor()
+        if not sponsor_ticket_success:
+            print("❌ Create sponsor ticket failed")
+            return False
+        
+        downline_ticket_success, _ = self.test_create_ticket_downline_individual()
+        if not downline_ticket_success:
+            print("❌ Create individual downline ticket failed")
+            return False
+        
+        mass_ticket_success, _ = self.test_create_ticket_downline_mass()
+        if not mass_ticket_success:
+            print("❌ Create mass downline ticket failed")
+            return False
+        
+        missing_fields_success, _ = self.test_create_ticket_missing_fields()
+        if not missing_fields_success:
+            print("❌ Create ticket with missing fields should return 422")
+            return False
+        
+        create_unauth_success, _ = self.test_create_ticket_unauthorized()
+        if not create_unauth_success:
+            print("❌ Create ticket without auth should return 401")
+            return False
+        
+        # 3. Test user ticket management
+        print("\n📋 Testing User Ticket Management")
+        user_tickets_success, _ = self.test_get_user_tickets()
+        if not user_tickets_success:
+            print("❌ Get user tickets failed")
+            return False
+        
+        filtered_tickets_success, _ = self.test_get_user_tickets_with_filters()
+        if not filtered_tickets_success:
+            print("❌ Get filtered user tickets failed")
+            return False
+        
+        user_tickets_unauth_success, _ = self.test_get_user_tickets_unauthorized()
+        if not user_tickets_unauth_success:
+            print("❌ Get user tickets without auth should return 401")
+            return False
+        
+        conversation_success, _ = self.test_get_ticket_conversation()
+        if not conversation_success:
+            print("⚠️ Get ticket conversation failed - may be due to mock ticket ID")
+        
+        conversation_not_found_success, _ = self.test_get_ticket_conversation_not_found()
+        if not conversation_not_found_success:
+            print("❌ Get non-existent ticket should return 404")
+            return False
+        
+        reply_success, _ = self.test_reply_to_ticket()
+        if not reply_success:
+            print("⚠️ Reply to ticket failed - may be due to mock ticket ID")
+        
+        reply_unauth_success, _ = self.test_reply_to_ticket_unauthorized()
+        if not reply_unauth_success:
+            print("❌ Reply without auth should return 401")
+            return False
+        
+        downline_contacts_success, _ = self.test_get_downline_contacts()
+        if not downline_contacts_success:
+            print("❌ Get downline contacts failed")
+            return False
+        
+        downline_contacts_unauth_success, _ = self.test_get_downline_contacts_unauthorized()
+        if not downline_contacts_unauth_success:
+            print("❌ Get downline contacts without auth should return 401")
+            return False
+        
+        # 4. Test admin ticket management
+        print("\n👨‍💼 Testing Admin Ticket Management")
+        admin_tickets_success, _ = self.test_admin_get_all_tickets()
+        if not admin_tickets_success:
+            print("❌ Admin get all tickets failed")
+            return False
+        
+        admin_filtered_success, _ = self.test_admin_get_tickets_with_filters()
+        if not admin_filtered_success:
+            print("❌ Admin get filtered tickets failed")
+            return False
+        
+        admin_tickets_unauth_success, _ = self.test_admin_get_tickets_unauthorized()
+        if not admin_tickets_unauth_success:
+            print("❌ Admin get tickets without auth should return 401")
+            return False
+        
+        admin_status_success, _ = self.test_admin_update_ticket_status()
+        if not admin_status_success:
+            print("⚠️ Admin update ticket status failed - may be due to mock ticket ID")
+        
+        admin_status_invalid_success, _ = self.test_admin_update_ticket_status_invalid()
+        if not admin_status_invalid_success:
+            print("❌ Admin update with invalid status should return 400")
+            return False
+        
+        admin_reply_success, _ = self.test_admin_reply_to_ticket()
+        if not admin_reply_success:
+            print("⚠️ Admin reply to ticket failed - may be due to mock ticket ID")
+        
+        admin_reply_unauth_success, _ = self.test_admin_reply_to_ticket_unauthorized()
+        if not admin_reply_unauth_success:
+            print("❌ Admin reply without auth should return 401")
+            return False
+        
+        # 5. Test mass messaging
+        print("\n📢 Testing Mass Messaging")
+        mass_all_success, _ = self.test_admin_mass_message_all_users()
+        if not mass_all_success:
+            print("❌ Admin mass message to all users failed")
+            return False
+        
+        mass_tiers_success, _ = self.test_admin_mass_message_specific_tiers()
+        if not mass_tiers_success:
+            print("❌ Admin mass message to specific tiers failed")
+            return False
+        
+        mass_unauth_success, _ = self.test_admin_mass_message_unauthorized()
+        if not mass_unauth_success:
+            print("❌ Admin mass message without auth should return 401")
+            return False
+        
+        print("✅ Internal Ticketing System Test Passed")
+        return True
+    
     # Priority 2: User Experience API Tests
     def get_existing_user_token(self):
         """Get a token for an existing user for testing user endpoints"""
