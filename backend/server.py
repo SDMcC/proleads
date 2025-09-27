@@ -3952,6 +3952,38 @@ async def reply_to_ticket(
         logger.error(f"Failed to send reply: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to send reply")
 
+# Delete a ticket (user can only delete their own closed tickets)
+@app.delete("/api/tickets/{ticket_id}")
+async def delete_ticket(ticket_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a ticket (only closed tickets by the sender)"""
+    try:
+        # Get ticket
+        ticket = await db.tickets.find_one({"ticket_id": ticket_id})
+        if not ticket:
+            raise HTTPException(status_code=404, detail="Ticket not found")
+        
+        # Verify user is the sender
+        if ticket["sender_address"] != current_user["address"]:
+            raise HTTPException(status_code=403, detail="You can only delete your own tickets")
+        
+        # Only allow deletion of closed tickets
+        if ticket["status"] != "closed":
+            raise HTTPException(status_code=400, detail="Only closed tickets can be deleted")
+        
+        # Delete ticket messages first
+        await db.ticket_messages.delete_many({"ticket_id": ticket_id})
+        
+        # Delete the ticket
+        await db.tickets.delete_one({"ticket_id": ticket_id})
+        
+        return {"message": "Ticket deleted successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to delete ticket: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to delete ticket")
+
 # Get user's direct referrals for downline messaging
 @app.get("/api/tickets/downline-contacts")
 async def get_downline_contacts(current_user: dict = Depends(get_current_user)):
