@@ -3500,6 +3500,790 @@ async def download_user_leads_csv(
         raise HTTPException(status_code=500, detail="Failed to download CSV file")
 
 
+# =============================================================================
+# TICKETING SYSTEM API ENDPOINTS
+# =============================================================================
+
+# Helper function to create ticket notifications
+async def create_ticket_notification(ticket_id: str, sender_address: str, sender_username: str, contact_type: str, subject: str):
+    """Create notifications for ticket creation"""
+    try:
+        if contact_type == "admin":
+            # Notify admin
+            await create_admin_notification(
+                notification_type="ticket",
+                title="New Support Ticket",
+                message=f"New ticket from {sender_username}: {subject}",
+                related_user=sender_address
+            )
+        elif contact_type == "sponsor":
+            # Find sponsor and notify
+            sender = await db.users.find_one({"address": sender_address})
+            if sender and sender.get("referrer_address"):
+                await create_notification(
+                    user_address=sender["referrer_address"],
+                    notification_type="ticket",
+                    title="Message from Downline",
+                    message=f"{sender_username} sent you a message: {subject}"
+                )
+        elif contact_type in ["downline_individual", "downline_mass"]:
+            # Notifications for downline messages are sent when replies are made
+            pass
+            
+    except Exception as e:
+        logger.error(f"Failed to create ticket notification: {str(e)}")
+
+# File upload helper for ticket attachments
+@app.post("/api/tickets/upload-attachment")
+async def upload_ticket_attachment(file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
+    """Upload file attachment for tickets"""
+    try:
+        # Validate file size (10MB max)
+        if file.size > 10 * 1024 * 1024:
+            raise HTTPException(status_code=413, detail="File too large. Maximum size is 10MB")
+        
+        # Validate file type
+        allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'text/plain', 
+                        'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+        if file.content_type not in allowed_types:
+            raise HTTPException(status_code=400, detail="File type not allowed")
+        
+        # Create attachments directory if it doesn't exist
+        import os
+        upload_dir = "/app/attachments"
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        # Generate unique filename
+        file_extension = file.filename.split('.')[-1] if '.' in file.filename else ''
+        unique_filename = f"{uuid.uuid4()}.{file_extension}"
+        file_path = os.path.join(upload_dir, unique_filename)
+        
+        # Save file
+        content = await file.read()
+        with open(file_path, "wb") as f:
+            f.write(content)
+        
+        # Store file info in database
+        attachment_doc = {
+            "attachment_id": str(uuid.uuid4()),
+            "filename": file.filename,
+            "unique_filename": unique_filename,
+            "file_path": file_path,
+            "file_size": len(content),
+            "content_type": file.content_type,
+            "uploaded_by": current_user["address"],
+            "uploaded_at": datetime.utcnow()
+        }
+        
+        await db.ticket_attachments.insert_one(attachment_doc)
+        
+        return {
+            "attachment_id": attachment_doc["attachment_id"],
+            "filename": file.filename,
+            "file_size": len(content)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"File upload failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="File upload failed")
+
+# Create a new ticket
+@app.post("/api/tickets/create")
+async def create_ticket(
+    ticket_data: TicketCreate,
+    attachment_ids: Optional[str] = Form(None),  # JSON string of attachment IDs
+    current_user: dict = Depends(get_current_user)
+):
+    """Create a new support ticket"""
+    try:
+        # Validate contact type and recipients
+        if ticket_data.contact_type == "downline_individual" and not ticket_data.recipient_address:
+            raise HTTPException(status_code=400, detail="Recipient address required for individual downline messages")
+        
+        # For sponsor messages, verify user has a sponsor
+        recipient_username = None
+        if ticket_data.contact_type == "sponsor":
+            user = await db.users.find_one({"address": current_user["address"]})
+            if not user.get("referrer_address"):
+                raise HTTPException(status_code=400, detail="You don't have a sponsor to message")
+            
+            # Get sponsor info
+            sponsor = await db.users.find_one({"address": user["referrer_address"]})
+            if sponsor:
+                recipient_username = sponsor.get("username")
+                ticket_data.recipient_address = sponsor["address"]
+        
+        # For individual downline messages, verify recipient is a direct referral
+        elif ticket_data.contact_type == "downline_individual":
+            user = await db.users.find_one({"address": current_user["address"]})
+            referrals = user.get("referrals", [])
+            
+            # Check if recipient is in direct referrals
+            recipient_found = False
+            for referral in referrals:
+                if referral.get("address") == ticket_data.recipient_address:
+                    recipient_found = True
+                    recipient_username = referral.get("username")
+                    break
+            
+            if not recipient_found:
+                raise HTTPException(status_code=400, detail="Recipient is not your direct referral")
+        
+        # For mass downline messages, get all direct referrals
+        elif ticket_data.contact_type == "downline_mass":
+            user = await db.users.find_one({"address": current_user["address"]})
+            referrals = user.get("referrals", [])
+            if not referrals:
+                raise HTTPException(status_code=400, detail="You don't have any referrals to message")
+        
+        # Create ticket document
+        ticket_id = str(uuid.uuid4())
+        ticket_doc = {
+            "ticket_id": ticket_id,
+            "sender_address": current_user["address"],
+            "sender_username": current_user["username"],
+            "contact_type": ticket_data.contact_type,
+            "recipient_address": ticket_data.recipient_address,
+            "recipient_username": recipient_username,
+            "category": ticket_data.category,
+            "priority": ticket_data.priority,
+            "subject": ticket_data.subject,
+            "status": "open",
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow(),
+            "attachment_count": 0
+        }
+        
+        # Handle attachments if provided
+        attachment_urls = []
+        if attachment_ids:
+            try:
+                attachment_list = json.loads(attachment_ids)
+                for attachment_id in attachment_list:
+                    # Verify attachment exists and belongs to user
+                    attachment = await db.ticket_attachments.find_one({
+                        "attachment_id": attachment_id,
+                        "uploaded_by": current_user["address"]
+                    })
+                    if attachment:
+                        attachment_urls.append(f"/api/tickets/attachment/{attachment_id}")
+                        ticket_doc["attachment_count"] += 1
+            except json.JSONDecodeError:
+                pass
+        
+        # Insert ticket
+        await db.tickets.insert_one(ticket_doc)
+        
+        # Create initial message
+        message_doc = {
+            "message_id": str(uuid.uuid4()),
+            "ticket_id": ticket_id,
+            "sender_address": current_user["address"],
+            "sender_username": current_user["username"],
+            "sender_role": "user",
+            "message": ticket_data.message,
+            "attachment_urls": attachment_urls,
+            "created_at": datetime.utcnow()
+        }
+        
+        await db.ticket_messages.insert_one(message_doc)
+        
+        # Handle mass messaging for downline_mass
+        if ticket_data.contact_type == "downline_mass":
+            user = await db.users.find_one({"address": current_user["address"]})
+            referrals = user.get("referrals", [])
+            
+            for referral in referrals:
+                # Create individual ticket for each referral
+                individual_ticket_id = str(uuid.uuid4())
+                individual_ticket_doc = {
+                    "ticket_id": individual_ticket_id,
+                    "sender_address": current_user["address"],
+                    "sender_username": current_user["username"],
+                    "contact_type": "downline_individual",
+                    "recipient_address": referral.get("address"),
+                    "recipient_username": referral.get("username"),
+                    "category": ticket_data.category,
+                    "priority": ticket_data.priority,
+                    "subject": f"[Mass Message] {ticket_data.subject}",
+                    "status": "open",
+                    "created_at": datetime.utcnow(),
+                    "updated_at": datetime.utcnow(),
+                    "attachment_count": len(attachment_urls)
+                }
+                
+                await db.tickets.insert_one(individual_ticket_doc)
+                
+                # Create message for individual ticket
+                individual_message_doc = {
+                    "message_id": str(uuid.uuid4()),
+                    "ticket_id": individual_ticket_id,
+                    "sender_address": current_user["address"],
+                    "sender_username": current_user["username"],
+                    "sender_role": "user",
+                    "message": ticket_data.message,
+                    "attachment_urls": attachment_urls,
+                    "created_at": datetime.utcnow()
+                }
+                
+                await db.ticket_messages.insert_one(individual_message_doc)
+                
+                # Create notification for recipient
+                await create_notification(
+                    user_address=referral.get("address"),
+                    notification_type="ticket",
+                    title="Message from Sponsor",
+                    message=f"{current_user['username']} sent you a message: {ticket_data.subject}"
+                )
+        
+        # Create notifications
+        await create_ticket_notification(
+            ticket_id, current_user["address"], current_user["username"], 
+            ticket_data.contact_type, ticket_data.subject
+        )
+        
+        return {"ticket_id": ticket_id, "status": "created", "message": "Ticket created successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to create ticket: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to create ticket")
+
+# Get tickets for current user
+@app.get("/api/tickets/user")
+async def get_user_tickets(
+    page: int = 1,
+    limit: int = 10,
+    status_filter: Optional[str] = None,
+    category_filter: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get tickets for the current user"""
+    try:
+        # Build query
+        query = {"$or": [
+            {"sender_address": current_user["address"]},
+            {"recipient_address": current_user["address"]}
+        ]}
+        
+        if status_filter:
+            query["status"] = status_filter
+        
+        if category_filter:
+            query["category"] = category_filter
+        
+        # Get total count
+        total_count = await db.tickets.count_documents(query)
+        
+        # Calculate pagination
+        skip = (page - 1) * limit
+        total_pages = (total_count + limit - 1) // limit
+        
+        # Get tickets
+        tickets = await db.tickets.find(query).sort("updated_at", -1).skip(skip).limit(limit).to_list(None)
+        
+        # Convert ObjectId and datetime for JSON serialization
+        for ticket in tickets:
+            ticket["_id"] = str(ticket["_id"])
+            ticket["created_at"] = ticket["created_at"].isoformat()
+            ticket["updated_at"] = ticket["updated_at"].isoformat()
+        
+        return {
+            "tickets": tickets,
+            "total_count": total_count,
+            "page": page,
+            "limit": limit,
+            "total_pages": total_pages
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to fetch user tickets: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch tickets")
+
+# Get ticket details with messages
+@app.get("/api/tickets/{ticket_id}")
+async def get_ticket_details(ticket_id: str, current_user: dict = Depends(get_current_user)):
+    """Get ticket details with conversation thread"""
+    try:
+        # Get ticket
+        ticket = await db.tickets.find_one({"ticket_id": ticket_id})
+        if not ticket:
+            raise HTTPException(status_code=404, detail="Ticket not found")
+        
+        # Verify user has access to this ticket
+        if (ticket["sender_address"] != current_user["address"] and 
+            ticket.get("recipient_address") != current_user["address"]):
+            raise HTTPException(status_code=403, detail="Access denied")
+        
+        # Get messages
+        messages = await db.ticket_messages.find(
+            {"ticket_id": ticket_id}
+        ).sort("created_at", 1).to_list(None)
+        
+        # Convert ObjectId and datetime for JSON serialization
+        ticket["_id"] = str(ticket["_id"])
+        ticket["created_at"] = ticket["created_at"].isoformat()
+        ticket["updated_at"] = ticket["updated_at"].isoformat()
+        
+        for message in messages:
+            message["_id"] = str(message["_id"])
+            message["created_at"] = message["created_at"].isoformat()
+        
+        return {
+            "ticket": ticket,
+            "messages": messages
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to fetch ticket details: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch ticket details")
+
+# Reply to a ticket
+@app.post("/api/tickets/{ticket_id}/reply")
+async def reply_to_ticket(
+    ticket_id: str,
+    reply_data: TicketReply,
+    attachment_ids: Optional[str] = Form(None),
+    current_user: dict = Depends(get_current_user)
+):
+    """Reply to a ticket"""
+    try:
+        # Get ticket
+        ticket = await db.tickets.find_one({"ticket_id": ticket_id})
+        if not ticket:
+            raise HTTPException(status_code=404, detail="Ticket not found")
+        
+        # Verify user has access to this ticket
+        if (ticket["sender_address"] != current_user["address"] and 
+            ticket.get("recipient_address") != current_user["address"]):
+            raise HTTPException(status_code=403, detail="Access denied")
+        
+        # Handle attachments if provided
+        attachment_urls = []
+        if attachment_ids:
+            try:
+                attachment_list = json.loads(attachment_ids)
+                for attachment_id in attachment_list:
+                    # Verify attachment exists and belongs to user
+                    attachment = await db.ticket_attachments.find_one({
+                        "attachment_id": attachment_id,
+                        "uploaded_by": current_user["address"]
+                    })
+                    if attachment:
+                        attachment_urls.append(f"/api/tickets/attachment/{attachment_id}")
+            except json.JSONDecodeError:
+                pass
+        
+        # Create reply message
+        message_doc = {
+            "message_id": str(uuid.uuid4()),
+            "ticket_id": ticket_id,
+            "sender_address": current_user["address"],
+            "sender_username": current_user["username"],
+            "sender_role": "user",
+            "message": reply_data.message,
+            "attachment_urls": attachment_urls,
+            "created_at": datetime.utcnow()
+        }
+        
+        await db.ticket_messages.insert_one(message_doc)
+        
+        # Update ticket timestamp and status if closed
+        update_fields = {"updated_at": datetime.utcnow()}
+        if ticket["status"] == "closed":
+            update_fields["status"] = "open"  # Reopen if reply to closed ticket
+        
+        await db.tickets.update_one(
+            {"ticket_id": ticket_id},
+            {"$set": update_fields}
+        )
+        
+        # Create notification for the other party
+        if current_user["address"] == ticket["sender_address"]:
+            # Reply from ticket sender, notify recipient
+            if ticket.get("recipient_address"):
+                await create_notification(
+                    user_address=ticket["recipient_address"],
+                    notification_type="ticket",
+                    title="Ticket Reply",
+                    message=f"{current_user['username']} replied to: {ticket['subject']}"
+                )
+        else:
+            # Reply from recipient, notify sender
+            await create_notification(
+                user_address=ticket["sender_address"],
+                notification_type="ticket", 
+                title="Ticket Reply",
+                message=f"{current_user['username']} replied to: {ticket['subject']}"
+            )
+        
+        return {"message": "Reply sent successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to send reply: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to send reply")
+
+# Get user's direct referrals for downline messaging
+@app.get("/api/tickets/downline-contacts")
+async def get_downline_contacts(current_user: dict = Depends(get_current_user)):
+    """Get user's direct referrals for individual messaging"""
+    try:
+        user = await db.users.find_one({"address": current_user["address"]})
+        referrals = user.get("referrals", [])
+        
+        # Format for frontend
+        contacts = []
+        for referral in referrals:
+            contacts.append({
+                "address": referral.get("address"),
+                "username": referral.get("username"),
+                "email": referral.get("email"),
+                "membership_tier": referral.get("membership_tier", "affiliate")
+            })
+        
+        return {"contacts": contacts}
+        
+    except Exception as e:
+        logger.error(f"Failed to fetch downline contacts: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch contacts")
+
+# =============================================================================
+# ADMIN TICKET MANAGEMENT API ENDPOINTS
+# =============================================================================
+
+# Get all tickets for admin
+@app.get("/api/admin/tickets")
+async def get_admin_tickets(
+    page: int = 1,
+    limit: int = 20,
+    status_filter: Optional[str] = None,
+    category_filter: Optional[str] = None,
+    user_filter: Optional[str] = None,
+    contact_type_filter: Optional[str] = None,
+    admin: dict = Depends(get_admin_user)
+):
+    """Get all tickets for admin dashboard"""
+    try:
+        # Build query
+        query = {}
+        
+        if status_filter:
+            query["status"] = status_filter
+        
+        if category_filter:
+            query["category"] = category_filter
+            
+        if contact_type_filter:
+            query["contact_type"] = contact_type_filter
+        
+        if user_filter:
+            # Search by username or email
+            query["$or"] = [
+                {"sender_username": {"$regex": user_filter, "$options": "i"}},
+                {"recipient_username": {"$regex": user_filter, "$options": "i"}}
+            ]
+        
+        # Get total count
+        total_count = await db.tickets.count_documents(query)
+        
+        # Calculate pagination
+        skip = (page - 1) * limit
+        total_pages = (total_count + limit - 1) // limit
+        
+        # Get tickets
+        tickets = await db.tickets.find(query).sort("updated_at", -1).skip(skip).limit(limit).to_list(None)
+        
+        # Convert ObjectId and datetime for JSON serialization
+        for ticket in tickets:
+            ticket["_id"] = str(ticket["_id"])
+            ticket["created_at"] = ticket["created_at"].isoformat()
+            ticket["updated_at"] = ticket["updated_at"].isoformat()
+        
+        return {
+            "tickets": tickets,
+            "total_count": total_count,
+            "page": page,
+            "limit": limit,
+            "total_pages": total_pages
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to fetch admin tickets: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch tickets")
+
+# Update ticket status (admin only)
+@app.put("/api/admin/tickets/{ticket_id}/status")
+async def update_ticket_status(
+    ticket_id: str,
+    status_data: TicketStatusUpdate,
+    admin: dict = Depends(get_admin_user)
+):
+    """Update ticket status"""
+    try:
+        # Validate status
+        if status_data.status not in ["open", "in_progress", "closed"]:
+            raise HTTPException(status_code=400, detail="Invalid status")
+        
+        # Update ticket
+        result = await db.tickets.update_one(
+            {"ticket_id": ticket_id},
+            {"$set": {
+                "status": status_data.status,
+                "updated_at": datetime.utcnow()
+            }}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=404, detail="Ticket not found")
+        
+        # Get ticket for notification
+        ticket = await db.tickets.find_one({"ticket_id": ticket_id})
+        if ticket:
+            # Notify ticket sender
+            await create_notification(
+                user_address=ticket["sender_address"],
+                notification_type="ticket",
+                title="Ticket Status Updated",
+                message=f"Your ticket '{ticket['subject']}' status changed to: {status_data.status}"
+            )
+        
+        return {"message": "Ticket status updated successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to update ticket status: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to update ticket status")
+
+# Admin reply to ticket
+@app.post("/api/admin/tickets/{ticket_id}/reply")
+async def admin_reply_to_ticket(
+    ticket_id: str,
+    reply_data: TicketReply,
+    attachment_ids: Optional[str] = Form(None),
+    admin: dict = Depends(get_admin_user)
+):
+    """Admin reply to a ticket"""
+    try:
+        # Get ticket
+        ticket = await db.tickets.find_one({"ticket_id": ticket_id})
+        if not ticket:
+            raise HTTPException(status_code=404, detail="Ticket not found")
+        
+        # Handle attachments if provided (admin can upload files too)
+        attachment_urls = []
+        if attachment_ids:
+            try:
+                attachment_list = json.loads(attachment_ids)
+                for attachment_id in attachment_list:
+                    # For admin, we can be more lenient with attachment verification
+                    attachment = await db.ticket_attachments.find_one({
+                        "attachment_id": attachment_id
+                    })
+                    if attachment:
+                        attachment_urls.append(f"/api/tickets/attachment/{attachment_id}")
+            except json.JSONDecodeError:
+                pass
+        
+        # Create reply message
+        message_doc = {
+            "message_id": str(uuid.uuid4()),
+            "ticket_id": ticket_id,
+            "sender_address": "admin",
+            "sender_username": admin["username"],
+            "sender_role": "admin",
+            "message": reply_data.message,
+            "attachment_urls": attachment_urls,
+            "created_at": datetime.utcnow()
+        }
+        
+        await db.ticket_messages.insert_one(message_doc)
+        
+        # Update ticket timestamp and set to in_progress if open
+        update_fields = {"updated_at": datetime.utcnow()}
+        if ticket["status"] == "open":
+            update_fields["status"] = "in_progress"
+        
+        await db.tickets.update_one(
+            {"ticket_id": ticket_id},
+            {"$set": update_fields}
+        )
+        
+        # Create notification for ticket sender
+        await create_notification(
+            user_address=ticket["sender_address"],
+            notification_type="ticket",
+            title="Admin Reply",
+            message=f"Admin replied to your ticket: {ticket['subject']}"
+        )
+        
+        return {"message": "Reply sent successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to send admin reply: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to send admin reply")
+
+# Send mass news message
+@app.post("/api/admin/tickets/mass-message")
+async def send_mass_message(
+    message_data: MassNewsMessage,
+    admin: dict = Depends(get_admin_user)
+):
+    """Send mass news message to users"""
+    try:
+        # Determine target users
+        target_users = []
+        
+        if message_data.target_type == "all_users":
+            # Get all active users
+            users = await db.users.find({"suspended": {"$ne": True}}).to_list(None)
+            target_users = users
+            
+        elif message_data.target_type == "specific_tiers":
+            if not message_data.target_tiers:
+                raise HTTPException(status_code=400, detail="Target tiers required")
+            
+            # Get users by membership tiers
+            users = await db.users.find({
+                "membership_tier": {"$in": message_data.target_tiers},
+                "suspended": {"$ne": True}
+            }).to_list(None)
+            target_users = users
+            
+        elif message_data.target_type == "specific_users":
+            if not message_data.target_users:
+                raise HTTPException(status_code=400, detail="Target users required")
+            
+            # Get specific users
+            users = await db.users.find({
+                "address": {"$in": message_data.target_users},
+                "suspended": {"$ne": True}
+            }).to_list(None)
+            target_users = users
+        
+        if not target_users:
+            raise HTTPException(status_code=400, detail="No target users found")
+        
+        # Create tickets for each target user
+        created_count = 0
+        for user in target_users:
+            # Create news ticket
+            ticket_id = str(uuid.uuid4())
+            ticket_doc = {
+                "ticket_id": ticket_id,
+                "sender_address": "admin",
+                "sender_username": admin["username"],
+                "contact_type": "news",
+                "recipient_address": user["address"],
+                "recipient_username": user["username"],
+                "category": "general",
+                "priority": "medium",
+                "subject": f"[NEWS] {message_data.subject}",
+                "status": "closed",  # News messages are closed by default
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "attachment_count": 0
+            }
+            
+            await db.tickets.insert_one(ticket_doc)
+            
+            # Create message
+            message_doc = {
+                "message_id": str(uuid.uuid4()),
+                "ticket_id": ticket_id,
+                "sender_address": "admin",
+                "sender_username": admin["username"],
+                "sender_role": "admin",
+                "message": message_data.message,
+                "attachment_urls": [],
+                "created_at": datetime.utcnow()
+            }
+            
+            await db.ticket_messages.insert_one(message_doc)
+            
+            # Create notification
+            await create_notification(
+                user_address=user["address"],
+                notification_type="ticket",
+                title="News Update",
+                message=f"New announcement: {message_data.subject}"
+            )
+            
+            created_count += 1
+        
+        return {
+            "message": "Mass message sent successfully",
+            "recipients_count": created_count
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to send mass message: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to send mass message")
+
+# Get attachment file
+@app.get("/api/tickets/attachment/{attachment_id}")
+async def get_ticket_attachment(attachment_id: str, current_user: dict = Depends(get_current_user)):
+    """Download ticket attachment"""
+    try:
+        # Get attachment info
+        attachment = await db.ticket_attachments.find_one({"attachment_id": attachment_id})
+        if not attachment:
+            raise HTTPException(status_code=404, detail="Attachment not found")
+        
+        # Verify access (either uploader or involved in tickets with this attachment)
+        if attachment["uploaded_by"] != current_user["address"]:
+            # Check if user is involved in any tickets with this attachment
+            ticket_messages = await db.ticket_messages.find({
+                "attachment_urls": f"/api/tickets/attachment/{attachment_id}"
+            }).to_list(None)
+            
+            has_access = False
+            for message in ticket_messages:
+                ticket = await db.tickets.find_one({"ticket_id": message["ticket_id"]})
+                if ticket and (ticket["sender_address"] == current_user["address"] or 
+                              ticket.get("recipient_address") == current_user["address"]):
+                    has_access = True
+                    break
+            
+            if not has_access:
+                raise HTTPException(status_code=403, detail="Access denied")
+        
+        # Return file
+        import os
+        if not os.path.exists(attachment["file_path"]):
+            raise HTTPException(status_code=404, detail="File not found")
+        
+        def file_generator():
+            with open(attachment["file_path"], "rb") as f:
+                while chunk := f.read(8192):
+                    yield chunk
+        
+        return StreamingResponse(
+            file_generator(),
+            media_type=attachment["content_type"],
+            headers={
+                "Content-Disposition": f"attachment; filename={attachment['filename']}"
+            }
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to download attachment: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to download attachment")
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
