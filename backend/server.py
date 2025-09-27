@@ -4444,7 +4444,10 @@ async def get_ticket_attachment(attachment_id: str, current_user: dict = Depends
             raise HTTPException(status_code=404, detail="Attachment not found")
         
         # Verify access (either uploader or involved in tickets with this attachment)
-        if attachment["uploaded_by"] != current_user["address"]:
+        user_identifier = current_user.get("address") or current_user.get("username")
+        uploader_identifier = attachment.get("uploaded_by")
+        
+        if uploader_identifier != user_identifier:
             # Check if user is involved in any tickets with this attachment
             ticket_messages = await db.ticket_messages.find({
                 "attachment_urls": f"/api/tickets/attachment/{attachment_id}"
@@ -4453,10 +4456,14 @@ async def get_ticket_attachment(attachment_id: str, current_user: dict = Depends
             has_access = False
             for message in ticket_messages:
                 ticket = await db.tickets.find_one({"ticket_id": message["ticket_id"]})
-                if ticket and (ticket["sender_address"] == current_user["address"] or 
-                              ticket.get("recipient_address") == current_user["address"]):
-                    has_access = True
-                    break
+                if ticket:
+                    # Check if user is sender or recipient using flexible identifiers
+                    if (ticket.get("sender_address") == current_user.get("address") or 
+                        ticket.get("sender_username") == current_user.get("username") or
+                        ticket.get("recipient_address") == current_user.get("address") or
+                        ticket.get("recipient_username") == current_user.get("username")):
+                        has_access = True
+                        break
             
             if not has_access:
                 raise HTTPException(status_code=403, detail="Access denied")
