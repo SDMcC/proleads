@@ -1158,6 +1158,7 @@ function Dashboard() {
                   notifications={notifications}
                   onClose={() => setNotificationsPanelOpen(false)}
                   onClearNotification={clearNotification}
+                  setActiveTab={setActiveTab}
                 />
               )}
               
