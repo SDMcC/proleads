@@ -563,9 +563,24 @@ function FAQSection() {
 function Footer() {
   
   const scrollToSection = (sectionId) => {
+    // If we're not on the homepage, navigate to it first
+    if (window.location.pathname !== '/') {
+      window.location.href = '/';
+      return;
+    }
+    
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleSmoothScroll = (sectionId) => {
+    if (window.location.pathname !== '/') {
+      // If not on homepage, navigate to homepage and then scroll
+      window.location.href = '/#' + sectionId;
+    } else {
+      scrollToSection(sectionId);
     }
   };
 
@@ -573,24 +588,24 @@ function Footer() {
     <footer className="bg-gray-900 text-white py-12">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div>
-            <div className="flex items-center space-x-3 mb-4">
+          <div className="text-center md:text-left">
+            <div className="flex flex-col items-center md:items-start mb-4">
               <img 
                 src="https://members.proleads.network/assets/images/hero-logo-2.png" 
                 alt="Proleads Network" 
-                className="h-8 w-auto"
+                className="w-20 h-auto mb-2"
               />
+              <p className="text-gray-400 text-lg">
+                Your LeadGen Partner
+              </p>
             </div>
-            <p className="text-gray-400 mb-4">
-              Your LeadGen Partner
-            </p>
           </div>
           
           <div>
             <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2">
-              <li><button onClick={() => scrollToSection('about')} className="text-gray-400 hover:text-white transition-colors text-left">About</button></li>
-              <li><button onClick={() => scrollToSection('pricing')} className="text-gray-400 hover:text-white transition-colors text-left">Pricing</button></li>
+              <li><button onClick={() => handleSmoothScroll('about')} className="text-gray-400 hover:text-white transition-colors text-left">About</button></li>
+              <li><button onClick={() => handleSmoothScroll('pricing')} className="text-gray-400 hover:text-white transition-colors text-left">Pricing</button></li>
               <li><a href="/affiliates" className="text-gray-400 hover:text-white transition-colors">Affiliates</a></li>
               <li><a href="/dashboard" className="text-gray-400 hover:text-white transition-colors">Members Area</a></li>
             </ul>
