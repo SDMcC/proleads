@@ -6860,7 +6860,6 @@ function AdminDashboard() {
           onEdit={handleEditMember}
         />
       )}
-        </div>
       </div>
     </div>
   );
