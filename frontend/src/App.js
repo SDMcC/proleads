@@ -611,6 +611,543 @@ function Footer() {
   );
 }
 
+// Affiliates Page Component
+function AffiliatesPage() {
+  return (
+    <div className="min-h-screen bg-white">
+      {/* Header */}
+      <header className="bg-gray-900 text-white">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex justify-between items-center">
+            <a href="/" className="flex items-center space-x-3">
+              <Network className="h-8 w-8 text-blue-400" />
+              <span className="text-xl font-bold">Web3 Membership</span>
+            </a>
+            <a href="/" className="text-blue-400 hover:text-blue-300 transition-colors">
+              ← Back to Home
+            </a>
+          </div>
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <section className="bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 text-white py-20">
+        <div className="container mx-auto px-4 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold mb-6">
+            Join Our Affiliate Program
+          </h1>
+          <p className="text-xl text-blue-200 mb-8 max-w-3xl mx-auto">
+            Earn up to 30% recurring commissions by referring new members to Web3 Membership. 
+            Build your network and create passive income with our generous multi-tier commission structure.
+          </p>
+        </div>
+      </section>
+
+      {/* How It Works Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">How The Affiliate Program Works</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Users className="h-8 w-8 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">1. Become a Member</h3>
+              <p className="text-gray-600">
+                Join any membership tier to automatically become an affiliate. Even our free Affiliate tier 
+                gives you access to the referral program and commission structure.
+              </p>
+            </div>
+            
+            <div className="text-center">
+              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Network className="h-8 w-8 text-purple-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">2. Share Your Link</h3>
+              <p className="text-gray-600">
+                Get your unique referral link from your dashboard and share it with your network. 
+                Anyone who joins through your link becomes part of your downline.
+              </p>
+            </div>
+            
+            <div className="text-center">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <DollarSign className="h-8 w-8 text-green-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">3. Earn Commissions</h3>
+              <p className="text-gray-600">
+                Receive instant USDC payouts when your referrals join. Earn recurring monthly commissions 
+                and build passive income through our multi-tier structure.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Commission Structure */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Commission Structure by Tier</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-bold text-blue-600 mb-4">Affiliate (Free)</h3>
+              <ul className="space-y-2 text-sm">
+                <li>Tier 1: 25%</li>
+                <li>Tier 2: 5%</li>
+                <li className="text-gray-400">No weekly leads</li>
+                <li className="text-blue-600 font-medium">Perfect for beginners</li>
+              </ul>
+            </div>
+            
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-bold text-orange-600 mb-4">Bronze ($20/month)</h3>
+              <ul className="space-y-2 text-sm">
+                <li>Tier 1: 25%</li>
+                <li>Tier 2: 5%</li>
+                <li>Tier 3: 3%</li>
+                <li>Tier 4: 2%</li>
+                <li className="text-orange-600 font-medium">100 leads/week</li>
+              </ul>
+            </div>
+            
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-bold text-gray-600 mb-4">Silver ($50/month)</h3>
+              <ul className="space-y-2 text-sm">
+                <li>Tier 1: 27%</li>
+                <li>Tier 2: 10%</li>
+                <li>Tier 3: 5%</li>
+                <li>Tier 4: 3%</li>
+                <li className="text-gray-600 font-medium">250 leads/week</li>
+              </ul>
+            </div>
+            
+            <div className="border border-yellow-500 rounded-lg p-6 bg-yellow-50">
+              <h3 className="text-lg font-bold text-yellow-600 mb-4">Gold ($100/month)</h3>
+              <ul className="space-y-2 text-sm">
+                <li>Tier 1: 30%</li>
+                <li>Tier 2: 15%</li>
+                <li>Tier 3: 10%</li>
+                <li>Tier 4: 5%</li>
+                <li className="text-yellow-600 font-medium">500 leads/week</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="text-center mt-12">
+            <p className="text-gray-600 mb-6">
+              Higher membership tiers earn better commission rates and receive more weekly leads to grow your business.
+            </p>
+            <a 
+              href="/#pricing" 
+              className="bg-blue-600 hover:bg-blue-700 text-white py-3 px-8 rounded-lg font-semibold transition-all duration-300"
+            >
+              View All Plans
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* Benefits Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Affiliate Program Benefits</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            <div className="space-y-6">
+              <div className="flex items-start space-x-4">
+                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Zap className="h-6 w-6 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">Instant USDC Payouts</h3>
+                  <p className="text-gray-600">
+                    Receive your commissions instantly in USDC cryptocurrency. No waiting periods, no manual processing - 
+                    payments are automated and sent directly to your wallet.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-start space-x-4">
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <TrendingUp className="h-6 w-6 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">Recurring Commissions</h3>
+                  <p className="text-gray-600">
+                    Earn monthly recurring commissions for as long as your referrals remain active members. 
+                    Build sustainable passive income with compound growth.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-start space-x-4">
+                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Award className="h-6 w-6 text-purple-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">Multi-Tier Structure</h3>
+                  <p className="text-gray-600">
+                    Earn from up to 4 levels deep in your network. Higher membership tiers unlock deeper 
+                    commission structures and better rates.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="flex items-start space-x-4">
+                <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Users className="h-6 w-6 text-yellow-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">Easy Sharing Tools</h3>
+                  <p className="text-gray-600">
+                    Get your personalized referral link and tracking tools from your member dashboard. 
+                    Monitor your network growth and commission earnings in real-time.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-start space-x-4">
+                <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Target className="h-6 w-6 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">Quality Leads Included</h3>
+                  <p className="text-gray-600">
+                    Paid tiers receive weekly verified leads to help grow your business. Use these leads 
+                    for your own network marketing while earning affiliate commissions.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-start space-x-4">
+                <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Activity className="h-6 w-6 text-indigo-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">No Experience Required</h3>
+                  <p className="text-gray-600">
+                    Perfect for beginners and experienced marketers alike. Our system handles the technical 
+                    aspects while you focus on sharing and growing your network.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-16 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 text-white">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            Ready to Start Earning?
+          </h2>
+          <p className="text-xl mb-8 text-blue-100 max-w-2xl mx-auto">
+            Join Web3 Membership today and start building your affiliate network. 
+            Even our free tier gives you access to commission opportunities.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a 
+              href="/register?tier=affiliate"
+              className="bg-blue-600 hover:bg-blue-700 text-white py-4 px-8 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-105"
+            >
+              Join Free Now
+            </a>
+            <a 
+              href="/#pricing"
+              className="bg-white bg-opacity-20 text-white py-4 px-8 rounded-xl font-bold text-lg hover:bg-opacity-30 transition-all duration-300 backdrop-blur-sm border border-white border-opacity-30"
+            >
+              View All Plans
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <Footer />
+    </div>
+  );
+}
+
+// Privacy Policy Page Component
+function PrivacyPolicyPage() {
+  return (
+    <div className="min-h-screen bg-white">
+      {/* Header */}
+      <header className="bg-gray-900 text-white">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex justify-between items-center">
+            <a href="/" className="flex items-center space-x-3">
+              <Network className="h-8 w-8 text-blue-400" />
+              <span className="text-xl font-bold">Web3 Membership</span>
+            </a>
+            <a href="/" className="text-blue-400 hover:text-blue-300 transition-colors">
+              ← Back to Home
+            </a>
+          </div>
+        </div>
+      </header>
+
+      <div className="container mx-auto px-4 py-12 max-w-4xl">
+        <div className="prose max-w-none">
+          <h1 className="text-4xl font-bold text-gray-900 mb-8">Our Policies</h1>
+          
+          <div className="mb-8">
+            <h3 className="text-lg font-medium text-gray-700 mb-4">Jump to:</h3>
+            <ul className="space-y-2">
+              <li><a href="#privacy-policy" className="text-blue-600 hover:text-blue-800">Privacy Policy</a></li>
+              <li><a href="#refund-policy" className="text-blue-600 hover:text-blue-800">Refund Policy</a></li>
+              <li><a href="#contact" className="text-blue-600 hover:text-blue-800">Contact Us</a></li>
+            </ul>
+          </div>
+
+          <section id="privacy-policy" className="mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">Privacy Policy</h2>
+            <p className="text-gray-600 mb-4"><strong>Last updated:</strong> {new Date().toLocaleDateString()}</p>
+            
+            <p className="text-gray-700 mb-6">
+              This Privacy Policy describes Our policies and procedures on the collection, use and disclosure of Your 
+              information when You use the Service and tells You about Your privacy rights and how the law protects You.
+            </p>
+
+            <p className="text-gray-700 mb-8">
+              We use Your Personal data to provide and improve the Service. By using the Service, You agree to the 
+              collection and use of information in accordance with this Privacy Policy.
+            </p>
+
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Information We Collect</h3>
+            <p className="text-gray-700 mb-4">
+              While using Our Service, We may ask You to provide Us with certain personally identifiable information 
+              that can be used to contact or identify You. Personally identifiable information may include, but is not limited to:
+            </p>
+            <ul className="list-disc list-inside text-gray-700 mb-6 space-y-1">
+              <li>Email address</li>
+              <li>Username and password</li>
+              <li>Cryptocurrency wallet addresses</li>
+              <li>Usage Data</li>
+            </ul>
+
+            <h3 className="text-xl font-bold text-gray-900 mb-4">How We Use Your Information</h3>
+            <p className="text-gray-700 mb-4">The Company may use Personal Data for the following purposes:</p>
+            <ul className="list-disc list-inside text-gray-700 mb-6 space-y-1">
+              <li><strong>To provide and maintain our Service:</strong> including monitoring usage of our Service</li>
+              <li><strong>To manage Your Account:</strong> manage Your registration as a user of the Service</li>
+              <li><strong>To process payments:</strong> handle cryptocurrency transactions and commission payments</li>
+              <li><strong>To contact You:</strong> regarding updates, security notices, or support requests</li>
+              <li><strong>For business transfers:</strong> in connection with mergers or asset transfers</li>
+            </ul>
+
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Data Security</h3>
+            <p className="text-gray-700 mb-6">
+              The security of Your Personal Data is important to Us, but remember that no method of transmission over 
+              the Internet, or method of electronic storage is 100% secure. While We strive to use commercially 
+              acceptable means to protect Your Personal Data, We cannot guarantee its absolute security.
+            </p>
+
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Blockchain and Cryptocurrency</h3>
+            <p className="text-gray-700 mb-6">
+              Our service involves cryptocurrency transactions on blockchain networks. Please note that blockchain 
+              transactions are public and immutable. While wallet addresses may be pseudonymous, transaction data 
+              is permanently recorded on the blockchain.
+            </p>
+          </section>
+
+          <section id="refund-policy" className="mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">Return & Refund Policy</h2>
+            <p className="text-gray-600 mb-4"><strong>Last updated:</strong> {new Date().toLocaleDateString()}</p>
+            
+            <p className="text-gray-700 mb-6">
+              All payments including commission payouts to our affiliates and members are made using USDC and are 
+              processed, split and transferred instantly to the personal wallets of all members and affiliates who 
+              are part of the respective sale - up to seven individual wallets.
+            </p>
+
+            <p className="text-gray-700 mb-6">
+              Due to the nature of the blockchain and cryptocurrency in general, transactions can only be refunded 
+              by the party receiving the funds, so it is not possible for us to offer refunds without the agreement 
+              and action of the other parties involved.
+            </p>
+
+            <p className="text-gray-700 mb-6">
+              If you have any questions, concerns, or complaints regarding this refund policy, we encourage you to 
+              contact us using the details below.
+            </p>
+          </section>
+
+          <section id="contact" className="mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">Contact Us</h2>
+            <p className="text-gray-700 mb-4">
+              If you have any questions about this Privacy Policy, You can contact us:
+            </p>
+            <ul className="text-gray-700 space-y-2">
+              <li>By email: <a href="mailto:support@web3membership.com" className="text-blue-600 hover:text-blue-800">support@web3membership.com</a></li>
+              <li>Through our member support system in your dashboard</li>
+            </ul>
+          </section>
+        </div>
+      </div>
+
+      <Footer />
+    </div>
+  );
+}
+
+// Terms of Service Page Component
+function TermsPage() {
+  return (
+    <div className="min-h-screen bg-white">
+      {/* Header */}
+      <header className="bg-gray-900 text-white">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex justify-between items-center">
+            <a href="/" className="flex items-center space-x-3">
+              <Network className="h-8 w-8 text-blue-400" />
+              <span className="text-xl font-bold">Web3 Membership</span>
+            </a>
+            <a href="/" className="text-blue-400 hover:text-blue-300 transition-colors">
+              ← Back to Home
+            </a>
+          </div>
+        </div>
+      </header>
+
+      <div className="container mx-auto px-4 py-12 max-w-4xl">
+        <div className="prose max-w-none">
+          <h1 className="text-4xl font-bold text-gray-900 mb-8">Terms & Conditions</h1>
+          
+          <div className="mb-8">
+            <h3 className="text-lg font-medium text-gray-700 mb-4">Jump to:</h3>
+            <ul className="space-y-2">
+              <li><a href="#terms-conditions" className="text-blue-600 hover:text-blue-800">Website Terms & Conditions</a></li>
+              <li><a href="#kyc-policy" className="text-blue-600 hover:text-blue-800">Know Your Customer</a></li>
+              <li><a href="#participation-terms" className="text-blue-600 hover:text-blue-800">Terms of Participation</a></li>
+              <li><a href="#affiliate-terms" className="text-blue-600 hover:text-blue-800">Affiliate Terms & Conditions</a></li>
+            </ul>
+          </div>
+
+          <section id="terms-conditions" className="mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">Website Terms & Conditions</h2>
+            
+            <p className="text-gray-700 mb-6">
+              These Terms govern your access to, usage of all content, products and services available at our website 
+              (the "Service") operated by Web3 Membership ("us", "we", or "our").
+            </p>
+
+            <p className="text-gray-700 mb-8">
+              Your access to our services are subject to your acceptance, without modification, of all of the terms 
+              and conditions contained herein and all other operating rules and policies published and that may be 
+              published from time to time by us.
+            </p>
+
+            <h3 className="text-xl font-bold text-gray-900 mb-4">User Accounts</h3>
+            <p className="text-gray-700 mb-6">
+              Where use of any part of our Services requires an account, you agree to provide us with complete and 
+              accurate information when you register for an account. You will be solely responsible and liable for 
+              any activity that occurs under your account.
+            </p>
+
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Cryptocurrency and Blockchain</h3>
+            <p className="text-gray-700 mb-6">
+              Our service involves cryptocurrency transactions and blockchain technology. You acknowledge and understand 
+              the risks associated with cryptocurrency, including volatility, technical risks, and regulatory uncertainty. 
+              All transactions are final and irreversible.
+            </p>
+
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Termination</h3>
+            <p className="text-gray-700 mb-6">
+              We may terminate or suspend your access to all or any part of our Services at any time, with or without 
+              cause, with or without notice, effective immediately. If you wish to terminate your account, you may 
+              simply discontinue using our Services.
+            </p>
+          </section>
+
+          <section id="kyc-policy" className="mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">Know Your Customer (KYC) Policy</h2>
+            
+            <p className="text-gray-700 mb-6">
+              To comply with applicable laws and regulations, including anti-money laundering (AML) and 
+              counter-terrorism financing (CTF) requirements, we may require you to provide certain information 
+              and documentation to verify your identity.
+            </p>
+
+            <h3 className="text-xl font-bold text-gray-900 mb-4">KYC Requirements</h3>
+            <p className="text-gray-700 mb-4">Depending on your usage of our services, we may request:</p>
+            <ul className="list-disc list-inside text-gray-700 mb-6 space-y-1">
+              <li>Personal identification details (full name, date of birth, address)</li>
+              <li>Government-issued identification documents</li>
+              <li>Proof of address documentation</li>
+              <li>Source of funds verification for large transactions</li>
+            </ul>
+
+            <p className="text-gray-700 mb-6">
+              Failure to provide requested KYC information in a timely manner may result in restrictions on your 
+              account, including withholding of commission payments or suspension of access to our services.
+            </p>
+          </section>
+
+          <section id="participation-terms" className="mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">Terms of Participation</h2>
+            
+            <div className="space-y-4 text-gray-700">
+              <p><strong>1.</strong> Members must be 18 years of age or older to participate. Members must provide accurate, complete and updated registration information.</p>
+              
+              <p><strong>2.</strong> We reserve the right to refuse applications for membership at our sole discretion.</p>
+              
+              <p><strong>3.</strong> Members may not activate or use more than one Member account or use false or misleading information.</p>
+              
+              <p><strong>4.</strong> We reserve the right to track Member activity and transactions for security and compliance purposes.</p>
+              
+              <p><strong>5.</strong> We have the right to suspend or cancel membership for violations of these terms. All earnings may be forfeited for fraudulent behavior.</p>
+              
+              <p><strong>6.</strong> Spamming is strictly prohibited and will result in immediate account termination.</p>
+              
+              <p><strong>7.</strong> All Members shall comply with applicable laws, rules, and regulations in their jurisdiction.</p>
+            </div>
+          </section>
+
+          <section id="affiliate-terms" className="mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">Affiliate Terms & Conditions</h2>
+            
+            <p className="text-gray-700 mb-6">
+              These terms apply to individuals participating in our affiliate program. By participating, you agree 
+              to use the program in accordance with these terms.
+            </p>
+
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Affiliate Registration</h3>
+            <p className="text-gray-700 mb-6">
+              We reserve the right to approve or reject any affiliate registration in our sole discretion. 
+              All members automatically become affiliates and can earn commissions by referring new members.
+            </p>
+
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Commissions and Payments</h3>
+            <p className="text-gray-700 mb-6">
+              Commission rates vary by membership tier and are paid instantly in USDC cryptocurrency. Payments 
+              are made automatically to your specified wallet address when referrals join or make payments.
+            </p>
+
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Network Building</h3>
+            <p className="text-gray-700 mb-6">
+              Affiliates can invite others to become their downline affiliates. Network commissions are paid 
+              according to your membership tier's commission structure, up to 4 levels deep for higher tiers.
+            </p>
+
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Compliance</h3>
+            <p className="text-gray-700 mb-6">
+              Affiliates must comply with all applicable laws regarding marketing, advertising, and financial 
+              services. Misleading claims, spam, or fraudulent practices will result in immediate termination.
+            </p>
+          </section>
+        </div>
+      </div>
+
+      <Footer />
+    </div>
+  );
+}
+
 // Landing Page Component - ProLeads Network Style
 function LandingPage() {
   const { user } = useAuth();
