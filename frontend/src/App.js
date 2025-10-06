@@ -1360,7 +1360,7 @@ function LandingPage() {
                 <div>
                   <h3 className="text-xl font-bold text-gray-900 mb-3">Cost-Effective Lead Generation</h3>
                   <p className="text-gray-600">
-                    Why spend big on outdated lead sources? Web3 Membership delivers quality leads every week at a fraction 
+                    Why spend big on outdated lead sources? Proleads Network delivers quality leads every week at a fraction 
                     of the cost. With no long-term contracts, it's the smartest way to connect with prospects ready to join 
                     or buy, helping you grow your business without breaking the bank.
                   </p>
