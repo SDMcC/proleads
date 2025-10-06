@@ -2005,9 +2005,31 @@ function RegisterPage() {
               <p className="text-gray-400 text-xs mt-1">You can change this later in your account settings</p>
             </div>
 
+            <div className="flex items-start space-x-3">
+              <input
+                type="checkbox"
+                id="acceptTerms"
+                checked={acceptTerms}
+                onChange={(e) => setAcceptTerms(e.target.checked)}
+                className="mt-1 h-4 w-4 text-blue-600 bg-black bg-opacity-30 border-gray-600 rounded focus:ring-blue-500"
+                required
+              />
+              <label htmlFor="acceptTerms" className="text-white text-sm">
+                I accept the{' '}
+                <a 
+                  href="/terms" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-400 hover:text-blue-300 underline"
+                >
+                  Terms & Conditions
+                </a>
+              </label>
+            </div>
+
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !acceptTerms}
               className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
             >
               {loading ? 'Creating Account...' : 'Create Account'}
