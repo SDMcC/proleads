@@ -8821,6 +8821,7 @@ function AdminMilestonesTab() {
     </div>
   );
 }
+*/
 
 // Admin Stat Card Component
 function AdminStatCard({ icon, title, value, subtitle }) {
