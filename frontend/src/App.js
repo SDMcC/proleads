@@ -1259,10 +1259,10 @@ function LandingPage() {
             </h2>
             <p className="text-lg text-gray-600 max-w-4xl mx-auto leading-relaxed">
               Network marketing isn't easy - building a thriving downline, chasing referrals, and securing steady income takes work. 
-              If you're a network marketer with a growing network, Web3 Membership is your edge. We deliver high quality, 
+              If you're a network marketer with a growing network, Proleads Network is your edge. We deliver high quality, 
               blockchain-verified leads straight to you, so you can focus on growing your empire. Our exclusive tools and 
               done-for-you system make it simple to unlock predictable results and new ways to earn. Every network marketer 
-              needs fresh leads - and Web3 Membership delivers.
+              needs fresh leads - and Proleads Network delivers.
             </p>
           </div>
 
