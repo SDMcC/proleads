@@ -6133,10 +6133,10 @@ function AdminDashboard() {
                 subtitle={`${stats?.payments?.recent_30_days || 0} payments this month`}
               />
               <AdminStatCard
-                icon={<Activity className="h-8 w-8 text-yellow-400" />}
-                title="Active Payments"
-                value={stats?.payments?.by_status?.waiting?.count || 0}
-                subtitle="Pending confirmations"
+                icon={<FileText className="h-8 w-8 text-yellow-400" />}
+                title="Leads Status"
+                value={stats?.leads?.remaining || 0}
+                subtitle={stats?.leads?.csv_status || "No CSV uploaded"}
               />
               <AdminStatCard
                 icon={<TrendingUp className="h-8 w-8 text-purple-400" />}
