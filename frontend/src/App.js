@@ -1198,8 +1198,12 @@ function LandingPage() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-3">
-              <Network className="h-8 w-8 text-blue-400" />
-              <span className="text-xl font-bold">Web3 Membership</span>
+              <img 
+                src="https://members.proleads.network/assets/images/hero-logo-2.png" 
+                alt="Proleads Network" 
+                className="h-8 w-auto"
+              />
+              <span className="text-xl font-bold">Proleads Network</span>
             </div>
             <button
               onClick={() => setShowLogin(!showLogin)}
