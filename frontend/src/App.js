@@ -1346,7 +1346,7 @@ function LandingPage() {
                 <div>
                   <h3 className="text-xl font-bold text-gray-900 mb-3">Empowering Your Business Growth</h3>
                   <p className="text-gray-600">
-                    Web3 Membership takes your network marketing to the next level by handling lead generation for you. 
+                    Proleads Network takes your network marketing to the next level by handling lead generation for you. 
                     Your leads arrive weekly, complete with verified information, so you can focus on building relationships 
                     and expanding your team. Designed for marketers like you, our system turns your existing reach into unstoppable momentum.
                   </p>
