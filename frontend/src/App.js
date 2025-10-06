@@ -756,7 +756,17 @@ function AffiliatesPage() {
               Higher membership tiers earn better commission rates and receive more weekly leads to grow your business.
             </p>
             <a 
-              href="/#pricing" 
+              href="/" 
+              onClick={(e) => {
+                e.preventDefault();
+                window.location.href = '/';
+                setTimeout(() => {
+                  const element = document.getElementById('pricing');
+                  if (element) {
+                    element.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }, 100);
+              }}
               className="bg-blue-600 hover:bg-blue-700 text-white py-3 px-8 rounded-lg font-semibold transition-all duration-300"
             >
               View All Plans
