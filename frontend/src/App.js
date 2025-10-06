@@ -561,26 +561,38 @@ function FAQSection() {
 
 // Footer Component
 function Footer() {
+  
+  const scrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <footer className="bg-gray-900 text-white py-12">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <div className="flex items-center space-x-3 mb-4">
-              <Network className="h-8 w-8 text-blue-400" />
-              <span className="text-xl font-bold">Web3 Membership</span>
+              <img 
+                src="https://members.proleads.network/assets/images/hero-logo-2.png" 
+                alt="Proleads Network" 
+                className="h-8 w-auto"
+              />
             </div>
             <p className="text-gray-400 mb-4">
-              Revolutionary affiliate system with instant USDC payouts and blockchain-verified leads.
+              Your LeadGen Partner
             </p>
           </div>
           
           <div>
             <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2">
-              <li><a href="/#about" className="text-gray-400 hover:text-white transition-colors">About</a></li>
-              <li><a href="/#pricing" className="text-gray-400 hover:text-white transition-colors">Pricing</a></li>
+              <li><button onClick={() => scrollToSection('about')} className="text-gray-400 hover:text-white transition-colors text-left">About</button></li>
+              <li><button onClick={() => scrollToSection('pricing')} className="text-gray-400 hover:text-white transition-colors text-left">Pricing</button></li>
               <li><a href="/affiliates" className="text-gray-400 hover:text-white transition-colors">Affiliates</a></li>
+              <li><a href="/dashboard" className="text-gray-400 hover:text-white transition-colors">Members Area</a></li>
             </ul>
           </div>
           
@@ -595,7 +607,7 @@ function Footer() {
           <div>
             <h3 className="text-lg font-semibold mb-4">Support</h3>
             <ul className="space-y-2">
-              <li><span className="text-gray-400">Email: support@web3membership.com</span></li>
+              <li><span className="text-gray-400">Email: support@proleads.network</span></li>
               <li><span className="text-gray-400">24/7 Member Support</span></li>
             </ul>
           </div>
@@ -603,7 +615,7 @@ function Footer() {
         
         <div className="border-t border-gray-800 mt-8 pt-8 text-center">
           <p className="text-gray-400">
-            © {new Date().getFullYear()} Web3 Membership. All rights reserved.
+            © {new Date().getFullYear()} Proleads Network. All rights reserved.
           </p>
         </div>
       </div>
