@@ -1390,7 +1390,7 @@ function LandingPage() {
                 <div>
                   <h3 className="text-xl font-bold text-gray-900 mb-3">Maximize Your Earnings Potential</h3>
                   <p className="text-gray-600">
-                    Web3 Membership isn't just about growth — it's about income. Every member becomes an{' '}
+                    Proleads Network isn't just about growth — it's about income. Every member becomes an{' '}
                     <a href="/affiliates" className="text-blue-600 hover:text-blue-800 font-medium">affiliate</a>, 
                     earning up to 30% recurring commissions on referrals, plus bonuses up to four tiers deep. 
                     Refer just 4 members, and their payouts can cover your membership cost. It's passive income designed for network marketers ready to profit from their network.
