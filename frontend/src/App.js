@@ -8598,7 +8598,6 @@ function MemberModal({ member, editingMember, onClose, onUpdate, onSuspend, onUn
         )}
         </div>
       </div>
-    </div>
   );
 }
 
