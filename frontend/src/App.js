@@ -6803,6 +6803,9 @@ function AdminDashboard() {
           </div>
         )}
 
+        {/* Milestones Tab */}
+        {activeTab === 'milestones' && <AdminMilestonesTab />}
+
         {/* Leads Management Tab */}
         {activeTab === 'leads' && (
           <LeadsManagementTab />
