@@ -6804,7 +6804,12 @@ function AdminDashboard() {
         )}
 
         {/* Milestones Tab */}
-        {activeTab === 'milestones' && <AdminMilestonesTab />}
+        {activeTab === 'milestones' && (
+          <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+            <h2 className="text-2xl font-bold text-white mb-4">Milestones</h2>
+            <p className="text-gray-400">Milestone bonuses management coming soon...</p>
+          </div>
+        )}
 
         {/* Leads Management Tab */}
         {activeTab === 'leads' && (
