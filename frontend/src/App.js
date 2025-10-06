@@ -5646,6 +5646,18 @@ function AdminDashboard() {
   });
   const [adminReplyMessage, setAdminReplyMessage] = useState('');
 
+  // Milestones management state
+  const [milestones, setMilestones] = useState([]);
+  const [milestonePage, setMilestonePage] = useState(1);
+  const [milestoneTotalPages, setMilestoneTotalPages] = useState(1);
+  const [milestoneFilters, setMilestoneFilters] = useState({
+    user: '',
+    dateFrom: '',
+    dateTo: '',
+    minAmount: '',
+    maxAmount: ''
+  });
+
   useEffect(() => {
     fetchAdminData();
     fetchAdminNotifications();
