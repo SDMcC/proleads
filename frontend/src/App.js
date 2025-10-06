@@ -1077,7 +1077,7 @@ function TermsPage() {
             
             <p className="text-gray-700 mb-6">
               These Terms govern your access to, usage of all content, products and services available at our website 
-              (the "Service") operated by Web3 Membership ("us", "we", or "our").
+              (the "Service") operated by Proleads Network ("us", "we", or "our").
             </p>
 
             <p className="text-gray-700 mb-8">
