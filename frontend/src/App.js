@@ -1285,7 +1285,7 @@ function LandingPage() {
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">A New Idea</h3>
               <p className="text-gray-600">
-                Web3 Membership redefines lead generation. Get a consistent supply of high quality leads to fuel your network, 
+                Proleads Network redefines lead generation. Get a consistent supply of high quality leads to fuel your network, 
                 plus earn passive income by sharing the system. Refer just 4 new members, and their commissions can cover 
                 your entire membership cost - making your growth practically free.
               </p>
