@@ -292,6 +292,325 @@ function ProtectedRoute({ children }) {
   return user ? children : <Navigate to="/" />;
 }
 
+// Login Modal Component
+function LoginModal({ onClose }) {
+  const { login } = useAuth();
+  const [loginData, setLoginData] = useState({ username: '', password: '' });
+  const [loginLoading, setLoginLoading] = useState(false);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    if (!loginData.username || !loginData.password) {
+      alert('Please fill in all fields');
+      return;
+    }
+
+    setLoginLoading(true);
+    try {
+      const response = await axios.post(`${API_URL}/api/auth/login`, {
+        username: loginData.username,
+        password: loginData.password
+      });
+      
+      const { token } = response.data;
+      login(token);
+      window.location.href = '/dashboard';
+      
+    } catch (error) {
+      console.error('Login failed:', error);
+      let errorMessage = 'Login failed. Please check your credentials.';
+      if (error.response?.data?.detail) {
+        errorMessage = `Login failed: ${error.response.data.detail}`;
+      }
+      alert(errorMessage);
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg max-w-md w-full p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">Login</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+            <X className="h-6 w-6" />
+          </button>
+        </div>
+        
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div>
+            <label className="block text-gray-700 text-sm font-medium mb-2">Username</label>
+            <input
+              type="text"
+              value={loginData.username}
+              onChange={(e) => setLoginData(prev => ({ ...prev, username: e.target.value }))}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-blue-500"
+              placeholder="Enter your username"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-gray-700 text-sm font-medium mb-2">Password</label>
+            <input
+              type="password"
+              value={loginData.password}
+              onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-blue-500"
+              placeholder="Enter your password"
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={loginLoading}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg font-semibold transition-all duration-300 disabled:opacity-50"
+          >
+            {loginLoading ? 'Logging in...' : 'Login'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// Enhanced Membership Tiers Component
+function EnhancedMembershipTiers({ tiers, referralCode, loading }) {
+  const publicTiers = ['affiliate', 'bronze', 'silver', 'gold'];
+  
+  if (loading) {
+    return (
+      <section className="py-16 bg-white" id="pricing">
+        <div className="container mx-auto px-4 text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="py-16 bg-white" id="pricing">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Choose Your Membership Level
+          </h2>
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+            Select the tier that matches your network marketing goals. Each membership includes weekly leads and access to our affiliate program.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {publicTiers.map((tierId) => {
+            const tier = tiers[tierId];
+            if (!tier) return null;
+            
+            const isAffiliate = tierId === 'affiliate';
+            const price = tier.price;
+            const commissions = tier.commissions || [];
+            
+            // Define leads per week
+            const leadsPerWeek = {
+              affiliate: 0,
+              bronze: 100,
+              silver: 250,
+              gold: 500
+            }[tierId] || 0;
+
+            return (
+              <div key={tierId} className={`relative bg-white border-2 rounded-lg shadow-lg overflow-hidden ${
+                tierId === 'gold' ? 'border-yellow-500 transform scale-105' : 'border-gray-200'
+              }`}>
+                {tierId === 'gold' && (
+                  <div className="absolute top-0 left-0 right-0 bg-yellow-500 text-white text-center py-1 text-sm font-medium">
+                    Most Popular
+                  </div>
+                )}
+                
+                <div className="p-6">
+                  <div className="text-center mb-6">
+                    <h3 className="text-xl font-bold text-gray-900 capitalize mb-2">
+                      {getTierDisplayName(tierId)}
+                    </h3>
+                    <div className="text-3xl font-bold text-gray-900 mb-2">
+                      {isAffiliate ? 'FREE' : `$${price}`}
+                      {!isAffiliate && <span className="text-lg text-gray-500">/month</span>}
+                    </div>
+                    {isAffiliate && (
+                      <p className="text-sm text-gray-500">Lifetime Access</p>
+                    )}
+                  </div>
+
+                  <ul className="space-y-3 mb-6">
+                    <li className="flex items-center">
+                      <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
+                      <span className="text-gray-600">
+                        {leadsPerWeek > 0 ? `${leadsPerWeek} leads/week` : 'Affiliate program access'}
+                      </span>
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
+                      <span className="text-gray-600">
+                        {commissions.length === 4 ? '4-tier commissions' : '2-tier commissions'}
+                      </span>
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
+                      <span className="text-gray-600">Instant USDC payouts</span>
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
+                      <span className="text-gray-600">Member dashboard</span>
+                    </li>
+                  </ul>
+
+                  {commissions.length > 0 && (
+                    <div className="mb-6">
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">Commission Structure:</h4>
+                      <div className="text-xs text-gray-600 space-y-1">
+                        {commissions.map((rate, index) => (
+                          <div key={index}>Tier {index + 1}: {Math.round(rate * 100)}%</div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <a 
+                    href={`/register?tier=${tierId}${referralCode ? `&ref=${referralCode}` : ''}`}
+                    className={`block w-full text-center py-3 px-6 rounded-lg font-semibold transition-all duration-300 ${
+                      tierId === 'gold' 
+                        ? 'bg-yellow-500 hover:bg-yellow-600 text-white' 
+                        : tierId === 'affiliate'
+                        ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                        : 'bg-gray-800 hover:bg-gray-900 text-white'
+                    }`}
+                  >
+                    {isAffiliate ? 'Join Free' : 'Choose Plan'}
+                  </a>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// FAQ Section Component
+function FAQSection() {
+  const [openFaq, setOpenFaq] = useState(null);
+
+  const faqs = [
+    {
+      question: "How does the affiliate program work?",
+      answer: "Every member becomes an affiliate and can earn commissions by referring new members. You earn up to 30% recurring commissions on referrals, with payments made instantly in USDC."
+    },
+    {
+      question: "What kind of leads do you provide?",
+      answer: "We provide fresh, verified leads for network marketing. Leads are delivered weekly to your member dashboard and include contact information for prospects interested in business opportunities."
+    },
+    {
+      question: "How are commissions paid?",
+      answer: "All commissions are paid instantly in USDC cryptocurrency directly to your wallet address. Payments are processed automatically when new members join your network."
+    },
+    {
+      question: "Can I cancel my membership anytime?",
+      answer: "Yes, you can cancel your membership at any time. Due to the nature of cryptocurrency payments and instant commission distribution, refunds are subject to our refund policy."
+    },
+    {
+      question: "What's the difference between membership tiers?",
+      answer: "Higher tiers receive more weekly leads and have access to deeper commission structures (up to 4 levels). All tiers include affiliate program access and member dashboard."
+    }
+  ];
+
+  return (
+    <section className="py-16 bg-gray-50">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
+          <p className="text-gray-600">Get answers to common questions about Web3 Membership</p>
+        </div>
+        
+        <div className="max-w-3xl mx-auto">
+          {faqs.map((faq, index) => (
+            <div key={index} className="mb-4">
+              <button
+                onClick={() => setOpenFaq(openFaq === index ? null : index)}
+                className="w-full text-left p-6 bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 focus:outline-none"
+              >
+                <div className="flex justify-between items-center">
+                  <h3 className="font-semibold text-gray-900">{faq.question}</h3>
+                  <ChevronDown className={`h-5 w-5 text-gray-500 transition-transform duration-300 ${
+                    openFaq === index ? 'transform rotate-180' : ''
+                  }`} />
+                </div>
+              </button>
+              {openFaq === index && (
+                <div className="mt-2 p-6 pt-0 bg-white">
+                  <p className="text-gray-600">{faq.answer}</p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// Footer Component
+function Footer() {
+  return (
+    <footer className="bg-gray-900 text-white py-12">
+      <div className="container mx-auto px-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div>
+            <div className="flex items-center space-x-3 mb-4">
+              <Network className="h-8 w-8 text-blue-400" />
+              <span className="text-xl font-bold">Web3 Membership</span>
+            </div>
+            <p className="text-gray-400 mb-4">
+              Revolutionary affiliate system with instant USDC payouts and blockchain-verified leads.
+            </p>
+          </div>
+          
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
+            <ul className="space-y-2">
+              <li><a href="/#about" className="text-gray-400 hover:text-white transition-colors">About</a></li>
+              <li><a href="/#pricing" className="text-gray-400 hover:text-white transition-colors">Pricing</a></li>
+              <li><a href="/affiliates" className="text-gray-400 hover:text-white transition-colors">Affiliates</a></li>
+            </ul>
+          </div>
+          
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Legal</h3>
+            <ul className="space-y-2">
+              <li><a href="/privacy-policy" className="text-gray-400 hover:text-white transition-colors">Privacy Policy</a></li>
+              <li><a href="/terms" className="text-gray-400 hover:text-white transition-colors">Terms of Service</a></li>
+            </ul>
+          </div>
+          
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Support</h3>
+            <ul className="space-y-2">
+              <li><span className="text-gray-400">Email: support@web3membership.com</span></li>
+              <li><span className="text-gray-400">24/7 Member Support</span></li>
+            </ul>
+          </div>
+        </div>
+        
+        <div className="border-t border-gray-800 mt-8 pt-8 text-center">
+          <p className="text-gray-400">
+            © {new Date().getFullYear()} Web3 Membership. All rights reserved.
+          </p>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
 // Landing Page Component - ProLeads Network Style
 function LandingPage() {
   const { user } = useAuth();
