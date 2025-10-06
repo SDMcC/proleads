@@ -653,7 +653,7 @@ function AffiliatesPage() {
             Join Our Affiliate Program
           </h1>
           <p className="text-xl text-blue-200 mb-8 max-w-3xl mx-auto">
-            Earn up to 30% recurring commissions by referring new members to Web3 Membership. 
+            Earn up to 30% recurring commissions by referring new members to Proleads Network. 
             Build your network and create passive income with our generous multi-tier commission structure.
           </p>
         </div>
