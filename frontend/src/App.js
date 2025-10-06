@@ -47,7 +47,15 @@ import {
   XCircle,
   Circle,
   MoreVertical,
-  Target
+  Target,
+  Trash2,
+  Upload,
+  Edit,
+  Calendar,
+  User,
+  RefreshCcw,
+  Ticket,
+  MessageSquare
 } from 'lucide-react';
 import './App.css';
 
