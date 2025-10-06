@@ -632,8 +632,12 @@ function AffiliatesPage() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <a href="/" className="flex items-center space-x-3">
-              <Network className="h-8 w-8 text-blue-400" />
-              <span className="text-xl font-bold">Web3 Membership</span>
+              <img 
+                src="https://members.proleads.network/assets/images/hero-logo-2.png" 
+                alt="Proleads Network" 
+                className="h-8 w-auto"
+              />
+              <span className="text-xl font-bold">Proleads Network</span>
             </a>
             <a href="/" className="text-blue-400 hover:text-blue-300 transition-colors">
               ← Back to Home
@@ -893,8 +897,12 @@ function PrivacyPolicyPage() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <a href="/" className="flex items-center space-x-3">
-              <Network className="h-8 w-8 text-blue-400" />
-              <span className="text-xl font-bold">Web3 Membership</span>
+              <img 
+                src="https://members.proleads.network/assets/images/hero-logo-2.png" 
+                alt="Proleads Network" 
+                className="h-8 w-auto"
+              />
+              <span className="text-xl font-bold">Proleads Network</span>
             </a>
             <a href="/" className="text-blue-400 hover:text-blue-300 transition-colors">
               ← Back to Home
@@ -1016,8 +1024,12 @@ function TermsPage() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <a href="/" className="flex items-center space-x-3">
-              <Network className="h-8 w-8 text-blue-400" />
-              <span className="text-xl font-bold">Web3 Membership</span>
+              <img 
+                src="https://members.proleads.network/assets/images/hero-logo-2.png" 
+                alt="Proleads Network" 
+                className="h-8 w-auto"
+              />
+              <span className="text-xl font-bold">Proleads Network</span>
             </a>
             <a href="/" className="text-blue-400 hover:text-blue-300 transition-colors">
               ← Back to Home
