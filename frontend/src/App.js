@@ -873,7 +873,7 @@ function AffiliatesPage() {
             Ready to Start Earning?
           </h2>
           <p className="text-xl mb-8 text-blue-100 max-w-2xl mx-auto">
-            Join Web3 Membership today and start building your affiliate network. 
+            Join Proleads Network today and start building your affiliate network. 
             Even our free tier gives you access to commission opportunities.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -884,7 +884,17 @@ function AffiliatesPage() {
               Join Free Now
             </a>
             <a 
-              href="/#pricing"
+              href="/"
+              onClick={(e) => {
+                e.preventDefault();
+                window.location.href = '/';
+                setTimeout(() => {
+                  const element = document.getElementById('pricing');
+                  if (element) {
+                    element.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }, 100);
+              }}
               className="bg-white bg-opacity-20 text-white py-4 px-8 rounded-xl font-bold text-lg hover:bg-opacity-30 transition-all duration-300 backdrop-blur-sm border border-white border-opacity-30"
             >
               View All Plans
