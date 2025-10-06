@@ -1850,6 +1850,11 @@ function RegisterPage() {
       return;
     }
 
+    if (!acceptTerms) {
+      alert('Please accept the Terms & Conditions to continue');
+      return;
+    }
+
     // Basic wallet address validation
     if (!formData.wallet_address.startsWith('0x') || formData.wallet_address.length !== 42) {
       alert('Please enter a valid Ethereum wallet address');
