@@ -1320,12 +1320,12 @@ function LandingPage() {
             <div>
               <h3 className="text-3xl font-bold text-gray-900 mb-6">Your Path to Success</h3>
               <p className="text-gray-600 leading-relaxed mb-6">
-                Why Web3 Membership? It's built for network marketers who demand results without the hassle. Our done-for-you 
+                Why Proleads Network? It's built for network marketers who demand results without the hassle. Our done-for-you 
                 system delivers the leads you need - verified and ready to engage so you save time and connect with prospects 
                 who matter. Perfect for those with established networks or those just starting out, our tools make growth effortless. 
                 Plus, refer just 4 members, and your membership could be free through our{' '}
                 <a href="/affiliates" className="text-blue-600 hover:text-blue-800 font-medium">affiliate program</a>. 
-                With instant payouts and generous bonuses, Web3 Membership is your path to predictable success.
+                With instant payouts and generous bonuses, Proleads Network is your path to predictable success.
               </p>
             </div>
           </div>
