@@ -1266,7 +1266,11 @@ function LandingPage() {
       <section className="bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 text-white py-20">
         <div className="container mx-auto px-4 text-center">
           <div className="mb-8">
-            <Network className="h-16 w-16 text-blue-400 mx-auto mb-4" />
+            <img 
+              src="https://members.proleads.network/assets/images/hero-logo-2.png" 
+              alt="Proleads Network" 
+              className="h-16 w-auto mx-auto mb-4"
+            />
           </div>
           
           <h1 className="text-5xl md:text-6xl font-bold mb-6">
