@@ -1912,7 +1912,11 @@ function RegisterPage() {
       <div className="max-w-md w-full">
         <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-2xl p-8 shadow-2xl border border-white border-opacity-20">
           <div className="text-center mb-8">
-            <Network className="h-16 w-16 text-white mx-auto mb-4" />
+            <img 
+              src="https://members.proleads.network/assets/images/hero-logo-2.png" 
+              alt="Proleads Network" 
+              className="h-16 w-auto mx-auto mb-4"
+            />
             <h2 className="text-3xl font-bold text-white mb-2">Join Our Network</h2>
             <p className="text-gray-200">Create your membership account</p>
             
