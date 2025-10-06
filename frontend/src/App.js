@@ -1226,7 +1226,7 @@ function LandingPage() {
           </div>
           
           <h1 className="text-5xl md:text-6xl font-bold mb-6">
-            Welcome To Web3 Membership
+            Welcome To Proleads Network
           </h1>
           
           <h2 className="text-2xl md:text-3xl text-blue-300 mb-8">
