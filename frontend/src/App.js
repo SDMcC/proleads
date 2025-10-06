@@ -1204,6 +1204,17 @@ function LandingPage() {
       fetchReferrerInfo(ref);
     }
     fetchMembershipTiers();
+    
+    // Handle hash navigation for smooth scrolling
+    const hash = window.location.hash;
+    if (hash) {
+      setTimeout(() => {
+        const element = document.getElementById(hash.replace('#', ''));
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    }
   }, []);
 
   const fetchReferrerInfo = async (code) => {
