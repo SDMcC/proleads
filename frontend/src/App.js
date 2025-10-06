@@ -889,17 +889,7 @@ function AffiliatesPage() {
               Join Free Now
             </a>
             <a 
-              href="/"
-              onClick={(e) => {
-                e.preventDefault();
-                window.location.href = '/';
-                setTimeout(() => {
-                  const element = document.getElementById('pricing');
-                  if (element) {
-                    element.scrollIntoView({ behavior: 'smooth' });
-                  }
-                }, 100);
-              }}
+              href="/#pricing"
               className="bg-white bg-opacity-20 text-white py-4 px-8 rounded-xl font-bold text-lg hover:bg-opacity-30 transition-all duration-300 backdrop-blur-sm border border-white border-opacity-30"
             >
               View All Plans
