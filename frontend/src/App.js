@@ -1301,7 +1301,7 @@ function LandingPage() {
               <h3 className="text-xl font-bold text-gray-900 mb-3">Exponential Growth</h3>
               <p className="text-gray-600">
                 Our subscription model fuels your growth. Weekly leads keep your pipeline full and your downline thriving. 
-                With Web3 Membership, you're not just maintaining momentum - you're unlocking the potential to grow faster and smarter.
+                With Proleads Network, you're not just maintaining momentum - you're unlocking the potential to grow faster and smarter.
               </p>
             </div>
           </div>
