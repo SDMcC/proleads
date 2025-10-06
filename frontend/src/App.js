@@ -1023,7 +1023,7 @@ function PrivacyPolicyPage() {
               If you have any questions about this Privacy Policy, You can contact us:
             </p>
             <ul className="text-gray-700 space-y-2">
-              <li>By email: <a href="mailto:support@web3membership.com" className="text-blue-600 hover:text-blue-800">support@web3membership.com</a></li>
+              <li>By email: <a href="mailto:support@proleads.network" className="text-blue-600 hover:text-blue-800">support@proleads.network</a></li>
               <li>Through our member support system in your dashboard</li>
             </ul>
           </section>
