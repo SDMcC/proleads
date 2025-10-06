@@ -1810,6 +1810,7 @@ function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [referralCode, setReferralCode] = useState('');
   const [referrerInfo, setReferrerInfo] = useState(null);
+  const [acceptTerms, setAcceptTerms] = useState(false);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
