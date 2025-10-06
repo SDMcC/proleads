@@ -6067,32 +6067,41 @@ function AdminDashboard() {
         />
       )}
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Tab Navigation */}
-        <div className="flex space-x-1 mb-8">
-          {[
-            { id: 'overview', label: 'Overview', icon: BarChart3 },
-            { id: 'members', label: 'Members', icon: Users },
-            { id: 'payments', label: 'Payments', icon: DollarSign },
-            { id: 'commissions', label: 'Commissions', icon: TrendingUp },
-            { id: 'leads', label: 'Leads Distribution', icon: FileText },
-            { id: 'tickets', label: 'Tickets', icon: MessageCircle },
-            { id: 'configuration', label: 'Configuration', icon: Settings }
-          ].map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              onClick={() => setActiveTab(id)}
-              className={`px-6 py-3 rounded-lg font-medium transition-all duration-300 flex items-center space-x-2 ${
-                activeTab === id
-                  ? 'bg-red-600 text-white'
-                  : 'bg-white bg-opacity-10 text-gray-300 hover:bg-opacity-20'
-              }`}
-            >
-              <Icon className="h-4 w-4" />
-              <span>{label}</span>
-            </button>
-          ))}
+      <div className="flex min-h-screen">
+        {/* Sidebar Navigation */}
+        <div className="w-64 bg-red-900 bg-opacity-30 backdrop-blur-sm border-r border-red-800">
+          <div className="p-6">
+            <h2 className="text-lg font-bold text-white mb-6">Admin Panel</h2>
+            <nav className="space-y-2">
+              {[
+                { id: 'overview', label: 'Overview', icon: BarChart3 },
+                { id: 'members', label: 'Members', icon: Users },
+                { id: 'payments', label: 'Payments', icon: DollarSign },
+                { id: 'commissions', label: 'Commissions', icon: TrendingUp },
+                { id: 'milestones', label: 'Milestones', icon: Award },
+                { id: 'leads', label: 'Leads Distribution', icon: FileText },
+                { id: 'tickets', label: 'Tickets', icon: MessageCircle },
+                { id: 'configuration', label: 'Configuration', icon: Settings }
+              ].map(({ id, label, icon: Icon }) => (
+                <button
+                  key={id}
+                  onClick={() => setActiveTab(id)}
+                  className={`w-full px-4 py-3 rounded-lg font-medium transition-all duration-300 flex items-center space-x-3 text-left ${
+                    activeTab === id
+                      ? 'bg-red-600 text-white'
+                      : 'text-gray-300 hover:bg-red-800 hover:bg-opacity-30'
+                  }`}
+                >
+                  <Icon className="h-5 w-5" />
+                  <span>{label}</span>
+                </button>
+              ))}
+            </nav>
+          </div>
         </div>
+
+        {/* Main Content Area */}
+        <div className="flex-1 px-4 sm:px-6 lg:px-8 py-8">
 
         {/* Overview Tab */}
         {activeTab === 'overview' && (
