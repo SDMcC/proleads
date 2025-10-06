@@ -588,8 +588,8 @@ function Footer() {
     <footer className="bg-gray-900 text-white py-12">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="text-center md:text-left">
-            <div className="flex flex-col items-center md:items-start mb-4">
+          <div className="text-center">
+            <div className="flex flex-col items-center mb-4">
               <img 
                 src="https://members.proleads.network/assets/images/hero-logo-2.png" 
                 alt="Proleads Network" 
