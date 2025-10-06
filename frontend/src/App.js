@@ -6018,8 +6018,12 @@ function AdminDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center space-x-2">
-              <Shield className="h-8 w-8 text-red-400" />
-              <span className="text-2xl font-bold text-white">Admin Dashboard</span>
+              <img 
+                src="https://members.proleads.network/assets/images/hero-logo-2.png" 
+                alt="Proleads Network" 
+                className="h-8 w-auto"
+              />
+              <span className="text-2xl font-bold text-white">Proleads Network - Admin</span>
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-gray-300">Administrator</span>
