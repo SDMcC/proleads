@@ -501,7 +501,6 @@ function EnhancedMembershipTiers({ tiers, referralCode, loading }) {
               </div>
             );
           })}
-        </div>
       </div>
     </section>
   );
