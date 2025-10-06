@@ -283,216 +283,282 @@ function ProtectedRoute({ children }) {
   return user ? children : <Navigate to="/" />;
 }
 
-// Landing Page Component
+// Landing Page Component - ProLeads Network Style
 function LandingPage() {
-  const { user, login } = useAuth();
+  const { user } = useAuth();
   const [referralCode, setReferralCode] = useState('');
+  const [referrerInfo, setReferrerInfo] = useState(null);
   const [showLogin, setShowLogin] = useState(false);
-  const [loginData, setLoginData] = useState({
-    username: '',
-    password: ''
-  });
-  const [loginLoading, setLoginLoading] = useState(false);
+  const [membershipTiers, setMembershipTiers] = useState({});
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const ref = urlParams.get('ref');
     if (ref) {
       setReferralCode(ref);
+      fetchReferrerInfo(ref);
     }
+    fetchMembershipTiers();
   }, []);
 
-  const generateReferralLink = () => {
-    if (user && user.referral_code) {
-      const baseUrl = window.location.origin;
-      return `${baseUrl}/r/${user.referral_code}`;
-    }
-    return '';
-  };
-
-  const copyReferralLink = () => {
-    const link = generateReferralLink();
-    navigator.clipboard.writeText(link);
-    alert('Referral link copied to clipboard!');
-  };
-
-  const handleSimpleLogin = async (e) => {
-    e.preventDefault();
-    if (!loginData.username || !loginData.password) {
-      alert('Please fill in all fields');
-      return;
-    }
-
-    setLoginLoading(true);
+  const fetchReferrerInfo = async (code) => {
     try {
-      const response = await axios.post(`${API_URL}/api/auth/login`, {
-        username: loginData.username,
-        password: loginData.password
-      });
-      
-      const { token } = response.data;
-      login(token);
-      window.location.href = '/dashboard';
-      
+      const response = await axios.get(`${API_URL}/api/referral/${code}`);
+      setReferrerInfo(response.data);
     } catch (error) {
-      console.error('Login failed:', error);
-      let errorMessage = 'Login failed. Please check your credentials.';
-      if (error.response?.data?.detail) {
-        errorMessage = `Login failed: ${error.response.data.detail}`;
-      }
-      alert(errorMessage);
+      console.error('Failed to fetch referrer info:', error);
+    }
+  };
+
+  const fetchMembershipTiers = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/membership/tiers`);
+      setMembershipTiers(response.data.tiers);
+    } catch (error) {
+      console.error('Failed to fetch tiers:', error);
     } finally {
-      setLoginLoading(false);
+      setLoading(false);
     }
   };
 
   if (user) {
-    return (
-      <div className="min-h-screen" style={{
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-      }}>
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-white mb-4">Welcome back, {user.username}!</h1>
-            <p className="text-xl text-gray-200">You're signed in and ready to go</p>
-          </div>
-
-          <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-8">
-              <h2 className="text-2xl font-bold text-white mb-4">Your Dashboard</h2>
-              <p className="text-gray-200 mb-6">Access your member dashboard to view earnings, referrals, and more.</p>
-              <a 
-                href="/dashboard"
-                className="inline-block bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105"
-              >
-                Go to Dashboard
-              </a>
-            </div>
-
-            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-8">
-              <h2 className="text-2xl font-bold text-white mb-4">Share Your Link</h2>
-              <p className="text-gray-200 mb-4">Invite others and earn commissions</p>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={generateReferralLink()}
-                  readOnly
-                  className="flex-1 px-4 py-2 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white text-sm"
-                />
-                <button
-                  onClick={copyReferralLink}
-                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-300"
-                >
-                  Copy
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <Navigate to="/dashboard" />;
   }
 
   return (
-    <div className="min-h-screen" style={{
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-    }}>
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="bg-black bg-opacity-20 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-6">
+      <header className="bg-gray-900 text-white">
+        <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-3">
-              <Network className="h-8 w-8 text-white" />
-              <h1 className="text-2xl font-bold text-white">Web3 Membership</h1>
+              <Network className="h-8 w-8 text-blue-400" />
+              <span className="text-xl font-bold">Web3 Membership</span>
             </div>
             <button
               onClick={() => setShowLogin(!showLogin)}
-              className="bg-white bg-opacity-20 text-white px-6 py-2 rounded-lg hover:bg-opacity-30 transition-all duration-300"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-all duration-300"
             >
-              {showLogin ? 'Hide Login' : 'Login'}
+              Login
             </button>
           </div>
         </div>
       </header>
 
-      {/* Login Form */}
-      {showLogin && (
-        <div className="bg-black bg-opacity-20 backdrop-blur-sm border-b border-white border-opacity-10">
-          <div className="container mx-auto px-4 py-8">
-            <div className="max-w-md mx-auto">
-              <h2 className="text-2xl font-bold text-white mb-6 text-center">Login to Your Account</h2>
-              <form onSubmit={handleSimpleLogin} className="space-y-4">
-                <div>
-                  <label className="block text-white text-sm font-medium mb-2">
-                    Username
-                  </label>
-                  <input
-                    type="text"
-                    value={loginData.username}
-                    onChange={(e) => setLoginData(prev => ({ ...prev, username: e.target.value }))}
-                    className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
-                    placeholder="Enter your username"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-white text-sm font-medium mb-2">
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    value={loginData.password}
-                    onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
-                    className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
-                    placeholder="Enter your password"
-                    required
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={loginLoading}
-                  className="w-full bg-gradient-to-r from-green-600 to-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-green-700 hover:to-blue-700 transition-all duration-300 disabled:opacity-50"
-                >
-                  {loginLoading ? 'Logging in...' : 'Login'}
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Login Modal */}
+      {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
 
       {/* Hero Section */}
-      <section className="py-20">
+      <section className="bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 text-white py-20">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-5xl font-bold text-white mb-6">
-            Join the Ultimate <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">Web3 Membership</span>
-          </h2>
-          <p className="text-xl text-gray-200 mb-12 max-w-3xl mx-auto">
-            Experience a revolutionary affiliate system with 4-tier commissions, instant USDC payouts, and exclusive member benefits.
-          </p>
+          <div className="mb-8">
+            <Network className="h-16 w-16 text-blue-400 mx-auto mb-4" />
+          </div>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <a 
-              href={`/register${referralCode ? `?ref=${referralCode}` : ''}`}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-8 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-2xl"
-            >
-              Join Now
-            </a>
-            <a 
-              href={`/register${referralCode ? `?ref=${referralCode}` : ''}`}
-              className="bg-white bg-opacity-20 text-white py-4 px-8 rounded-xl font-bold text-lg hover:bg-opacity-30 transition-all duration-300 backdrop-blur-sm border border-white border-opacity-30"
-            >
-              Learn More
-            </a>
+          <h1 className="text-5xl md:text-6xl font-bold mb-6">
+            Welcome To Web3 Membership
+          </h1>
+          
+          <h2 className="text-2xl md:text-3xl text-blue-300 mb-8">
+            A Constant Supply Of Fresh Leads For Your Business
+          </h2>
+          
+          {referrerInfo && (
+            <div className="max-w-md mx-auto mb-8 p-4 bg-blue-600 bg-opacity-30 rounded-lg border border-blue-400 border-opacity-50">
+              <p className="text-blue-100 text-sm">
+                🎉 You're joining through <strong>{referrerInfo.referrer_username}</strong>'s network!
+              </p>
+              <p className="text-blue-200 text-xs mt-1">
+                Tier: {getTierDisplayName(referrerInfo.referrer_tier)}
+              </p>
+            </div>
+          )}
+          
+          <div className="flex items-center justify-center mb-12">
+            <ChevronDown className="h-8 w-8 text-blue-400 animate-bounce" />
           </div>
         </div>
       </section>
 
-      {/* Membership Tiers */}
-      <MembershipTiers referralCode={referralCode} />
+      {/* About Section */}
+      <section className="py-16 bg-gray-50" id="about">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Innovate Your Network Marketing
+            </h2>
+            <p className="text-lg text-gray-600 max-w-4xl mx-auto leading-relaxed">
+              Network marketing isn't easy - building a thriving downline, chasing referrals, and securing steady income takes work. 
+              If you're a network marketer with a growing network, Web3 Membership is your edge. We deliver high quality, 
+              blockchain-verified leads straight to you, so you can focus on growing your empire. Our exclusive tools and 
+              done-for-you system make it simple to unlock predictable results and new ways to earn. Every network marketer 
+              needs fresh leads - and Web3 Membership delivers.
+            </p>
+          </div>
 
-      {/* Commission Structure */}
-      <CommissionStructure />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            <div className="text-center p-6">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Activity className="h-8 w-8 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">Predictable Results</h3>
+              <p className="text-gray-600">
+                No more wasting time on lead generation. Our service delivers fresh leads directly to your members area 
+                every week, so you can focus on closing deals and building your team. With our proven system, you'll 
+                connect with prospects ready to act, driving steady growth for your business.
+              </p>
+            </div>
+            
+            <div className="text-center p-6">
+              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Zap className="h-8 w-8 text-purple-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">A New Idea</h3>
+              <p className="text-gray-600">
+                Web3 Membership redefines lead generation. Get a consistent supply of high quality leads to fuel your network, 
+                plus earn passive income by sharing the system. Refer just 4 new members, and their commissions can cover 
+                your entire membership cost - making your growth practically free.
+              </p>
+              <a href="/affiliates" className="text-blue-600 hover:text-blue-800 font-medium mt-2 inline-block">
+                Explore Our Affiliate Program →
+              </a>
+            </div>
+            
+            <div className="text-center p-6">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <TrendingUp className="h-8 w-8 text-green-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">Exponential Growth</h3>
+              <p className="text-gray-600">
+                Our subscription model fuels your growth. Weekly leads keep your pipeline full and your downline thriving. 
+                With Web3 Membership, you're not just maintaining momentum - you're unlocking the potential to grow faster and smarter.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Success Path Section */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <div className="w-full h-64 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg flex items-center justify-center mb-6">
+                <Users className="h-24 w-24 text-blue-600" />
+              </div>
+            </div>
+            <div>
+              <h3 className="text-3xl font-bold text-gray-900 mb-6">Your Path to Success</h3>
+              <p className="text-gray-600 leading-relaxed mb-6">
+                Why Web3 Membership? It's built for network marketers who demand results without the hassle. Our done-for-you 
+                system delivers the leads you need - verified and ready to engage so you save time and connect with prospects 
+                who matter. Perfect for those with established networks or those just starting out, our tools make growth effortless. 
+                Plus, refer just 4 members, and your membership could be free through our{' '}
+                <a href="/affiliates" className="text-blue-600 hover:text-blue-800 font-medium">affiliate program</a>. 
+                With instant payouts and generous bonuses, Web3 Membership is your path to predictable success.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center text-gray-900 mb-16">Your Leadgen Partner</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
+            <div className="space-y-12">
+              <div className="flex space-x-6">
+                <div className="w-24 h-24 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Users className="h-12 w-12 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">Empowering Your Business Growth</h3>
+                  <p className="text-gray-600">
+                    Web3 Membership takes your network marketing to the next level by handling lead generation for you. 
+                    Your leads arrive weekly, complete with verified information, so you can focus on building relationships 
+                    and expanding your team. Designed for marketers like you, our system turns your existing reach into unstoppable momentum.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex space-x-6">
+                <div className="w-24 h-24 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <DollarSign className="h-12 w-12 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">Cost-Effective Lead Generation</h3>
+                  <p className="text-gray-600">
+                    Why spend big on outdated lead sources? Web3 Membership delivers quality leads every week at a fraction 
+                    of the cost. With no long-term contracts, it's the smartest way to connect with prospects ready to join 
+                    or buy, helping you grow your business without breaking the bank.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="space-y-12">
+              <div className="flex space-x-6">
+                <div className="w-24 h-24 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Target className="h-12 w-12 text-purple-600" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">Maximizing ROI with Targeted Leads</h3>
+                  <p className="text-gray-600">
+                    Our leads are built for results. Each one is fresh, verified, and primed for network marketing, 
+                    boosting your chances of turning prospects into customers or team members. By prioritizing quality, 
+                    we help you maximize your return on investment with every subscription.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex space-x-6">
+                <div className="w-24 h-24 bg-yellow-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Award className="h-12 w-12 text-yellow-600" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">Maximize Your Earnings Potential</h3>
+                  <p className="text-gray-600">
+                    Web3 Membership isn't just about growth — it's about income. Every member becomes an{' '}
+                    <a href="/affiliates" className="text-blue-600 hover:text-blue-800 font-medium">affiliate</a>, 
+                    earning up to 30% recurring commissions on referrals, plus bonuses up to four tiers deep. 
+                    Refer just 4 members, and their payouts can cover your membership cost. It's passive income designed for network marketers ready to profit from their network.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Membership Tiers Section */}
+      <EnhancedMembershipTiers tiers={membershipTiers} referralCode={referralCode} loading={loading} />
+
+      {/* FAQ Section */}
+      <FAQSection />
+
+      {/* CTA Section */}
+      <section className="py-16 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 text-white">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            Ready to turn your network into a paycheck?
+          </h2>
+          <p className="text-xl mb-8 text-blue-100">
+            Pick your membership level and begin building your income today.
+          </p>
+          <a 
+            href={`/register${referralCode ? `?ref=${referralCode}` : ''}`}
+            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-8 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-2xl inline-block"
+          >
+            Join Now
+          </a>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }
