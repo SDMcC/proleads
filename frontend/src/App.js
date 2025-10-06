@@ -2182,8 +2182,12 @@ function Dashboard() {
               >
                 <Menu className="h-6 w-6" />
               </button>
-              <Network className="h-8 w-8 text-blue-400" />
-              <span className="text-2xl font-bold text-white">Web3 Membership</span>
+              <img 
+                src="https://members.proleads.network/assets/images/hero-logo-2.png" 
+                alt="Proleads Network" 
+                className="h-8 w-auto"
+              />
+              <span className="text-2xl font-bold text-white">Proleads Network</span>
             </div>
             <div className="flex items-center space-x-4">
               <div className="text-right">
@@ -5213,8 +5217,12 @@ function PaymentPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center space-x-2">
-              <Network className="h-8 w-8 text-blue-400" />
-              <span className="text-2xl font-bold text-white">Web3 Membership</span>
+              <img 
+                src="https://members.proleads.network/assets/images/hero-logo-2.png" 
+                alt="Proleads Network" 
+                className="h-8 w-auto"
+              />
+              <span className="text-2xl font-bold text-white">Proleads Network</span>
             </div>
             <div className="flex items-center space-x-4">
               <button
