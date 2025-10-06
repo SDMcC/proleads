@@ -46,7 +46,8 @@ import {
   CheckCircle,
   XCircle,
   Circle,
-  MoreVertical
+  MoreVertical,
+  Target
 } from 'lucide-react';
 import './App.css';
 
