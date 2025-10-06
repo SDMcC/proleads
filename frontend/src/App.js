@@ -64,10 +64,10 @@ const projectId = process.env.REACT_APP_WC_PROJECT_ID || 'af44774b87514c0aab2407
 
 // 2. Create wagmiConfig
 const metadata = {
-  name: 'Web3 Membership Platform',
+  name: 'Proleads Network',
   description: 'Multi-tier affiliate membership platform',
   url: window.location.origin,
-  icons: ['https://avatars.githubusercontent.com/u/37784886']
+  icons: ['https://members.proleads.network/assets/images/hero-logo-2.png']
 };
 
 const chains = [mainnet, arbitrum];
