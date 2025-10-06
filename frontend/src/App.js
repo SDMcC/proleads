@@ -8607,9 +8607,7 @@ function MemberModal({ member, editingMember, onClose, onUpdate, onSuspend, onUn
   );
 }
 
-// Admin Milestones Tab Component (temporarily commented out)
-/*
-function AdminMilestonesTab() {
+// Admin Milestones Tab Component - TODO: Implement after fixing syntax
   const [milestones, setMilestones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
