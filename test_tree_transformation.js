@@ -81,14 +81,11 @@ const transformToTreeData = (apiNode) => {
 
   // Create root node (current user)
   const rootNode = {
-    name: `${apiNode.root.username} (YOU)`,
+    name: apiNode.root.username,
     attributes: {
       membership_tier: getTierDisplayName(apiNode.root.membership_tier),
       status: 'Active',
       total_referrals: apiNode.root.total_referrals || 0,
-      total_earnings: `$${apiNode.root.total_earnings?.toFixed(2) || '0.00'}`,
-      email: apiNode.root.email,
-      level: 0,
       is_root: true
     },
     children: apiNode.children ? apiNode.children.map(transformNode) : []
