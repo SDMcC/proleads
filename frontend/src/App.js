@@ -5829,6 +5829,83 @@ function AdminDashboard() {
     }
   };
 
+  const fetchMilestones = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const headers = { Authorization: `Bearer ${token}` };
+      
+      const params = new URLSearchParams();
+      if (milestoneFilters.user) params.append('username_filter', milestoneFilters.user);
+      if (milestoneFilters.dateFrom) params.append('date_from', milestoneFilters.dateFrom);
+      if (milestoneFilters.dateTo) params.append('date_to', milestoneFilters.dateTo);
+      if (milestoneFilters.minAmount) params.append('award_filter', milestoneFilters.minAmount);
+      if (milestoneFilters.status) params.append('status_filter', milestoneFilters.status);
+      params.append('page', milestonePage.toString());
+      params.append('limit', '10');
+      
+      const response = await axios.get(`${API_URL}/api/admin/milestones?${params}`, { headers });
+      setMilestones(response.data.milestones || []);
+      setMilestoneTotalPages(response.data.total_pages || 1);
+      
+    } catch (error) {
+      console.error('Failed to fetch milestones:', error);
+    }
+  };
+
+  const markMilestoneAsPaid = async (milestoneId) => {
+    if (!window.confirm('Are you sure you want to mark this milestone as paid?')) {
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem('adminToken');
+      const headers = { Authorization: `Bearer ${token}` };
+      
+      await axios.put(`${API_URL}/api/admin/milestones/${milestoneId}/mark-paid`, {}, { headers });
+      
+      // Refresh milestones list
+      fetchMilestones();
+      alert('Milestone marked as paid successfully');
+      
+    } catch (error) {
+      console.error('Failed to mark milestone as paid:', error);
+      alert('Failed to mark milestone as paid: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const exportMilestones = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const headers = { Authorization: `Bearer ${token}` };
+      
+      const params = new URLSearchParams();
+      if (milestoneFilters.user) params.append('username_filter', milestoneFilters.user);
+      if (milestoneFilters.dateFrom) params.append('date_from', milestoneFilters.dateFrom);
+      if (milestoneFilters.dateTo) params.append('date_to', milestoneFilters.dateTo);
+      if (milestoneFilters.minAmount) params.append('award_filter', milestoneFilters.minAmount);
+      if (milestoneFilters.status) params.append('status_filter', milestoneFilters.status);
+      
+      const response = await axios.get(`${API_URL}/api/admin/milestones/export?${params}`, { 
+        headers, 
+        responseType: 'blob' 
+      });
+      
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `milestones_export_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+    } catch (error) {
+      console.error('Failed to export milestones:', error);
+      alert('Failed to export milestones: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
   const fetchMemberDetails = async (memberId) => {
     try {
       const token = localStorage.getItem('adminToken');
