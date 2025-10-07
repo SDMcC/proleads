@@ -7844,5 +7844,21 @@ if __name__ == "__main__":
         print("=" * 80)
         
         sys.exit(0 if success else 1)
+    elif len(sys.argv) > 1 and sys.argv[1] == "milestone_system":
+        print("🎯 RUNNING SPECIFIC TEST: Admin Milestone Management System Backend Implementation")
+        print("=" * 80)
+        
+        backend_url = "https://membership-tiers-2.preview.emergentagent.com"
+        tester = Web3MembershipTester(backend_url)
+        
+        # Run the specific milestone system test
+        success = tester.test_admin_milestone_management_system()
+        
+        print("\n" + "=" * 80)
+        print(f"🎯 FINAL RESULT: {'✅ PASSED' if success else '❌ FAILED'}")
+        print(f"📊 Tests passed: {tester.tests_passed}/{tester.tests_run}")
+        print("=" * 80)
+        
+        sys.exit(0 if success else 1)
     else:
         sys.exit(main())
