@@ -2958,12 +2958,14 @@ function NetworkTreeTab() {
               renderCustomNodeElement={({ nodeDatum, toggleNode }) => (
                 <g>
                   <foreignObject
-                    width="240"
-                    height="140"
-                    x="-120"
-                    y="-70"
+                    width="260"
+                    height="160"
+                    x="-130"
+                    y="-80"
+                    onClick={toggleNode}
+                    style={{ cursor: 'pointer' }}
                   >
-                    <CustomNodeLabel nodeData={nodeDatum} />
+                    <CustomNodeLabel nodeData={nodeDatum} toggleNode={toggleNode} />
                   </foreignObject>
                 </g>
               )}
