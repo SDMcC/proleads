@@ -2887,6 +2887,31 @@ function NetworkTreeTab() {
             YOU
           </div>
         )}
+
+        {/* Expandable indicator */}
+        {nodeData.children && nodeData.children.length > 0 && (
+          <div style={{
+            position: 'absolute',
+            bottom: '-8px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+            color: 'white',
+            padding: '4px',
+            borderRadius: '50%',
+            fontSize: '10px',
+            fontWeight: 'bold',
+            border: '2px solid #FFFFFF',
+            boxShadow: '0 2px 8px rgba(16, 185, 129, 0.4)',
+            width: '24px',
+            height: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            {nodeData.__rd3t?.collapsed ? '+' : '−'}
+          </div>
+        )}
       </div>
     );
   };
