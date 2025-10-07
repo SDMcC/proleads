@@ -2956,12 +2956,12 @@ function NetworkTreeTab() {
               separation={{ siblings: 1.5, nonSiblings: 1.5 }}
               allowForeignObjects={true}
               nodeLabelComponent={{
-                render: <CustomNodeLabel />,
+                render: <CustomNodeLabel className="networkTreeNode" />,
                 foreignObjectWrapper: {
-                  width: 220,
-                  height: 120,
-                  y: -60,
-                  x: -110
+                  width: 240,
+                  height: 140,
+                  y: -70,
+                  x: -120
                 }
               }}
               nodeSvgShape={{
