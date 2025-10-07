@@ -2151,6 +2151,240 @@ async def export_commissions_csv(
         logger.error(f"Failed to export commissions: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to export commissions")
 
+# Admin Milestone Management
+@app.get("/api/admin/milestones")
+async def get_admin_milestones(
+    page: int = 1,
+    limit: int = 10,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    username_filter: Optional[str] = None,
+    award_filter: Optional[float] = None,
+    status_filter: Optional[str] = None,
+    admin_user: dict = Depends(get_admin_user)
+):
+    """Get paginated list of all milestones with filtering for admin"""
+    try:
+        # Build query
+        query = {}
+        
+        # Date filtering
+        if date_from or date_to:
+            date_query = {}
+            if date_from:
+                date_query["$gte"] = datetime.fromisoformat(date_from.replace('Z', '+00:00'))
+            if date_to:
+                date_query["$lte"] = datetime.fromisoformat(date_to.replace('Z', '+00:00'))
+            query["achieved_date"] = date_query
+        
+        # Award amount filtering
+        if award_filter is not None:
+            query["bonus_amount"] = award_filter
+            
+        # Status filtering
+        if status_filter:
+            query["status"] = status_filter
+        
+        # Get total count
+        total_count = await db.milestones.count_documents(query)
+        
+        # Calculate pagination
+        skip = (page - 1) * limit
+        total_pages = (total_count + limit - 1) // limit
+        
+        # Get milestones
+        milestones_cursor = db.milestones.find(query).sort("achieved_date", -1).skip(skip).limit(limit)
+        milestones_list = await milestones_cursor.to_list(length=None)
+        
+        # Enhance with user information
+        enhanced_milestones = []
+        for milestone in milestones_list:
+            # Get user info
+            user = await db.users.find_one({"address": milestone["user_address"]})
+            
+            # Filter by username if specified
+            if username_filter and user:
+                if username_filter.lower() not in user.get("username", "").lower():
+                    total_count -= 1  # Adjust count for filtered item
+                    continue
+            elif username_filter and not user:
+                total_count -= 1  # Adjust count for filtered item
+                continue
+            
+            # Count current paid downlines
+            paid_downlines = await db.users.count_documents({
+                "referrer_address": milestone["user_address"],
+                "membership_tier": {"$ne": "affiliate"},
+                "suspended": {"$ne": True}
+            })
+            
+            enhanced_milestone = {
+                "milestone_id": milestone["milestone_id"],
+                "user_address": milestone["user_address"],
+                "username": user["username"] if user else "Unknown",
+                "email": user["email"] if user else "Unknown",
+                "wallet_address": milestone["user_address"],
+                "achieved_date": milestone["achieved_date"],
+                "milestone_count": milestone["milestone_count"],
+                "bonus_amount": milestone["bonus_amount"],
+                "status": milestone["status"],
+                "total_referrals": paid_downlines,
+                "created_at": milestone.get("created_at", milestone["achieved_date"])
+            }
+            enhanced_milestones.append(enhanced_milestone)
+        
+        # Recalculate pagination after filtering
+        if username_filter:
+            total_pages = (len(enhanced_milestones) + limit - 1) // limit if enhanced_milestones else 1
+            total_count = len(enhanced_milestones)
+        
+        return {
+            "milestones": enhanced_milestones,
+            "total_count": total_count,
+            "page": page,
+            "limit": limit,
+            "total_pages": total_pages
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to fetch admin milestones: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch admin milestones")
+
+@app.put("/api/admin/milestones/{milestone_id}/mark-paid")
+async def mark_milestone_as_paid(
+    milestone_id: str,
+    admin_user: dict = Depends(get_admin_user)
+):
+    """Mark milestone as paid"""
+    try:
+        # Find the milestone
+        milestone = await db.milestones.find_one({"milestone_id": milestone_id})
+        if not milestone:
+            raise HTTPException(status_code=404, detail="Milestone not found")
+        
+        # Update milestone status to paid
+        await db.milestones.update_one(
+            {"milestone_id": milestone_id},
+            {
+                "$set": {
+                    "status": "paid",
+                    "paid_at": datetime.utcnow(),
+                    "paid_by_admin": admin_user["username"]
+                }
+            }
+        )
+        
+        # Get user info for logging
+        user = await db.users.find_one({"address": milestone["user_address"]})
+        username = user["username"] if user else "Unknown"
+        
+        logger.info(f"MILESTONE MARKED PAID: Milestone {milestone_id} for user {username} (${milestone['bonus_amount']}) marked as paid by admin {admin_user['username']}")
+        
+        return {"message": "Milestone marked as paid successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to mark milestone as paid: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to mark milestone as paid")
+
+@app.get("/api/admin/milestones/export")
+async def export_admin_milestones(
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    username_filter: Optional[str] = None,
+    award_filter: Optional[float] = None,
+    status_filter: Optional[str] = None,
+    admin_user: dict = Depends(get_admin_user)
+):
+    """Export milestones data as CSV"""
+    try:
+        # Build query (same as get_admin_milestones)
+        query = {}
+        
+        # Date filtering
+        if date_from or date_to:
+            date_query = {}
+            if date_from:
+                date_query["$gte"] = datetime.fromisoformat(date_from.replace('Z', '+00:00'))
+            if date_to:
+                date_query["$lte"] = datetime.fromisoformat(date_to.replace('Z', '+00:00'))
+            query["achieved_date"] = date_query
+        
+        # Award amount filtering
+        if award_filter is not None:
+            query["bonus_amount"] = award_filter
+            
+        # Status filtering
+        if status_filter:
+            query["status"] = status_filter
+        
+        # Get all milestones (no pagination for export)
+        milestones_cursor = db.milestones.find(query).sort("achieved_date", -1)
+        milestones_list = await milestones_cursor.to_list(length=None)
+        
+        # Create CSV
+        output = io.StringIO()
+        writer = csv.writer(output)
+        
+        # Write headers
+        writer.writerow([
+            "Milestone ID",
+            "Date",
+            "Username", 
+            "Email",
+            "Wallet Address",
+            "Total Referrals",
+            "Milestone Award Amount",
+            "Status"
+        ])
+        
+        # Write milestone data
+        for milestone in milestones_list:
+            # Get user info
+            user = await db.users.find_one({"address": milestone["user_address"]})
+            
+            # Apply username filter
+            if username_filter and user:
+                if username_filter.lower() not in user.get("username", "").lower():
+                    continue
+            elif username_filter and not user:
+                continue
+            
+            # Count current paid downlines
+            paid_downlines = await db.users.count_documents({
+                "referrer_address": milestone["user_address"],
+                "membership_tier": {"$ne": "affiliate"},
+                "suspended": {"$ne": True}
+            })
+            
+            writer.writerow([
+                milestone["milestone_id"],
+                milestone["achieved_date"].strftime("%Y-%m-%d %H:%M:%S") if milestone["achieved_date"] else "",
+                user["username"] if user else "Unknown",
+                user["email"] if user else "Unknown",
+                milestone["user_address"],
+                paid_downlines,
+                milestone["bonus_amount"],
+                milestone["status"]
+            ])
+        
+        # Prepare the CSV for download
+        output.seek(0)
+        
+        # Generate filename with timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"milestones_export_{timestamp}.csv"
+        
+        return StreamingResponse(
+            io.BytesIO(output.getvalue().encode('utf-8')),
+            media_type="text/csv",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+        
+    except Exception as e:
+        logger.error(f"Failed to export milestones: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to export milestones")
 # User earnings and payment history endpoints
 @app.get("/api/users/earnings")
 async def get_user_earnings(
