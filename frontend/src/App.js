@@ -29,6 +29,7 @@ import {
   Clock,
   Download,
   ChevronDown,
+  ChevronLeft,
   ChevronRight,
   Mail,
   Bell,
