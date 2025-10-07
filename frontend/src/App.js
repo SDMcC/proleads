@@ -2798,32 +2798,32 @@ function NetworkTreeTab() {
           justifyContent: 'space-between'
         }}
       >
-        {/* Username */}
+        {/* Top Section - Username */}
         <div style={{
           fontWeight: 'bold',
-          fontSize: '16px',
-          marginBottom: '12px',
+          fontSize: '15px',
           color: '#FFFFFF',
-          textShadow: '0 1px 3px rgba(0, 0, 0, 0.3)'
+          textShadow: '0 1px 3px rgba(0, 0, 0, 0.3)',
+          marginBottom: '8px'
         }}>
           {isRoot ? nodeData.name : nodeData.name}
         </div>
 
-        {/* Badges Row */}
+        {/* Middle Section - Badges */}
         <div style={{
           display: 'flex',
           justifyContent: 'center',
-          gap: '8px',
-          marginBottom: '12px',
+          gap: '6px',
+          marginBottom: '8px',
           flexWrap: 'wrap'
         }}>
           {/* Membership Tier Badge */}
           <div style={{
             background: `linear-gradient(135deg, ${badgeColor} 0%, ${badgeColor}CC 100%)`,
             color: 'white',
-            padding: '6px 12px',
-            borderRadius: '20px',
-            fontSize: '11px',
+            padding: '4px 10px',
+            borderRadius: '16px',
+            fontSize: '10px',
             fontWeight: 'bold',
             textTransform: 'uppercase',
             border: `1px solid ${borderColor}`,
@@ -2837,9 +2837,9 @@ function NetworkTreeTab() {
           <div style={{
             background: `linear-gradient(135deg, ${statusColor} 0%, ${statusColor}CC 100%)`,
             color: 'white',
-            padding: '6px 12px',
-            borderRadius: '20px',
-            fontSize: '11px',
+            padding: '4px 10px',
+            borderRadius: '16px',
+            fontSize: '10px',
             fontWeight: 'bold',
             boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
             border: '1px solid rgba(255, 255, 255, 0.2)'
@@ -2848,21 +2848,21 @@ function NetworkTreeTab() {
           </div>
         </div>
 
-        {/* Referrals Count */}
+        {/* Bottom Section - Referrals Count */}
         <div style={{
           background: 'rgba(255, 255, 255, 0.1)',
-          padding: '8px 12px',
-          borderRadius: '12px',
-          fontSize: '13px',
+          padding: '6px 10px',
+          borderRadius: '10px',
+          fontSize: '12px',
           fontWeight: '600',
           color: '#E5E7EB',
           border: '1px solid rgba(255, 255, 255, 0.1)',
           backdropFilter: 'blur(5px)'
         }}>
-          <div style={{ color: '#F3F4F6', fontSize: '11px', marginBottom: '2px' }}>
+          <div style={{ color: '#F3F4F6', fontSize: '10px', marginBottom: '1px' }}>
             Referrals
           </div>
-          <div style={{ color: '#FFFFFF', fontSize: '15px', fontWeight: 'bold' }}>
+          <div style={{ color: '#FFFFFF', fontSize: '14px', fontWeight: 'bold' }}>
             {referrals}
           </div>
         </div>
