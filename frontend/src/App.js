@@ -2955,8 +2955,11 @@ function NetworkTreeTab() {
               translate={{ x: 400, y: 100 }}
               separation={{ siblings: 1.5, nonSiblings: 1.5 }}
               allowForeignObjects={true}
+              renderCustomNodeElement={(nodeData, toggleNode) => (
+                <CustomNodeLabel nodeData={nodeData} />
+              )}
               nodeLabelComponent={{
-                render: <CustomNodeLabel className="networkTreeNode" />,
+                render: <div className="networkTreeNode" />,
                 foreignObjectWrapper: {
                   width: 240,
                   height: 140,
