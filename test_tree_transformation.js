@@ -73,9 +73,6 @@ const transformToTreeData = (apiNode) => {
         membership_tier: tierDisplay,
         status: status,
         total_referrals: node.total_referrals || 0,
-        total_earnings: `$${node.total_earnings?.toFixed(2) || '0.00'}`,
-        email: node.email,
-        level: node.level || 0,
         is_root: false
       },
       children: node.children ? node.children.map(transformNode) : []
