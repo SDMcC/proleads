@@ -2673,6 +2673,7 @@ function NetworkTreeTab() {
   const [networkData, setNetworkData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [depth, setDepth] = useState(3);
+  const [treeData, setTreeData] = useState(null);
 
   useEffect(() => {
     fetchNetworkTree();
@@ -2685,6 +2686,12 @@ function NetworkTreeTab() {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNetworkData(response.data);
+      
+      // Transform API data to react-d3-tree format
+      if (response.data?.network_tree) {
+        const transformedData = transformToTreeData(response.data.network_tree);
+        setTreeData(transformedData);
+      }
     } catch (error) {
       console.error('Failed to fetch network tree:', error);
     } finally {
@@ -2692,36 +2699,127 @@ function NetworkTreeTab() {
     }
   };
 
-  const renderTreeNode = (node, level = 0) => {
-    const marginLeft = level * 20;
+  // Transform API data structure to react-d3-tree format
+  const transformToTreeData = (apiNode) => {
+    const transformNode = (node) => {
+      const status = node.suspended ? 'Suspended' : 'Active';
+      const tierDisplay = getTierDisplayName(node.membership_tier);
+      
+      return {
+        name: node.username || 'Unknown User',
+        attributes: {
+          membership_tier: tierDisplay,
+          status: status,
+          total_referrals: node.total_referrals || 0,
+          total_earnings: `$${node.total_earnings?.toFixed(2) || '0.00'}`,
+          email: node.email,
+          level: node.level || 0,
+          is_root: false
+        },
+        children: node.children ? node.children.map(transformNode) : []
+      };
+    };
+
+    // Create root node (current user)
+    const rootNode = {
+      name: `${apiNode.root.username} (YOU)`,
+      attributes: {
+        membership_tier: getTierDisplayName(apiNode.root.membership_tier),
+        status: 'Active',
+        total_referrals: apiNode.root.total_referrals || 0,
+        total_earnings: `$${apiNode.root.total_earnings?.toFixed(2) || '0.00'}`,
+        email: apiNode.root.email,
+        level: 0,
+        is_root: true
+      },
+      children: apiNode.children ? apiNode.children.map(transformNode) : []
+    };
+
+    return [rootNode];
+  };
+
+  // Custom node label component
+  const CustomNodeLabel = ({ nodeData }) => {
+    const isRoot = nodeData.attributes?.is_root;
+    const tier = nodeData.attributes?.membership_tier || 'Unknown';
+    const status = nodeData.attributes?.status || 'Unknown';
+    const referrals = nodeData.attributes?.total_referrals || 0;
     
+    // Get tier color
+    const getTierColor = (tier) => {
+      switch (tier?.toLowerCase()) {
+        case 'gold': return '#FCD34D';
+        case 'silver': return '#9CA3AF';  
+        case 'bronze': return '#F97316';
+        case 'test': return '#10B981';
+        case 'vip affiliate': return '#A855F7';
+        case 'affiliate':
+        default: return '#3B82F6';
+      }
+    };
+
+    const tierColor = getTierColor(tier);
+    const statusColor = status === 'Active' ? '#10B981' : '#EF4444';
+
     return (
-      <div key={node.address} className="mb-2">
-        <div 
-          className="bg-white bg-opacity-5 rounded-lg p-3 border-l-4 border-blue-400"
-          style={{ marginLeft: `${marginLeft}px` }}
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="text-white font-medium">{node.username}</h4>
-              <p className="text-gray-400 text-sm">{node.email}</p>
-              <div className="flex items-center space-x-4 mt-1">
-                <span className={`px-2 py-1 rounded text-xs uppercase font-medium ${getTierBadgeClass(node.membership_tier)}`}>
-                  {getTierDisplayName(node.membership_tier)}
-                </span>
-                <span className="text-gray-400 text-xs">Level {node.level}</span>
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="text-white font-medium">{node.total_referrals} referrals</p>
-              <p className="text-green-400 text-sm">${node.total_earnings?.toFixed(2) || '0.00'}</p>
-              {node.suspended && (
-                <span className="px-2 py-1 bg-red-600 text-red-100 rounded text-xs">Suspended</span>
-              )}
-            </div>
+      <div
+        style={{
+          background: isRoot ? 'linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%)' : '#1F2937',
+          border: `2px solid ${isRoot ? '#60A5FA' : tierColor}`,
+          borderRadius: '12px',
+          padding: '12px',
+          minWidth: '200px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+          color: 'white',
+          fontSize: '12px',
+          textAlign: 'center',
+          position: 'relative'
+        }}
+      >
+        {/* Name */}
+        <div style={{
+          fontWeight: 'bold',
+          fontSize: '14px',
+          marginBottom: '8px',
+          color: isRoot ? '#FFFFFF' : '#F9FAFB'
+        }}>
+          {nodeData.name}
+        </div>
+
+        {/* Membership Tier Badge */}
+        <div style={{
+          background: tierColor,
+          color: 'white',
+          padding: '4px 8px',
+          borderRadius: '6px',
+          fontSize: '10px',
+          fontWeight: 'bold',
+          marginBottom: '6px',
+          textTransform: 'uppercase'
+        }}>
+          {tier}
+        </div>
+
+        {/* Status and Referrals */}
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          fontSize: '11px'
+        }}>
+          <div style={{
+            background: statusColor,
+            color: 'white',
+            padding: '2px 6px',
+            borderRadius: '4px',
+            fontSize: '10px'
+          }}>
+            {status}
+          </div>
+          <div style={{ color: '#D1D5DB' }}>
+            {referrals} referrals
           </div>
         </div>
-        {node.children && node.children.map(child => renderTreeNode(child, level + 1))}
       </div>
     );
   };
@@ -2729,7 +2827,9 @@ function NetworkTreeTab() {
   if (loading) {
     return (
       <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto"></div>
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500"></div>
+        </div>
       </div>
     );
   }
@@ -2738,8 +2838,8 @@ function NetworkTreeTab() {
     <div>
       {/* Controls */}
       <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6 mb-6">
-        <div className="flex items-center justify-between">
-          <h3 className="text-xl font-bold text-white">Network Tree</h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xl font-bold text-white">Interactive Network Genealogy</h3>
           <div className="flex items-center space-x-4">
             <label className="text-gray-300">Depth:</label>
             <select
@@ -2756,8 +2856,13 @@ function NetworkTreeTab() {
           </div>
         </div>
         
+        {/* Instructions */}
+        <div className="text-gray-300 text-sm mb-4">
+          💡 <strong>Tips:</strong> Click on any node to expand/collapse their downline. Drag to pan around the tree. Use mouse wheel to zoom in/out.
+        </div>
+        
         {networkData?.network_stats && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="text-center">
               <p className="text-2xl font-bold text-blue-400">{networkData.network_stats.direct_referrals}</p>
               <p className="text-gray-400">Direct Referrals</p>
@@ -2774,36 +2879,51 @@ function NetworkTreeTab() {
         )}
       </div>
 
-      {/* Network Tree */}
-      <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
-        <h4 className="text-lg font-bold text-white mb-4">Your Network</h4>
-        {networkData?.network_tree ? (
-          <div className="space-y-4">
-            {/* Root Node (Current User) */}
-            <div className="bg-blue-600 bg-opacity-20 rounded-lg p-4 border-2 border-blue-400">
-              <div className="text-center">
-                <h4 className="text-white font-bold text-lg">YOU</h4>
-                <p className="text-blue-200">{networkData.network_tree.root.username}</p>
-                <span className={`inline-block px-3 py-1 rounded text-sm uppercase font-medium mt-2 ${getTierBadgeClass(networkData.network_tree.root.membership_tier)}`}>
-                  {getTierDisplayName(networkData.network_tree.root.membership_tier)}
-                </span>
-              </div>
-            </div>
-            
-            {/* Children Nodes */}
-            {networkData.network_tree.children && networkData.network_tree.children.length > 0 ? (
-              <div className="mt-6">
-                {networkData.network_tree.children.map(child => renderTreeNode(child, 1))}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-gray-400">No referrals yet. Share your referral link to build your network!</p>
-              </div>
-            )}
+      {/* Interactive Network Tree */}
+      <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl overflow-hidden">
+        <div className="p-4 border-b border-white border-opacity-10">
+          <h4 className="text-lg font-bold text-white">Your Network Tree</h4>
+        </div>
+        
+        {treeData && treeData.length > 0 ? (
+          <div style={{ width: '100%', height: '700px', background: '#111827' }}>
+            <Tree
+              data={treeData}
+              orientation="vertical"
+              pathFunc="step"
+              translate={{ x: 400, y: 100 }}
+              separation={{ siblings: 1.5, nonSiblings: 1.5 }}
+              allowForeignObjects={true}
+              nodeLabelComponent={{
+                render: <CustomNodeLabel />,
+                foreignObjectWrapper: {
+                  width: 220,
+                  height: 120,
+                  y: -60,
+                  x: -110
+                }
+              }}
+              nodeSvgShape={{
+                shape: 'circle',
+                shapeProps: {
+                  r: 0,
+                  fill: 'transparent'
+                }
+              }}
+              initialDepth={depth > 3 ? 2 : depth}
+              collapsible={true}
+              zoom={0.8}
+              enableLegacyTransitions={true}
+              transitionDuration={500}
+            />
           </div>
         ) : (
-          <div className="text-center py-8">
-            <p className="text-gray-400">Unable to load network tree</p>
+          <div className="text-center py-12">
+            <div className="mb-4">
+              <Network className="h-16 w-16 text-gray-400 mx-auto" />
+            </div>
+            <p className="text-gray-400 text-lg">No referrals yet</p>
+            <p className="text-gray-500 text-sm mt-2">Share your referral link to build your network tree!</p>
           </div>
         )}
       </div>
