@@ -2958,15 +2958,6 @@ function NetworkTreeTab() {
               renderCustomNodeElement={(nodeData, toggleNode) => (
                 <CustomNodeLabel nodeData={nodeData} />
               )}
-              nodeLabelComponent={{
-                render: <div className="networkTreeNode" />,
-                foreignObjectWrapper: {
-                  width: 240,
-                  height: 140,
-                  y: -70,
-                  x: -120
-                }
-              }}
               nodeSvgShape={{
                 shape: 'circle',
                 shapeProps: {
