@@ -2746,81 +2746,147 @@ function NetworkTreeTab() {
     const status = nodeData.attributes?.status || 'Unknown';
     const referrals = nodeData.attributes?.total_referrals || 0;
     
-    // Get tier color
-    const getTierColor = (tier) => {
+    // Get tier border color (actual metallic colors)
+    const getTierBorderColor = (tier) => {
       switch (tier?.toLowerCase()) {
-        case 'gold': return '#FCD34D';
-        case 'silver': return '#9CA3AF';  
-        case 'bronze': return '#F97316';
+        case 'gold': return '#FFD700';  // Gold
+        case 'silver': return '#C0C0C0';  // Silver
+        case 'bronze': return '#CD7F32';  // Bronze
         case 'test': return '#10B981';
         case 'vip affiliate': return '#A855F7';
         case 'affiliate':
-        default: return '#3B82F6';
+        default: return '#3B82F6';  // Blue
       }
     };
 
-    const tierColor = getTierColor(tier);
-    const statusColor = status === 'Active' ? '#10B981' : '#EF4444';
+    // Get tier badge color
+    const getTierBadgeColor = (tier) => {
+      switch (tier?.toLowerCase()) {
+        case 'gold': return '#F59E0B';
+        case 'silver': return '#6B7280';  
+        case 'bronze': return '#EA580C';
+        case 'test': return '#059669';
+        case 'vip affiliate': return '#7C3AED';
+        case 'affiliate':
+        default: return '#2563EB';
+      }
+    };
+
+    const borderColor = getTierBorderColor(tier);
+    const badgeColor = getTierBadgeColor(tier);
+    const statusColor = status === 'Active' ? '#059669' : '#DC2626';
 
     return (
       <div
         style={{
-          background: isRoot ? 'linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%)' : '#1F2937',
-          border: `2px solid ${isRoot ? '#60A5FA' : tierColor}`,
-          borderRadius: '12px',
-          padding: '12px',
-          minWidth: '200px',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+          background: isRoot 
+            ? 'linear-gradient(135deg, #1E40AF 0%, #3730A3 100%)' 
+            : 'linear-gradient(135deg, #374151 0%, #1F2937 100%)',
+          border: `3px solid ${borderColor}`,
+          borderRadius: '16px',
+          padding: '16px',
+          minWidth: '220px',
+          maxWidth: '220px',
+          boxShadow: isRoot 
+            ? '0 8px 25px rgba(59, 130, 246, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)' 
+            : '0 8px 25px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)',
           color: 'white',
           fontSize: '12px',
           textAlign: 'center',
-          position: 'relative'
+          position: 'relative',
+          backdropFilter: 'blur(10px)',
+          transition: 'all 0.3s ease'
         }}
       >
-        {/* Name */}
+        {/* Username */}
         <div style={{
           fontWeight: 'bold',
-          fontSize: '14px',
-          marginBottom: '8px',
-          color: isRoot ? '#FFFFFF' : '#F9FAFB'
+          fontSize: '16px',
+          marginBottom: '12px',
+          color: '#FFFFFF',
+          textShadow: '0 1px 3px rgba(0, 0, 0, 0.3)'
         }}>
-          {nodeData.name}
+          {isRoot ? nodeData.name : nodeData.name}
         </div>
 
-        {/* Membership Tier Badge */}
+        {/* Badges Row */}
         <div style={{
-          background: tierColor,
-          color: 'white',
-          padding: '4px 8px',
-          borderRadius: '6px',
-          fontSize: '10px',
-          fontWeight: 'bold',
-          marginBottom: '6px',
-          textTransform: 'uppercase'
+          display: 'flex',
+          justifyContent: 'center',
+          gap: '8px',
+          marginBottom: '12px',
+          flexWrap: 'wrap'
         }}>
-          {tier}
-        </div>
-
-        {/* Status and Referrals */}
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          fontSize: '11px'
-        }}>
+          {/* Membership Tier Badge */}
           <div style={{
-            background: statusColor,
+            background: `linear-gradient(135deg, ${badgeColor} 0%, ${badgeColor}CC 100%)`,
             color: 'white',
-            padding: '2px 6px',
-            borderRadius: '4px',
-            fontSize: '10px'
+            padding: '6px 12px',
+            borderRadius: '20px',
+            fontSize: '11px',
+            fontWeight: 'bold',
+            textTransform: 'uppercase',
+            border: `1px solid ${borderColor}`,
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+            letterSpacing: '0.5px'
+          }}>
+            {tier}
+          </div>
+
+          {/* Status Badge */}
+          <div style={{
+            background: `linear-gradient(135deg, ${statusColor} 0%, ${statusColor}CC 100%)`,
+            color: 'white',
+            padding: '6px 12px',
+            borderRadius: '20px',
+            fontSize: '11px',
+            fontWeight: 'bold',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+            border: '1px solid rgba(255, 255, 255, 0.2)'
           }}>
             {status}
           </div>
-          <div style={{ color: '#D1D5DB' }}>
-            {referrals} referrals
+        </div>
+
+        {/* Referrals Count */}
+        <div style={{
+          background: 'rgba(255, 255, 255, 0.1)',
+          padding: '8px 12px',
+          borderRadius: '12px',
+          fontSize: '13px',
+          fontWeight: '600',
+          color: '#E5E7EB',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          backdropFilter: 'blur(5px)'
+        }}>
+          <div style={{ color: '#F3F4F6', fontSize: '11px', marginBottom: '2px' }}>
+            Referrals
+          </div>
+          <div style={{ color: '#FFFFFF', fontSize: '15px', fontWeight: 'bold' }}>
+            {referrals}
           </div>
         </div>
+
+        {/* Root indicator for "YOU" */}
+        {isRoot && (
+          <div style={{
+            position: 'absolute',
+            top: '-8px',
+            right: '-8px',
+            background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
+            color: 'white',
+            padding: '4px 8px',
+            borderRadius: '12px',
+            fontSize: '9px',
+            fontWeight: 'bold',
+            textTransform: 'uppercase',
+            border: '2px solid #FFFFFF',
+            boxShadow: '0 2px 8px rgba(245, 158, 11, 0.4)',
+            letterSpacing: '0.5px'
+          }}>
+            YOU
+          </div>
+        )}
       </div>
     );
   };
