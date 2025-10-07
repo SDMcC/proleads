@@ -2953,7 +2953,7 @@ function NetworkTreeTab() {
               orientation="vertical"
               pathFunc="step"
               translate={{ x: 400, y: 100 }}
-              separation={{ siblings: 1.5, nonSiblings: 1.5 }}
+              separation={{ siblings: 2.5, nonSiblings: 2.8 }}
               allowForeignObjects
               renderCustomNodeElement={({ nodeDatum, toggleNode }) => (
                 <g>
