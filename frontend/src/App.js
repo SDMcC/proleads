@@ -5670,8 +5670,10 @@ function AdminDashboard() {
       fetchPayments();
     } else if (activeTab === 'commissions') {
       fetchCommissions();
+    } else if (activeTab === 'milestones') {
+      fetchMilestones();
     }
-  }, [activeTab, memberFilter, memberPage, sortField, sortDirection, paymentUserFilter, paymentTierFilter, paymentStatusFilter, paymentDateFrom, paymentDateTo, paymentPage, commissionUserFilter, commissionTierFilter, commissionStatusFilter, commissionDateFrom, commissionDateTo, commissionPage]);
+  }, [activeTab, memberFilter, memberPage, sortField, sortDirection, paymentUserFilter, paymentTierFilter, paymentStatusFilter, paymentDateFrom, paymentDateTo, paymentPage, commissionUserFilter, commissionTierFilter, commissionStatusFilter, commissionDateFrom, commissionDateTo, commissionPage, milestoneFilters, milestonePage]);
 
   const fetchAdminData = async () => {
     try {
