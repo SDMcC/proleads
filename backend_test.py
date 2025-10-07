@@ -6468,7 +6468,7 @@ class Web3MembershipTester:
 
 def main():
     # Get the backend URL from environment or use default
-    backend_url = "https://ticketing-portal-1.preview.emergentagent.com"
+    backend_url = "https://membership-tiers-2.preview.emergentagent.com"
     
     print("🚀 Starting Web3 Membership Platform API Tests")
     print("=============================")
@@ -7180,7 +7180,7 @@ if __name__ == "__main__":
         print("🎯 RUNNING SPECIFIC TEST: CSV Lead Upload Functionality")
         print("=" * 80)
         
-        backend_url = "https://ticketing-portal-1.preview.emergentagent.com"
+        backend_url = "https://membership-tiers-2.preview.emergentagent.com"
         tester = Web3MembershipTester(backend_url)
         
         # Run the specific CSV upload test
@@ -7196,7 +7196,7 @@ if __name__ == "__main__":
         print("🎯 RUNNING SPECIFIC TEST: Referral Relationship Fix Verification")
         print("=" * 80)
         
-        backend_url = "https://ticketing-portal-1.preview.emergentagent.com"
+        backend_url = "https://membership-tiers-2.preview.emergentagent.com"
         tester = Web3MembershipTester(backend_url)
         
         # Run the specific referral relationship fix test
@@ -7212,7 +7212,7 @@ if __name__ == "__main__":
         print("🎯 RUNNING SPECIFIC TEST: Corrected Lead Distribution Algorithm")
         print("=" * 80)
         
-        backend_url = "https://ticketing-portal-1.preview.emergentagent.com"
+        backend_url = "https://membership-tiers-2.preview.emergentagent.com"
         tester = Web3MembershipTester(backend_url)
         
         # Run the specific lead distribution test
@@ -7228,7 +7228,7 @@ if __name__ == "__main__":
         print("🎯 RUNNING SPECIFIC TEST: Admin Members Management Enhancement - Subscription Expiry & Suspend/Unsuspend")
         print("=" * 80)
         
-        backend_url = "https://ticketing-portal-1.preview.emergentagent.com"
+        backend_url = "https://membership-tiers-2.preview.emergentagent.com"
         tester = Web3MembershipTester(backend_url)
         
         # Run the specific subscription expiry test
@@ -7244,7 +7244,7 @@ if __name__ == "__main__":
         print("🎯 RUNNING SPECIFIC TEST: Notification System Backend Implementation")
         print("=" * 80)
         
-        backend_url = "https://ticketing-portal-1.preview.emergentagent.com"
+        backend_url = "https://membership-tiers-2.preview.emergentagent.com"
         tester = Web3MembershipTester(backend_url)
         
         # Run the specific notification system test
@@ -7260,7 +7260,7 @@ if __name__ == "__main__":
         print("🎯 RUNNING SPECIFIC TEST: Internal Ticketing System Backend Implementation")
         print("=" * 80)
         
-        backend_url = "https://ticketing-portal-1.preview.emergentagent.com"
+        backend_url = "https://membership-tiers-2.preview.emergentagent.com"
         tester = Web3MembershipTester(backend_url)
         
         # Run the specific ticketing system test

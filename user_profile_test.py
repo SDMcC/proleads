@@ -243,7 +243,7 @@ class UserProfileTester:
         return all_passed
 
 def main():
-    backend_url = "https://ticketing-portal-1.preview.emergentagent.com"
+    backend_url = "https://membership-tiers-2.preview.emergentagent.com"
     
     print("🚀 User Profile and Registration System Test")
     print("=" * 50)
