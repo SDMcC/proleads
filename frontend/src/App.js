@@ -2734,7 +2734,7 @@ function NetworkTreeTab() {
   };
 
   // Custom node label component
-  const CustomNodeLabel = ({ nodeData }) => {
+  const CustomNodeLabel = ({ nodeData, toggleNode }) => {
     const isRoot = nodeData.attributes?.is_root;
     const tier = nodeData.attributes?.membership_tier || 'Unknown';
     const status = nodeData.attributes?.status || 'Unknown';
