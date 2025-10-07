@@ -2772,15 +2772,16 @@ function NetworkTreeTab() {
 
     return (
       <div
+        onClick={toggleNode}
         style={{
           background: isRoot 
             ? 'linear-gradient(135deg, #1E40AF 0%, #3730A3 100%)' 
             : 'linear-gradient(135deg, #374151 0%, #1F2937 100%)',
           border: `3px solid ${borderColor}`,
           borderRadius: '16px',
-          padding: '16px',
-          minWidth: '220px',
-          maxWidth: '220px',
+          padding: '14px',
+          width: '240px',
+          height: '140px',
           boxShadow: isRoot 
             ? '0 8px 25px rgba(59, 130, 246, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)' 
             : '0 8px 25px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)',
@@ -2789,7 +2790,12 @@ function NetworkTreeTab() {
           textAlign: 'center',
           position: 'relative',
           backdropFilter: 'blur(10px)',
-          transition: 'all 0.3s ease'
+          transition: 'all 0.3s ease',
+          cursor: 'pointer',
+          boxSizing: 'border-box',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between'
         }}
       >
         {/* Username */}
