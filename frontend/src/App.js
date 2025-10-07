@@ -5655,8 +5655,10 @@ function AdminDashboard() {
     dateFrom: '',
     dateTo: '',
     minAmount: '',
-    maxAmount: ''
+    status: ''
   });
+  const [selectedMilestone, setSelectedMilestone] = useState(null);
+  const [showMilestoneModal, setShowMilestoneModal] = useState(false);
 
   useEffect(() => {
     fetchAdminData();
