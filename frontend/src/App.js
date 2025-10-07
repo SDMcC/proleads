@@ -2954,9 +2954,18 @@ function NetworkTreeTab() {
               pathFunc="step"
               translate={{ x: 400, y: 100 }}
               separation={{ siblings: 1.5, nonSiblings: 1.5 }}
-              allowForeignObjects={true}
-              renderCustomNodeElement={(nodeData, toggleNode) => (
-                <CustomNodeLabel nodeData={nodeData} />
+              allowForeignObjects
+              renderCustomNodeElement={({ nodeDatum, toggleNode }) => (
+                <g>
+                  <foreignObject
+                    width="240"
+                    height="140"
+                    x="-120"
+                    y="-70"
+                  >
+                    <CustomNodeLabel nodeData={nodeDatum} />
+                  </foreignObject>
+                </g>
               )}
               nodeSvgShape={{
                 shape: 'circle',
