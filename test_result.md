@@ -789,7 +789,6 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Interactive Network Genealogy Tree Frontend Implementation"
     - "Admin Notification System Backend Implementation"
     - "Admin Notification System Frontend Implementation"
   stuck_tasks: []
