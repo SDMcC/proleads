@@ -6465,6 +6465,578 @@ class Web3MembershipTester:
         
         print("\n✅ Complete Notification System Test Passed")
         return True
+    
+    def test_get_admin_milestones_success(self):
+        """Test GET /api/admin/milestones with admin token"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        success, response = self.run_test("Get Admin Milestones (Success)", "GET", "admin/milestones", 200, headers=headers)
+        
+        if success:
+            # Verify response structure
+            required_keys = ['milestones', 'total_count', 'page', 'limit', 'total_pages']
+            missing_keys = [key for key in required_keys if key not in response]
+            
+            if not missing_keys:
+                print("✅ Milestones list contains all required pagination fields")
+                
+                # Verify milestone objects structure
+                milestones = response.get('milestones', [])
+                if milestones:
+                    milestone = milestones[0]
+                    required_milestone_keys = ['milestone_id', 'user_address', 'username', 'email', 
+                                             'wallet_address', 'achieved_date', 'milestone_count', 
+                                             'bonus_amount', 'status', 'total_referrals', 'created_at']
+                    missing_milestone_keys = [key for key in required_milestone_keys if key not in milestone]
+                    
+                    if not missing_milestone_keys:
+                        print("✅ Milestone objects contain all required fields")
+                    else:
+                        print(f"❌ Milestone objects missing required keys: {missing_milestone_keys}")
+                        return False, {}
+                else:
+                    print("⚠️ No milestones found in database")
+                
+                return True, response
+            else:
+                print(f"❌ Milestones list missing required keys: {missing_keys}")
+                return False, {}
+        
+        return success, response
+    
+    def test_get_admin_milestones_with_pagination(self):
+        """Test GET /api/admin/milestones with pagination parameters"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        # Test with pagination parameters
+        success, response = self.run_test("Get Admin Milestones with Pagination", "GET", "admin/milestones?page=1&limit=5", 200, headers=headers)
+        
+        if success:
+            milestones = response.get('milestones', [])
+            page = response.get('page', 0)
+            limit = response.get('limit', 0)
+            
+            if page == 1 and limit == 5:
+                print("✅ Pagination parameters working correctly")
+                return True, response
+            else:
+                print(f"❌ Pagination parameters not working: page={page}, limit={limit}")
+                return False, {}
+        
+        return success, response
+    
+    def test_get_admin_milestones_with_username_filter(self):
+        """Test GET /api/admin/milestones with username filtering"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        # Test with username filter
+        success, response = self.run_test("Get Admin Milestones with Username Filter", "GET", "admin/milestones?username_filter=test", 200, headers=headers)
+        
+        if success:
+            milestones = response.get('milestones', [])
+            print(f"✅ Username filtering returned {len(milestones)} milestones")
+            return True, response
+        
+        return success, response
+    
+    def test_get_admin_milestones_with_award_filter(self):
+        """Test GET /api/admin/milestones with award amount filtering"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        # Test with award filter ($25 milestone)
+        success, response = self.run_test("Get Admin Milestones with Award Filter", "GET", "admin/milestones?award_filter=25", 200, headers=headers)
+        
+        if success:
+            milestones = response.get('milestones', [])
+            # Verify all returned milestones have $25 award
+            for milestone in milestones:
+                if milestone.get('bonus_amount') != 25:
+                    print(f"❌ Found milestone with award ${milestone.get('bonus_amount')} when filtering for $25")
+                    return False, {}
+            
+            print("✅ Award filtering working correctly")
+            return True, response
+        
+        return success, response
+    
+    def test_get_admin_milestones_with_status_filter(self):
+        """Test GET /api/admin/milestones with status filtering"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        # Test with status filter
+        success, response = self.run_test("Get Admin Milestones with Status Filter", "GET", "admin/milestones?status_filter=pending", 200, headers=headers)
+        
+        if success:
+            milestones = response.get('milestones', [])
+            # Verify all returned milestones have pending status
+            for milestone in milestones:
+                if milestone.get('status') != 'pending':
+                    print(f"❌ Found milestone with status {milestone.get('status')} when filtering for pending")
+                    return False, {}
+            
+            print("✅ Status filtering working correctly")
+            return True, response
+        
+        return success, response
+    
+    def test_get_admin_milestones_with_date_filter(self):
+        """Test GET /api/admin/milestones with date range filtering"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        # Test with date range filter
+        success, response = self.run_test("Get Admin Milestones with Date Filter", "GET", "admin/milestones?date_from=2024-01-01&date_to=2024-12-31", 200, headers=headers)
+        
+        if success:
+            milestones = response.get('milestones', [])
+            print(f"✅ Date filtering returned {len(milestones)} milestones")
+            return True, response
+        
+        return success, response
+    
+    def test_get_admin_milestones_unauthorized(self):
+        """Test GET /api/admin/milestones without admin token"""
+        headers = {'Content-Type': 'application/json'}
+        success, response = self.run_test("Get Admin Milestones (Unauthorized)", "GET", "admin/milestones", 401, headers=headers)
+        return success, response
+    
+    def test_mark_milestone_as_paid_success(self):
+        """Test PUT /api/admin/milestones/{milestone_id}/mark-paid with valid milestone"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        # First get a milestone ID from the milestones list
+        milestones_success, milestones_response = self.run_test("Get Milestones for Mark Paid Test", "GET", "admin/milestones?limit=1&status_filter=pending", 200, headers=headers)
+        if not milestones_success or not milestones_response.get('milestones'):
+            print("⚠️ No pending milestones available to test mark as paid")
+            return True, {}  # Skip test if no pending milestones
+        
+        milestone_id = milestones_response['milestones'][0]['milestone_id']
+        
+        success, response = self.run_test("Mark Milestone as Paid (Success)", "PUT", f"admin/milestones/{milestone_id}/mark-paid", 200, headers=headers)
+        
+        if success:
+            if response.get('message') and 'successfully' in response.get('message', '').lower():
+                print("✅ Milestone marked as paid successfully")
+                
+                # Verify the update by getting milestone details
+                verify_success, verify_response = self.run_test("Verify Milestone Marked Paid", "GET", f"admin/milestones?limit=50", 200, headers=headers)
+                if verify_success:
+                    milestones = verify_response.get('milestones', [])
+                    updated_milestone = next((m for m in milestones if m['milestone_id'] == milestone_id), None)
+                    if updated_milestone and updated_milestone.get('status') == 'paid':
+                        print("✅ Milestone status update verified successfully")
+                        return True, response
+                    else:
+                        print("❌ Milestone status update not reflected in database")
+                        return False, {}
+                
+                return True, response
+            else:
+                print("❌ Mark paid response doesn't contain success message")
+                return False, {}
+        
+        return success, response
+    
+    def test_mark_milestone_as_paid_not_found(self):
+        """Test PUT /api/admin/milestones/{milestone_id}/mark-paid with non-existent milestone"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        fake_milestone_id = str(uuid.uuid4())
+        success, response = self.run_test("Mark Milestone as Paid (Not Found)", "PUT", f"admin/milestones/{fake_milestone_id}/mark-paid", 404, headers=headers)
+        return success, response
+    
+    def test_mark_milestone_as_paid_unauthorized(self):
+        """Test PUT /api/admin/milestones/{milestone_id}/mark-paid without admin token"""
+        headers = {'Content-Type': 'application/json'}
+        fake_milestone_id = str(uuid.uuid4())
+        
+        success, response = self.run_test("Mark Milestone as Paid (Unauthorized)", "PUT", f"admin/milestones/{fake_milestone_id}/mark-paid", 401, headers=headers)
+        return success, response
+    
+    def test_export_milestones_csv_success(self):
+        """Test GET /api/admin/milestones/export with admin token"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        # Test CSV export
+        url = f"{self.base_url}/api/admin/milestones/export"
+        print(f"\n🔍 Testing Export Milestones CSV (Success)...")
+        print(f"   URL: {url}")
+        
+        try:
+            response = requests.get(url, headers=headers)
+            success = response.status_code == 200
+            
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                
+                # Check if response is CSV content
+                content_type = response.headers.get('content-type', '')
+                if 'text/csv' in content_type:
+                    print("✅ Response is CSV format")
+                    
+                    # Check CSV headers
+                    csv_content = response.text
+                    if csv_content:
+                        lines = csv_content.split('\n')
+                        if lines:
+                            headers_line = lines[0]
+                            expected_headers = ['Milestone ID', 'Date', 'Username', 'Email', 
+                                              'Wallet Address', 'Total Referrals', 'Milestone Award Amount', 'Status']
+                            
+                            # Check if all expected headers are present
+                            headers_present = all(header in headers_line for header in expected_headers)
+                            if headers_present:
+                                print("✅ CSV contains all required headers")
+                            else:
+                                print("❌ CSV missing some required headers")
+                                return False, {}
+                        
+                        print(f"✅ CSV export successful with {len(lines)-1} data rows")
+                    else:
+                        print("⚠️ CSV export returned empty content")
+                else:
+                    print(f"❌ Response is not CSV format: {content_type}")
+                    return False, {}
+                
+                return True, {"csv_content": csv_content[:200] + "..." if len(csv_content) > 200 else csv_content}
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                try:
+                    error_detail = response.json().get('detail', 'No detail provided')
+                    print(f"   Error: {error_detail}")
+                except:
+                    print(f"   Response: {response.text}")
+                return False, {}
+                
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False, {}
+        
+        self.tests_run += 1
+        return success, {}
+    
+    def test_export_milestones_csv_with_filters(self):
+        """Test GET /api/admin/milestones/export with various filters"""
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        # Test CSV export with filters
+        url = f"{self.base_url}/api/admin/milestones/export?award_filter=25&status_filter=pending"
+        print(f"\n🔍 Testing Export Milestones CSV with Filters...")
+        print(f"   URL: {url}")
+        
+        try:
+            response = requests.get(url, headers=headers)
+            success = response.status_code == 200
+            
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                
+                # Check if response is CSV content
+                content_type = response.headers.get('content-type', '')
+                if 'text/csv' in content_type:
+                    print("✅ CSV export with filters successful")
+                    return True, {"message": "CSV export with filters working"}
+                else:
+                    print(f"❌ Response is not CSV format: {content_type}")
+                    return False, {}
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                return False, {}
+                
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False, {}
+        
+        self.tests_run += 1
+        return success, {}
+    
+    def test_export_milestones_csv_unauthorized(self):
+        """Test GET /api/admin/milestones/export without admin token"""
+        headers = {'Content-Type': 'application/json'}
+        
+        url = f"{self.base_url}/api/admin/milestones/export"
+        print(f"\n🔍 Testing Export Milestones CSV (Unauthorized)...")
+        print(f"   URL: {url}")
+        
+        try:
+            response = requests.get(url, headers=headers)
+            success = response.status_code == 401
+            
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                return True, {}
+            else:
+                print(f"❌ Failed - Expected 401, got {response.status_code}")
+                return False, {}
+                
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False, {}
+        
+        self.tests_run += 1
+        return success, {}
+    
+    def test_milestone_bonuses_verification(self):
+        """Test that milestone bonus amounts match expected values"""
+        expected_bonuses = {
+            25: 25.0,
+            100: 100.0,
+            250: 250.0,
+            1000: 1000.0,
+            5000: 2500.0,
+            10000: 5000.0
+        }
+        
+        print("\n🎯 Testing Milestone Bonus Verification")
+        
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token")
+                return False, {}
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        # Get all milestones to verify bonus amounts
+        success, response = self.run_test("Get All Milestones for Bonus Verification", "GET", "admin/milestones?limit=100", 200, headers=headers)
+        
+        if success:
+            milestones = response.get('milestones', [])
+            
+            # Check if we have milestones to verify
+            if not milestones:
+                print("⚠️ No milestones found - bonus verification skipped")
+                return True, {}
+            
+            # Verify bonus amounts match expected values
+            bonus_verification_passed = True
+            for milestone in milestones:
+                milestone_count = milestone.get('milestone_count')
+                bonus_amount = milestone.get('bonus_amount')
+                
+                if milestone_count in expected_bonuses:
+                    expected_bonus = expected_bonuses[milestone_count]
+                    if bonus_amount == expected_bonus:
+                        print(f"✅ {milestone_count} referrals = ${bonus_amount} (correct)")
+                    else:
+                        print(f"❌ {milestone_count} referrals = ${bonus_amount} (expected ${expected_bonus})")
+                        bonus_verification_passed = False
+                else:
+                    print(f"⚠️ Unexpected milestone count: {milestone_count}")
+            
+            if bonus_verification_passed:
+                print("✅ All milestone bonus amounts are correct")
+                self.tests_passed += 1
+            else:
+                print("❌ Some milestone bonus amounts are incorrect")
+            
+            self.tests_run += 1
+            return bonus_verification_passed, response
+        
+        return success, response
+    
+    def test_admin_milestone_management_system(self):
+        """Test complete Admin Milestone Management System"""
+        print("\n🏆 Testing Admin Milestone Management System")
+        
+        # 1. Test admin login first
+        login_success, _ = self.test_admin_login_success()
+        if not login_success:
+            print("❌ Admin login failed - cannot test milestone management")
+            return False
+        
+        # 2. Test get admin milestones with admin token
+        milestones_success, milestones_response = self.test_get_admin_milestones_success()
+        if not milestones_success:
+            print("❌ Get admin milestones with admin token failed")
+            return False
+        
+        # 3. Test pagination
+        pagination_success, _ = self.test_get_admin_milestones_with_pagination()
+        if not pagination_success:
+            print("❌ Get admin milestones with pagination failed")
+            return False
+        
+        # 4. Test filtering capabilities
+        username_filter_success, _ = self.test_get_admin_milestones_with_username_filter()
+        if not username_filter_success:
+            print("❌ Get admin milestones with username filter failed")
+            return False
+        
+        award_filter_success, _ = self.test_get_admin_milestones_with_award_filter()
+        if not award_filter_success:
+            print("❌ Get admin milestones with award filter failed")
+            return False
+        
+        status_filter_success, _ = self.test_get_admin_milestones_with_status_filter()
+        if not status_filter_success:
+            print("❌ Get admin milestones with status filter failed")
+            return False
+        
+        date_filter_success, _ = self.test_get_admin_milestones_with_date_filter()
+        if not date_filter_success:
+            print("❌ Get admin milestones with date filter failed")
+            return False
+        
+        # 5. Test unauthorized access
+        unauth_success, _ = self.test_get_admin_milestones_unauthorized()
+        if not unauth_success:
+            print("❌ Get admin milestones without admin token should return 401")
+            return False
+        
+        # 6. Test mark milestone as paid (if milestones exist)
+        if milestones_response.get('milestones'):
+            mark_paid_success, _ = self.test_mark_milestone_as_paid_success()
+            if not mark_paid_success:
+                print("❌ Mark milestone as paid failed")
+                return False
+            
+            # 7. Test mark milestone as paid with non-existent ID
+            not_found_success, _ = self.test_mark_milestone_as_paid_not_found()
+            if not not_found_success:
+                print("❌ Mark milestone as paid with invalid ID should return 404")
+                return False
+        else:
+            print("⚠️ No milestones in database - skipping mark as paid tests")
+        
+        # 8. Test mark milestone as paid without admin token
+        unauth_mark_success, _ = self.test_mark_milestone_as_paid_unauthorized()
+        if not unauth_mark_success:
+            print("❌ Mark milestone as paid without admin token should return 401")
+            return False
+        
+        # 9. Test CSV export with admin token
+        csv_success, _ = self.test_export_milestones_csv_success()
+        if not csv_success:
+            print("❌ CSV export with admin token failed")
+            return False
+        
+        # 10. Test CSV export with filters
+        csv_filter_success, _ = self.test_export_milestones_csv_with_filters()
+        if not csv_filter_success:
+            print("❌ CSV export with filters failed")
+            return False
+        
+        # 11. Test CSV export without admin token
+        csv_unauth_success, _ = self.test_export_milestones_csv_unauthorized()
+        if not csv_unauth_success:
+            print("❌ CSV export without admin token should return 401")
+            return False
+        
+        # 12. Test milestone bonus verification
+        bonus_verification_success, _ = self.test_milestone_bonuses_verification()
+        if not bonus_verification_success:
+            print("❌ Milestone bonus verification failed")
+            return False
+        
+        print("✅ Admin Milestone Management System Test Passed")
+        return True
 
 def main():
     # Get the backend URL from environment or use default
