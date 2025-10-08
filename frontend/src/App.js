@@ -2871,18 +2871,19 @@ function NetworkTreeTab() {
         {isRoot && (
           <div style={{
             position: 'absolute',
-            top: '-8px',
-            right: '-8px',
+            top: '-6px',
+            right: '-6px',
             background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
             color: 'white',
-            padding: '4px 8px',
-            borderRadius: '12px',
+            padding: '3px 7px',
+            borderRadius: '10px',
             fontSize: '9px',
             fontWeight: 'bold',
             textTransform: 'uppercase',
             border: '2px solid #FFFFFF',
-            boxShadow: '0 2px 8px rgba(245, 158, 11, 0.4)',
-            letterSpacing: '0.5px'
+            boxShadow: '0 2px 6px rgba(245, 158, 11, 0.3)',
+            letterSpacing: '0.5px',
+            zIndex: 10
           }}>
             YOU
           </div>
