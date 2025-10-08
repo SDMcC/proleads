@@ -2990,9 +2990,9 @@ function NetworkTreeTab() {
                 <g>
                   <foreignObject
                     width="260"
-                    height="160"
+                    height="170"
                     x="-130"
-                    y="-80"
+                    y="-85"
                     onClick={toggleNode}
                     style={{ cursor: 'pointer' }}
                   >
