@@ -2719,12 +2719,16 @@ function NetworkTreeTab() {
     };
 
     // Create root node (current user)
+    // Use network stats direct_referrals if root total_referrals is 0 or missing
+    const rootReferrals = apiNode.root.total_referrals || 
+                         (networkData?.network_stats?.direct_referrals) || 0;
+                         
     const rootNode = {
       name: apiNode.root.username,
       attributes: {
         membership_tier: getTierDisplayName(apiNode.root.membership_tier),
         status: 'Active',
-        total_referrals: apiNode.root.total_referrals || 0,
+        total_referrals: rootReferrals,
         is_root: true
       },
       children: apiNode.children ? apiNode.children.map(transformNode) : []
