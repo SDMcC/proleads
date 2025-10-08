@@ -2783,13 +2783,13 @@ function NetworkTreeTab() {
           width: '240px',
           height: '140px',
           boxShadow: isRoot 
-            ? '0 8px 25px rgba(59, 130, 246, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)' 
+            ? '0 4px 15px rgba(59, 130, 246, 0.2)' 
             : '0 8px 25px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)',
           color: 'white',
           fontSize: '12px',
           textAlign: 'center',
           position: 'relative',
-          backdropFilter: 'blur(10px)',
+          backdropFilter: isRoot ? 'none' : 'blur(10px)',
           transition: 'all 0.3s ease',
           cursor: 'pointer',
           boxSizing: 'border-box',
