@@ -7768,6 +7768,25 @@ function AdminDashboard() {
           />
         )}
 
+        {activeTab === 'kyc' && (
+          <AdminKYCTab 
+            submissions={kycSubmissions}
+            page={kycPage}
+            setPage={setKycPage}
+            totalPages={kycTotalPages}
+            statusFilter={kycStatusFilter}
+            setStatusFilter={setKycStatusFilter}
+            selectedKYC={selectedKYC}
+            setSelectedKYC={setSelectedKYC}
+            showModal={showKYCReviewModal}
+            setShowModal={setShowKYCReviewModal}
+            onApprove={handleApproveKYC}
+            onReject={handleRejectKYC}
+            rejectionReason={rejectionReason}
+            setRejectionReason={setRejectionReason}
+          />
+        )}
+
         {/* Leads Management Tab */}
         {activeTab === 'leads' && (
           <LeadsManagementTab />
