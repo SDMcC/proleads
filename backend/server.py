@@ -1214,6 +1214,7 @@ async def review_kyc(
 @app.get("/api/users/kyc/document/{filename}")
 async def get_kyc_document(
     filename: str,
+    token: Optional[str] = None,
     admin: dict = Depends(get_admin_user)
 ):
     """Get KYC document (admin only)"""
@@ -1223,12 +1224,23 @@ async def get_kyc_document(
         if not os.path.exists(file_path):
             raise HTTPException(status_code=404, detail="Document not found")
         
-        # Return file
+        # Return file with appropriate content type
         with open(file_path, 'rb') as f:
             content = f.read()
         
+        # Determine content type based on file extension
+        ext = filename.split('.')[-1].lower()
+        content_types = {
+            'jpg': 'image/jpeg',
+            'jpeg': 'image/jpeg',
+            'png': 'image/png',
+            'gif': 'image/gif',
+            'pdf': 'application/pdf'
+        }
+        content_type = content_types.get(ext, 'image/jpeg')
+        
         from fastapi.responses import Response
-        return Response(content=content, media_type="image/jpeg")
+        return Response(content=content, media_type=content_type)
         
     except HTTPException:
         raise
