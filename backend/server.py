@@ -771,7 +771,15 @@ async def register_user(user_data: UserRegistration):
             "referrer_code": user_data.referrer_code,
             "referrer_address": referrer_address,
             "created_at": datetime.utcnow(),
-            "suspended": False
+            "suspended": False,
+            "email_notifications": {
+                "new_referrals": True,
+                "lead_distribution": True,
+                "payment_confirmation": True,
+                "subscription_reminders": True,
+                "commission_payouts": True,
+                "referral_upgrade": True
+            }
         }
         
         # Insert user
@@ -787,6 +795,18 @@ async def register_user(user_data: UserRegistration):
                     title="New Referral!",
                     message=f"{user_data.username} has joined using your referral link!"
                 )
+                
+                # Send email notification to referrer if enabled
+                referrer_prefs = referrer.get("email_notifications", {})
+                if referrer_prefs.get("new_referrals", True):
+                    try:
+                        await send_new_referral_email(
+                            referrer["email"],
+                            referrer["username"],
+                            user_data.username
+                        )
+                    except Exception as e:
+                        logger.error(f"Failed to send new referral email: {str(e)}")
                 
                 # Check milestone achievements for referrer
                 await check_milestone_achievements(referrer_address)
