@@ -21,6 +21,19 @@ from dotenv import load_dotenv
 import csv
 import io
 
+# Import email service
+from email_service import (
+    send_new_referral_email,
+    send_lead_distribution_email,
+    send_payment_confirmation_email,
+    send_subscription_reminder_email,
+    send_commission_payout_email,
+    send_referral_upgrade_email,
+    send_admin_milestone_notification,
+    send_admin_payment_confirmation,
+    send_admin_lead_distribution_status
+)
+
 # Load environment variables
 load_dotenv()
 
