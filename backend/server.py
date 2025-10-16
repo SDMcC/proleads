@@ -954,6 +954,287 @@ async def update_notification_preferences(
         logger.error(f"Failed to update notification preferences: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to update notification preferences")
 
+# KYC System Endpoints
+@app.post("/api/users/kyc/upload-document")
+async def upload_kyc_document(
+    request: Request,
+    current_user: dict = Depends(get_current_user)
+):
+    """Upload KYC document (ID or selfie)"""
+    try:
+        form = await request.form()
+        file = form.get("file")
+        doc_type = form.get("doc_type")  # 'id_document' or 'selfie'
+        
+        if not file:
+            raise HTTPException(status_code=400, detail="No file provided")
+        
+        if doc_type not in ['id_document', 'selfie']:
+            raise HTTPException(status_code=400, detail="Invalid document type")
+        
+        # Read file content
+        contents = await file.read()
+        
+        # Generate unique filename
+        file_ext = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
+        filename = f"{current_user['address']}_{doc_type}_{uuid.uuid4().hex[:8]}.{file_ext}"
+        file_path = f"/app/kyc_documents/{filename}"
+        
+        # Save file
+        with open(file_path, 'wb') as f:
+            f.write(contents)
+        
+        logger.info(f"KYC document uploaded: {filename} for user {current_user['username']}")
+        
+        return {
+            "message": "Document uploaded successfully",
+            "file_path": filename,
+            "doc_type": doc_type
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to upload KYC document: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to upload document")
+
+@app.post("/api/users/kyc/submit")
+async def submit_kyc(
+    request: Request,
+    current_user: dict = Depends(get_current_user)
+):
+    """Submit KYC for review"""
+    try:
+        data = await request.json()
+        id_document = data.get("id_document")
+        selfie = data.get("selfie")
+        
+        if not id_document or not selfie:
+            raise HTTPException(status_code=400, detail="Both ID document and selfie are required")
+        
+        # Update user KYC status
+        await db.users.update_one(
+            {"address": current_user["address"]},
+            {"$set": {
+                "kyc_status": "pending",
+                "kyc_submitted_at": datetime.utcnow(),
+                "kyc_documents": {
+                    "id_document": id_document,
+                    "selfie": selfie
+                }
+            }}
+        )
+        
+        # Create admin notification
+        await create_admin_notification(
+            notification_type="kyc",
+            title="New KYC Submission",
+            message=f"{current_user['username']} has submitted KYC documents for review",
+            related_user=current_user["address"]
+        )
+        
+        logger.info(f"KYC submitted for review: {current_user['username']}")
+        
+        return {"message": "KYC submitted successfully. Your documents are under review."}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to submit KYC: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to submit KYC")
+
+@app.get("/api/users/kyc/status")
+async def get_kyc_status(current_user: dict = Depends(get_current_user)):
+    """Get user's KYC status and earning limit"""
+    try:
+        user = await db.users.find_one({"address": current_user["address"]})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Calculate total earnings
+        total_earnings = await db.commissions.aggregate([
+            {"$match": {"recipient_address": current_user["address"], "status": {"$in": ["completed", "pending"]}}},
+            {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+        ]).to_list(1)
+        
+        earnings = total_earnings[0]["total"] if total_earnings else 0.0
+        
+        kyc_status = user.get("kyc_status", "unverified")
+        
+        # Determine earning limit
+        if kyc_status == "verified":
+            earning_limit = None  # Unlimited
+            earnings_capped = False
+        else:
+            earning_limit = 50.0
+            earnings_capped = earnings >= earning_limit
+        
+        return {
+            "kyc_status": kyc_status,
+            "total_earnings": earnings,
+            "earning_limit": earning_limit,
+            "earnings_capped": earnings_capped,
+            "kyc_submitted_at": user.get("kyc_submitted_at"),
+            "kyc_verified_at": user.get("kyc_verified_at"),
+            "kyc_rejection_reason": user.get("kyc_rejection_reason")
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get KYC status: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to get KYC status")
+
+@app.get("/api/admin/kyc/submissions")
+async def get_kyc_submissions(
+    status_filter: Optional[str] = None,
+    page: int = 1,
+    limit: int = 50,
+    admin: dict = Depends(get_admin_user)
+):
+    """Get all KYC submissions for admin review"""
+    try:
+        skip = (page - 1) * limit
+        
+        # Build query
+        query = {}
+        if status_filter:
+            query["kyc_status"] = status_filter
+        else:
+            query["kyc_status"] = {"$in": ["pending", "verified", "rejected"]}
+        
+        # Get total count
+        total_count = await db.users.count_documents(query)
+        
+        # Get submissions
+        submissions = await db.users.find(query).skip(skip).limit(limit).sort("kyc_submitted_at", -1).to_list(None)
+        
+        # Format submissions
+        formatted_submissions = []
+        for user in submissions:
+            # Calculate earnings
+            earnings = await db.commissions.aggregate([
+                {"$match": {"recipient_address": user["address"], "status": {"$in": ["completed", "pending"]}}},
+                {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+            ]).to_list(1)
+            
+            total_earnings = earnings[0]["total"] if earnings else 0.0
+            
+            formatted_submissions.append({
+                "user_id": user["address"],
+                "username": user["username"],
+                "email": user["email"],
+                "kyc_status": user.get("kyc_status", "unverified"),
+                "kyc_submitted_at": user.get("kyc_submitted_at"),
+                "kyc_verified_at": user.get("kyc_verified_at"),
+                "kyc_documents": user.get("kyc_documents", {}),
+                "kyc_rejection_reason": user.get("kyc_rejection_reason"),
+                "total_earnings": total_earnings,
+                "membership_tier": user.get("membership_tier")
+            })
+        
+        return {
+            "submissions": formatted_submissions,
+            "total_count": total_count,
+            "page": page,
+            "limit": limit,
+            "total_pages": (total_count + limit - 1) // limit
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to get KYC submissions: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to get KYC submissions")
+
+@app.put("/api/admin/kyc/{user_id}/review")
+async def review_kyc(
+    user_id: str,
+    review: KYCApproval,
+    admin: dict = Depends(get_admin_user)
+):
+    """Approve or reject KYC submission"""
+    try:
+        user = await db.users.find_one({"address": user_id})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        if review.approved:
+            # Approve KYC
+            await db.users.update_one(
+                {"address": user_id},
+                {"$set": {
+                    "kyc_status": "verified",
+                    "kyc_verified_at": datetime.utcnow(),
+                    "kyc_rejection_reason": None
+                }}
+            )
+            
+            # Create notification for user
+            await create_notification(
+                user_address=user_id,
+                notification_type="kyc",
+                title="KYC Verified!",
+                message="Congratulations! Your KYC has been verified. You can now earn unlimited commissions."
+            )
+            
+            logger.info(f"KYC approved for user {user['username']} by admin {admin['username']}")
+            
+            return {"message": "KYC approved successfully"}
+        else:
+            # Reject KYC
+            if not review.rejection_reason:
+                raise HTTPException(status_code=400, detail="Rejection reason is required")
+            
+            await db.users.update_one(
+                {"address": user_id},
+                {"$set": {
+                    "kyc_status": "rejected",
+                    "kyc_rejection_reason": review.rejection_reason
+                }}
+            )
+            
+            # Create notification for user
+            await create_notification(
+                user_address=user_id,
+                notification_type="kyc",
+                title="KYC Rejected",
+                message=f"Your KYC submission was rejected. Reason: {review.rejection_reason}. Please resubmit with correct documents."
+            )
+            
+            logger.info(f"KYC rejected for user {user['username']} by admin {admin['username']}")
+            
+            return {"message": "KYC rejected"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to review KYC: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to review KYC")
+
+@app.get("/api/users/kyc/document/{filename}")
+async def get_kyc_document(
+    filename: str,
+    admin: dict = Depends(get_admin_user)
+):
+    """Get KYC document (admin only)"""
+    try:
+        file_path = f"/app/kyc_documents/{filename}"
+        
+        if not os.path.exists(file_path):
+            raise HTTPException(status_code=404, detail="Document not found")
+        
+        # Return file
+        with open(file_path, 'rb') as f:
+            content = f.read()
+        
+        from fastapi.responses import Response
+        return Response(content=content, media_type="image/jpeg")
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get KYC document: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to get document")
+
 # Notification system functions
 async def create_notification(user_address: str, notification_type: str, title: str, message: str):
     """Create a notification for a user"""
