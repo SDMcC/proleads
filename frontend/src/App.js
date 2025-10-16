@@ -9644,6 +9644,28 @@ function MemberModal({ member, editingMember, onClose, onUpdate, onSuspend, onUn
                       </span>
                     </div>
                   </div>
+                  <div>
+                    <span className="text-gray-400">KYC Status:</span>
+                    <span className={`ml-2 px-2 py-1 rounded text-xs uppercase font-medium ${
+                      memberData.kyc_status === 'verified' ? 'bg-green-600 text-green-100' :
+                      memberData.kyc_status === 'pending' ? 'bg-yellow-600 text-yellow-100' :
+                      memberData.kyc_status === 'rejected' ? 'bg-red-600 text-red-100' :
+                      'bg-gray-600 text-gray-100'
+                    }`}>
+                      {memberData.kyc_status === 'verified' && '✓ Verified'}
+                      {memberData.kyc_status === 'pending' && '⏳ Pending'}
+                      {memberData.kyc_status === 'rejected' && '✗ Rejected'}
+                      {(!memberData.kyc_status || memberData.kyc_status === 'unverified') && 'Unverified'}
+                    </span>
+                  </div>
+                  {memberData.kyc_verified_at && (
+                    <div>
+                      <span className="text-gray-400">KYC Verified:</span>
+                      <span className="text-white ml-2">
+                        {new Date(memberData.kyc_verified_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
 
