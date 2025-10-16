@@ -849,6 +849,86 @@ async def get_profile(current_user: dict = Depends(get_current_user)):
         "total_earnings": earnings,
         "referral_link": f"{APP_URL}/r/{current_user['referral_code']}"
     }
+
+@app.get("/api/users/notification-preferences")
+async def get_notification_preferences(current_user: dict = Depends(get_current_user)):
+    """Get user's email notification preferences"""
+    try:
+        user = await db.users.find_one({"address": current_user["address"]})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Get preferences or return defaults
+        preferences = user.get("email_notifications", {
+            "new_referrals": True,
+            "lead_distribution": True,
+            "payment_confirmation": True,
+            "subscription_reminders": True,
+            "commission_payouts": True,
+            "referral_upgrade": True
+        })
+        
+        return {"email_notifications": preferences}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to fetch notification preferences: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch notification preferences")
+
+@app.put("/api/users/notification-preferences")
+async def update_notification_preferences(
+    preferences: UpdateNotificationPreferences,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update user's email notification preferences"""
+    try:
+        # Get current preferences
+        user = await db.users.find_one({"address": current_user["address"]})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        current_prefs = user.get("email_notifications", {
+            "new_referrals": True,
+            "lead_distribution": True,
+            "payment_confirmation": True,
+            "subscription_reminders": True,
+            "commission_payouts": True,
+            "referral_upgrade": True
+        })
+        
+        # Update only provided fields
+        update_data = {}
+        if preferences.new_referrals is not None:
+            current_prefs["new_referrals"] = preferences.new_referrals
+        if preferences.lead_distribution is not None:
+            current_prefs["lead_distribution"] = preferences.lead_distribution
+        if preferences.payment_confirmation is not None:
+            current_prefs["payment_confirmation"] = preferences.payment_confirmation
+        if preferences.subscription_reminders is not None:
+            current_prefs["subscription_reminders"] = preferences.subscription_reminders
+        if preferences.commission_payouts is not None:
+            current_prefs["commission_payouts"] = preferences.commission_payouts
+        if preferences.referral_upgrade is not None:
+            current_prefs["referral_upgrade"] = preferences.referral_upgrade
+        
+        # Save updated preferences
+        await db.users.update_one(
+            {"address": current_user["address"]},
+            {"$set": {"email_notifications": current_prefs}}
+        )
+        
+        return {
+            "message": "Notification preferences updated successfully",
+            "email_notifications": current_prefs
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to update notification preferences: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to update notification preferences")
+
 # Notification system functions
 async def create_notification(user_address: str, notification_type: str, title: str, message: str):
     """Create a notification for a user"""
