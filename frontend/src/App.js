@@ -2077,11 +2077,33 @@ function Dashboard() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [notificationsPanelOpen, setNotificationsPanelOpen] = useState(false);
   const [bellButtonRef, setBellButtonRef] = useState(null);
+  
+  // KYC Modal state
+  const [showKYCModal, setShowKYCModal] = useState(false);
+  const [kycStatus, setKycStatus] = useState(null);
 
   useEffect(() => {
     fetchDashboardStats();
     fetchNotifications();
+    checkKYCStatus();
   }, []);
+
+  const checkKYCStatus = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API_URL}/api/users/kyc/status`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setKycStatus(response.data);
+      
+      // Show modal if user has earned $50+ and is unverified
+      if (response.data.earnings_capped && response.data.kyc_status === 'unverified') {
+        setShowKYCModal(true);
+      }
+    } catch (error) {
+      console.error('Failed to check KYC status:', error);
+    }
+  };
 
   // Click outside handling is now managed by NotificationPanel component
 
