@@ -2748,7 +2748,7 @@ function OverviewTab({ stats, user }) {
 }
 
 // KYC Earnings Card Component
-function KYCEarningsCard({ user }) {
+function KYCEarningsCard({ user, onNavigateToKYC }) {
   const [kycStatus, setKycStatus] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -2825,23 +2825,18 @@ function KYCEarningsCard({ user }) {
               <p className="text-blue-100 text-sm">Verify your identity in just a few minutes</p>
             </div>
           </div>
-          <a
-            href="#"
+          <button
             onClick={(e) => {
               e.preventDefault();
-              // This will be handled by parent component to switch to KYC tab
-              const accountLink = document.querySelector('button:has-text("Account")');
-              if (accountLink) accountLink.click();
-              setTimeout(() => {
-                const kycTab = document.querySelector('button:has-text("KYC")');
-                if (kycTab) kycTab.click();
-              }, 100);
+              if (onNavigateToKYC) {
+                onNavigateToKYC();
+              }
             }}
             className="px-6 py-2 bg-white text-blue-600 rounded-lg font-bold hover:bg-blue-50 transition-all duration-300 flex items-center space-x-2"
           >
             <span>Verify Now</span>
             <ChevronRight className="h-4 w-4" />
-          </a>
+          </button>
         </div>
       )}
 
