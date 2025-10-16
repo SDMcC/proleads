@@ -6775,6 +6775,81 @@ function AdminDashboard() {
     }
   };
 
+  // KYC Management Functions
+  const fetchKYCSubmissions = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const headers = { Authorization: `Bearer ${token}` };
+      
+      const params = new URLSearchParams();
+      if (kycStatusFilter) params.append('status_filter', kycStatusFilter);
+      params.append('page', kycPage.toString());
+      params.append('limit', '20');
+      
+      const response = await axios.get(`${API_URL}/api/admin/kyc/submissions?${params}`, { headers });
+      setKycSubmissions(response.data.submissions || []);
+      setKycTotalPages(response.data.total_pages || 1);
+      
+    } catch (error) {
+      console.error('Failed to fetch KYC submissions:', error);
+    }
+  };
+
+  const handleApproveKYC = async (userId) => {
+    if (!window.confirm('Are you sure you want to approve this KYC submission?')) {
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem('adminToken');
+      const headers = { Authorization: `Bearer ${token}` };
+      
+      await axios.put(`${API_URL}/api/admin/kyc/${userId}/review`, { approved: true }, { headers });
+      
+      // Refresh KYC list
+      fetchKYCSubmissions();
+      setShowKYCReviewModal(false);
+      setSelectedKYC(null);
+      alert('KYC approved successfully');
+      
+    } catch (error) {
+      console.error('Failed to approve KYC:', error);
+      alert('Failed to approve KYC: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const handleRejectKYC = async (userId) => {
+    if (!rejectionReason) {
+      alert('Please provide a rejection reason');
+      return;
+    }
+    
+    if (!window.confirm('Are you sure you want to reject this KYC submission?')) {
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem('adminToken');
+      const headers = { Authorization: `Bearer ${token}` };
+      
+      await axios.put(`${API_URL}/api/admin/kyc/${userId}/review`, { 
+        approved: false, 
+        rejection_reason: rejectionReason 
+      }, { headers });
+      
+      // Refresh KYC list
+      fetchKYCSubmissions();
+      setShowKYCReviewModal(false);
+      setSelectedKYC(null);
+      setRejectionReason('');
+      alert('KYC rejected');
+      
+    } catch (error) {
+      console.error('Failed to reject KYC:', error);
+      alert('Failed to reject KYC: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
   const fetchMemberDetails = async (memberId) => {
     try {
       const token = localStorage.getItem('adminToken');
