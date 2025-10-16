@@ -1206,6 +1206,33 @@ async def payment_callback(request: Request):
             # Get user info for notifications
             user = await db.users.find_one({"address": user_address})
             username = user.get("username", "Unknown User") if user else "Unknown User"
+            user_email = user.get("email", "") if user else ""
+            
+            # Send payment confirmation email to user if enabled
+            if user:
+                user_prefs = user.get("email_notifications", {})
+                if user_prefs.get("payment_confirmation", True) and user_email:
+                    try:
+                        await send_payment_confirmation_email(user_email, username, tier, amount)
+                    except Exception as e:
+                        logger.error(f"Failed to send payment confirmation email: {str(e)}")
+                
+                # Send referral upgrade email to sponsor if exists
+                referrer_address = user.get("referrer_address")
+                if referrer_address:
+                    referrer = await db.users.find_one({"address": referrer_address})
+                    if referrer:
+                        referrer_prefs = referrer.get("email_notifications", {})
+                        if referrer_prefs.get("referral_upgrade", True):
+                            try:
+                                await send_referral_upgrade_email(
+                                    referrer["email"],
+                                    referrer["username"],
+                                    username,
+                                    tier
+                                )
+                            except Exception as e:
+                                logger.error(f"Failed to send referral upgrade email: {str(e)}")
             
             # Create admin notification for payment
             await create_admin_notification(
@@ -1214,6 +1241,12 @@ async def payment_callback(request: Request):
                 message=f"{username} upgraded to {tier.capitalize()} membership - ${amount}",
                 related_user=user_address
             )
+            
+            # Send admin email notification
+            try:
+                await send_admin_payment_confirmation(username, tier, amount)
+            except Exception as e:
+                logger.error(f"Failed to send admin payment email: {str(e)}")
             
             # Calculate commissions with corrected logic
             await calculate_commissions(user_address, tier, amount)
