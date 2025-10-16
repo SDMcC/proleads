@@ -2439,6 +2439,21 @@ async def mark_milestone_as_paid(
         # Get user info for logging
         user = await db.users.find_one({"address": milestone["user_address"]})
         username = user["username"] if user else "Unknown"
+        user_email = user.get("email", "") if user else ""
+        
+        # Send commission payout email to user if enabled
+        if user:
+            user_prefs = user.get("email_notifications", {})
+            if user_prefs.get("commission_payouts", True) and user_email:
+                try:
+                    await send_commission_payout_email(
+                        user_email,
+                        username,
+                        milestone["bonus_amount"],
+                        milestone["milestone_count"]
+                    )
+                except Exception as e:
+                    logger.error(f"Failed to send commission payout email: {str(e)}")
         
         logger.info(f"MILESTONE MARKED PAID: Milestone {milestone_id} for user {username} (${milestone['bonus_amount']}) marked as paid by admin {admin_user['username']}")
         
