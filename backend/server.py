@@ -1916,11 +1916,13 @@ async def get_admin_dashboard_overview(admin: dict = Depends(get_admin_user)):
 @app.get("/api/admin/members")
 async def get_all_members(
     tier: Optional[str] = None,
+    sort_by: Optional[str] = None,
+    sort_direction: Optional[str] = "desc",
     page: int = 1,
     limit: int = 50,
     admin: dict = Depends(get_admin_user)
 ):
-    """Get all members with optional filtering and pagination"""
+    """Get all members with optional filtering, sorting, and pagination"""
     try:
         skip = (page - 1) * limit
         
