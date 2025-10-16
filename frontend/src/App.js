@@ -5287,6 +5287,167 @@ function AccountTab({ user, accountSubTab, setAccountSubTab }) {
   );
 }
 
+// Notification Settings Tab Component
+function NotificationSettingsTab({ user }) {
+  const [preferences, setPreferences] = useState({
+    new_referrals: true,
+    lead_distribution: true,
+    payment_confirmation: true,
+    subscription_reminders: true,
+    commission_payouts: true,
+    referral_upgrade: true
+  });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState('');
+
+  useEffect(() => {
+    fetchPreferences();
+  }, []);
+
+  const fetchPreferences = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API_URL}/api/users/notification-preferences`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setPreferences(response.data.email_notifications);
+    } catch (error) {
+      console.error('Failed to fetch notification preferences:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleToggle = async (key) => {
+    const newValue = !preferences[key];
+    const newPreferences = { ...preferences, [key]: newValue };
+    
+    // Update UI immediately
+    setPreferences(newPreferences);
+    
+    // Save to backend
+    try {
+      setSaving(true);
+      const token = localStorage.getItem('token');
+      await axios.put(
+        `${API_URL}/api/users/notification-preferences`,
+        { [key]: newValue },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setSaveMessage('Preferences saved successfully!');
+      setTimeout(() => setSaveMessage(''), 3000);
+    } catch (error) {
+      console.error('Failed to save notification preferences:', error);
+      // Revert on error
+      setPreferences(preferences);
+      setSaveMessage('Failed to save preferences. Please try again.');
+      setTimeout(() => setSaveMessage(''), 3000);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-8 text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+        <p className="text-gray-300 mt-4">Loading preferences...</p>
+      </div>
+    );
+  }
+
+  const notificationTypes = [
+    {
+      key: 'new_referrals',
+      label: 'New Referrals',
+      description: 'Get notified when someone signs up using your referral link'
+    },
+    {
+      key: 'lead_distribution',
+      label: 'Lead Distribution',
+      description: 'Get notified when new leads are distributed to your account'
+    },
+    {
+      key: 'payment_confirmation',
+      label: 'Payment Confirmation',
+      description: 'Get notified when your payment is confirmed'
+    },
+    {
+      key: 'subscription_reminders',
+      label: 'Subscription Reminders',
+      description: 'Get reminded 3 days before your subscription renewal'
+    },
+    {
+      key: 'commission_payouts',
+      label: 'Commission Payouts',
+      description: 'Get notified when your milestone commission is paid'
+    },
+    {
+      key: 'referral_upgrade',
+      label: 'Referral Upgrades',
+      description: 'Get notified when your referrals upgrade their membership'
+    }
+  ];
+
+  return (
+    <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-8">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h3 className="text-xl font-semibold text-white mb-2">Email Notification Settings</h3>
+          <p className="text-gray-300 text-sm">Manage which email notifications you want to receive</p>
+        </div>
+        {saveMessage && (
+          <div className={`px-4 py-2 rounded-lg ${
+            saveMessage.includes('success') ? 'bg-green-600' : 'bg-red-600'
+          } text-white text-sm`}>
+            {saveMessage}
+          </div>
+        )}
+      </div>
+
+      <div className="space-y-4">
+        {notificationTypes.map((type) => (
+          <div
+            key={type.key}
+            className="flex items-center justify-between p-4 bg-white bg-opacity-5 rounded-lg hover:bg-opacity-10 transition-all duration-300"
+          >
+            <div className="flex-1">
+              <h4 className="text-white font-medium mb-1">{type.label}</h4>
+              <p className="text-gray-400 text-sm">{type.description}</p>
+            </div>
+            <button
+              onClick={() => handleToggle(type.key)}
+              disabled={saving}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 focus:outline-none ${
+                preferences[type.key] ? 'bg-blue-600' : 'bg-gray-600'
+              } ${saving ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${
+                  preferences[type.key] ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-6 p-4 bg-blue-900 bg-opacity-30 rounded-lg border border-blue-500 border-opacity-30">
+        <div className="flex items-start space-x-3">
+          <Bell className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
+          <div>
+            <p className="text-blue-300 text-sm">
+              <strong>Note:</strong> Email notifications are currently configured for testing with Ethereal Email.
+              After deployment, these will be sent to your registered email address ({user?.email}).
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Recent Payments Component
 function RecentPayments() {
   const [payments, setPayments] = useState([]);
