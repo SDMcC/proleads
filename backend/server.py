@@ -1932,6 +1932,33 @@ async def get_all_members(
         # Get total count
         total_count = await db.users.count_documents(filter_query)
         
+        # Calculate overall stats for ALL filtered members (not just current page)
+        all_filtered_members = await db.users.find(filter_query).to_list(None)
+        
+        # Calculate aggregate stats
+        total_active = sum(1 for m in all_filtered_members if not m.get("suspended", False))
+        tier_counts = {}
+        total_earnings_all = 0
+        total_referrals_all = 0
+        
+        for member in all_filtered_members:
+            # Count by tier
+            member_tier = member.get("membership_tier", "affiliate")
+            tier_counts[member_tier] = tier_counts.get(member_tier, 0) + 1
+            
+            # Get member's earnings
+            earnings_pipeline = [
+                {"$match": {"recipient_address": member["address"], "status": "completed"}},
+                {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+            ]
+            earnings_result = await db.commissions.aggregate(earnings_pipeline).to_list(1)
+            member_earnings = earnings_result[0]["total"] if earnings_result else 0.0
+            total_earnings_all += member_earnings
+            
+            # Get member's referral count
+            referral_count = await db.users.count_documents({"referrer_address": member["address"]})
+            total_referrals_all += referral_count
+        
         # Get members with pagination
         members_cursor = db.users.find(filter_query).skip(skip).limit(limit).sort("created_at", -1)
         members = await members_cursor.to_list(length=None)
@@ -1967,7 +1994,7 @@ async def get_all_members(
                 is_expired = True
             
             enriched_member = {
-                "id": member["address"],  # Using address as ID
+                "id": member["address"],
                 "username": member["username"],
                 "email": member["email"],
                 "wallet_address": member["address"],
@@ -1991,7 +2018,14 @@ async def get_all_members(
             "total_count": total_count,
             "page": page,
             "limit": limit,
-            "total_pages": (total_count + limit - 1) // limit
+            "total_pages": (total_count + limit - 1) // limit,
+            "stats": {
+                "total_members": total_count,
+                "active_members": total_active,
+                "tier_counts": tier_counts,
+                "total_earnings": total_earnings_all,
+                "total_referrals": total_referrals_all
+            }
         }
         
     except Exception as e:
