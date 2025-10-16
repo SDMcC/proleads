@@ -1902,9 +1902,12 @@ async def get_admin_dashboard_overview(admin: dict = Depends(get_admin_user)):
                 "pending": await db.lead_distributions.count_documents({"status": {"$in": ["queued", "processing"]}})
             },
             "milestones": {
-                "total_achieved": 0,  # Placeholder for future milestones system
-                "pending_bonuses": 0,
-                "total_bonuses_paid": 0
+                "total_achieved": await db.milestones.count_documents({}),
+                "pending_bonuses": await db.milestones.count_documents({"status": "pending"}),
+                "total_bonuses_paid": (await db.milestones.aggregate([
+                    {"$match": {"status": "paid"}},
+                    {"$group": {"_id": None, "total": {"$sum": "$bonus_amount"}}}
+                ]).to_list(1))[0]["total"] if await db.milestones.count_documents({"status": "paid"}) > 0 else 0
             }
         }
         
