@@ -2811,9 +2811,12 @@ function KYCEarningsCard({ user, onNavigateToKYC }) {
 
   if (loading) return null;
 
+  // Don't render for verified users (they have the StatCard instead)
   const isVerified = kycStatus?.kyc_status === 'verified';
-  const earningLimit = isVerified ? null : 50.0;
-  const displayEarnings = isVerified ? kycStatus?.total_earnings : Math.min(kycStatus?.total_earnings || 0, earningLimit);
+  if (isVerified) return null;
+
+  const earningLimit = 50.0;
+  const displayEarnings = Math.min(kycStatus?.total_earnings || 0, earningLimit);
 
   return (
     <div className="bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl p-6 mb-8 shadow-lg">
@@ -2825,17 +2828,10 @@ function KYCEarningsCard({ user, onNavigateToKYC }) {
             <p className="text-blue-100 text-sm">Your commission earning capacity</p>
           </div>
         </div>
-        {isVerified ? (
-          <span className="px-4 py-2 bg-green-500 text-white rounded-lg font-bold flex items-center space-x-2">
-            <CheckCircle className="h-5 w-5" />
-            <span>Verified</span>
-          </span>
-        ) : (
-          <span className="px-4 py-2 bg-yellow-500 text-white rounded-lg font-bold flex items-center space-x-2">
-            <AlertTriangle className="h-5 w-5" />
-            <span>Unverified</span>
-          </span>
-        )}
+        <span className="px-4 py-2 bg-yellow-500 text-white rounded-lg font-bold flex items-center space-x-2">
+          <AlertTriangle className="h-5 w-5" />
+          <span>Unverified</span>
+        </span>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
