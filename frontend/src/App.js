@@ -3091,7 +3091,7 @@ function NetworkTreeTab() {
         {isRoot && (
           <div style={{
             position: 'absolute',
-            top: '-6px',
+            top: '2px',
             right: '-6px',
             background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
             color: 'white',
