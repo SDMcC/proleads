@@ -840,8 +840,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Admin Notification System Backend Implementation"
-    - "Admin Notification System Frontend Implementation"
+    - "Email Notification System Testing"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
