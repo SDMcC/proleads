@@ -203,6 +203,22 @@ class TicketMessage(BaseModel):
     attachment_urls: Optional[List[str]] = []
     created_at: datetime
 
+class EmailNotificationPreferences(BaseModel):
+    new_referrals: bool = True
+    lead_distribution: bool = True
+    payment_confirmation: bool = True
+    subscription_reminders: bool = True
+    commission_payouts: bool = True
+    referral_upgrade: bool = True
+
+class UpdateNotificationPreferences(BaseModel):
+    new_referrals: Optional[bool] = None
+    lead_distribution: Optional[bool] = None
+    payment_confirmation: Optional[bool] = None
+    subscription_reminders: Optional[bool] = None
+    commission_payouts: Optional[bool] = None
+    referral_upgrade: Optional[bool] = None
+
 # WebSocket connection manager
 class ConnectionManager:
     def __init__(self):
