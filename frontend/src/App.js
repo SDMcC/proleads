@@ -2623,6 +2623,83 @@ function AdminNotificationPanel({ bellButtonRef, notifications, onClose, onClear
 }
 
 // Dashboard Tab Components
+// KYC Stats Row Component
+function KYCStatsRow({ stats, user, onNavigateToKYC }) {
+  const [kycStatus, setKycStatus] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchKYCStatus = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`${API_URL}/api/users/kyc/status`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setKycStatus(response.data);
+      } catch (error) {
+        console.error('Failed to fetch KYC status:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchKYCStatus();
+  }, []);
+
+  const isVerified = kycStatus?.kyc_status === 'verified';
+
+  return (
+    <div className={`grid grid-cols-1 md:grid-cols-2 ${isVerified ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-6 mb-8`}>
+      <StatCard
+        icon={<DollarSign className="h-8 w-8 text-green-400" />}
+        title="Total Earnings"
+        value={`$${stats?.total_earnings?.toFixed(2) || '0.00'} USDC`}
+        subtitle="Completed payments"
+      />
+      <StatCard
+        icon={<Users className="h-8 w-8 text-blue-400" />}
+        title="Total Referrals"
+        value={stats?.total_referrals || 0}
+        subtitle="All levels"
+      />
+      <StatCard
+        icon={<Award className="h-8 w-8 text-purple-400" />}
+        title="Membership Tier"
+        value={getTierDisplayName(user?.membership_tier || 'affiliate').toUpperCase()}
+        subtitle={(() => {
+          const tier = user?.membership_tier;
+          if (tier === 'affiliate' || tier === 'vip_affiliate') return 'Free';
+          if (tier === 'test') return '$2/month';
+          if (tier === 'bronze') return '$20/month';
+          if (tier === 'silver') return '$50/month';
+          if (tier === 'gold') return '$100/month';
+          return 'Free';
+        })()}
+        action={
+          <button
+            onClick={() => window.location.href = '/payment'}
+            className="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-all duration-300"
+          >
+            Upgrade
+          </button>
+        }
+      />
+      {isVerified && !loading && (
+        <StatCard
+          icon={<Shield className="h-8 w-8 text-green-400" />}
+          title="KYC Status"
+          value={
+            <span className="flex items-center justify-center space-x-2">
+              <CheckCircle className="h-6 w-6 text-green-400" />
+              <span>Verified</span>
+            </span>
+          }
+          subtitle="Unlimited earnings"
+        />
+      )}
+    </div>
+  );
+}
+
 function OverviewTab({ stats, user, onNavigateToKYC }) {
   const getShortenedReferralLink = () => {
     if (!user?.referral_code) return '';
