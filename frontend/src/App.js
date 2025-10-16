@@ -7037,6 +7037,7 @@ function AdminDashboard() {
                 { id: 'payments', label: 'Payments', icon: DollarSign },
                 { id: 'commissions', label: 'Commissions', icon: TrendingUp },
                 { id: 'milestones', label: 'Milestones', icon: Award },
+                { id: 'kyc', label: 'KYC Verification', icon: Shield },
                 { id: 'leads', label: 'Leads Distribution', icon: FileText },
                 { id: 'tickets', label: 'Tickets', icon: MessageCircle },
                 { id: 'configuration', label: 'Configuration', icon: Settings }
