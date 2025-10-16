@@ -4148,15 +4148,36 @@ async def get_user_referrals(
         user_address = current_user["address"]
         offset = (page - 1) * limit
         
-        # Get all users who have this user as their referrer
-        referrals = await db.users.find({
-            "referrer_address": user_address
-        }).sort("created_at", -1).skip(offset).limit(limit).to_list(length=limit)
-        
         # Get total count for pagination
         total_referrals = await db.users.count_documents({
             "referrer_address": user_address
         })
+        
+        # Calculate total stats across ALL referrals (not just current page)
+        all_referrals = await db.users.find({
+            "referrer_address": user_address
+        }).to_list(None)
+        
+        # Calculate overall stats
+        total_active = sum(1 for r in all_referrals if not r.get("suspended", False))
+        tier_counts = {}
+        total_sub_referrals = 0
+        
+        for referral in all_referrals:
+            # Count by tier
+            tier = referral.get("membership_tier", "affiliate")
+            tier_counts[tier] = tier_counts.get(tier, 0) + 1
+            
+            # Count sub-referrals
+            sub_count = await db.users.count_documents({
+                "referrer_address": referral["address"]
+            })
+            total_sub_referrals += sub_count
+        
+        # Get paginated referrals for display
+        referrals = await db.users.find({
+            "referrer_address": user_address
+        }).sort("created_at", -1).skip(offset).limit(limit).to_list(length=limit)
         
         # Format referral data with additional information
         formatted_referrals = []
@@ -4166,7 +4187,7 @@ async def get_user_referrals(
                 "referrer_address": referral["address"]
             })
             
-            # Get referral's earnings (optional - if you want to include this)
+            # Get referral's earnings
             total_earnings = 0
             commissions = await db.commissions.find({
                 "recipient_address": referral["address"]
@@ -4194,7 +4215,13 @@ async def get_user_referrals(
             "total_count": total_referrals,
             "page": page,
             "limit": limit,
-            "total_pages": (total_referrals + limit - 1) // limit
+            "total_pages": (total_referrals + limit - 1) // limit,
+            "stats": {
+                "total_referrals": total_referrals,
+                "active_referrals": total_active,
+                "tier_counts": tier_counts,
+                "total_sub_referrals": total_sub_referrals
+            }
         }
         
     except Exception as e:
