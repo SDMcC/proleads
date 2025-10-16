@@ -4502,24 +4502,24 @@ function ReferralsTab() {
           {/* Referrals Summary */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-4 text-center">
-              <div className="text-2xl font-bold text-white">{totalReferrals}</div>
+              <div className="text-2xl font-bold text-white">{stats.total_referrals}</div>
               <div className="text-gray-300 text-sm">Total Referrals</div>
             </div>
             <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-4 text-center">
               <div className="text-2xl font-bold text-green-400">
-                {referrals.filter(ref => ref.status === 'active').length}
+                {stats.active_referrals}
               </div>
               <div className="text-gray-300 text-sm">Active</div>
             </div>
             <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-4 text-center">
               <div className="text-2xl font-bold text-orange-400">
-                {referrals.filter(ref => ref.membership_tier === 'bronze').length}
+                {stats.tier_counts?.bronze || 0}
               </div>
               <div className="text-gray-300 text-sm">Bronze Members</div>
             </div>
             <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-4 text-center">
               <div className="text-2xl font-bold text-blue-400">
-                {referrals.reduce((sum, ref) => sum + ref.referral_count, 0)}
+                {stats.total_sub_referrals}
               </div>
               <div className="text-gray-300 text-sm">Sub-Referrals</div>
             </div>
