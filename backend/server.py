@@ -1934,11 +1934,12 @@ async def get_all_members(
         # Get total count
         total_count = await db.users.count_documents(filter_query)
         
-        # Calculate overall stats for ALL filtered members (not just current page)
+        # Get ALL filtered members first (we need to enrich them for sorting)
         all_filtered_members = await db.users.find(filter_query).to_list(None)
         
-        # Calculate aggregate stats
-        total_active = sum(1 for m in all_filtered_members if not m.get("suspended", False))
+        # Enrich ALL members with referral count and earnings for proper sorting
+        enriched_all = []
+        total_active = 0
         tier_counts = {}
         total_earnings_all = 0
         total_referrals_all = 0
@@ -1948,28 +1949,13 @@ async def get_all_members(
             member_tier = member.get("membership_tier", "affiliate")
             tier_counts[member_tier] = tier_counts.get(member_tier, 0) + 1
             
-            # Get member's earnings
-            earnings_pipeline = [
-                {"$match": {"recipient_address": member["address"], "status": "completed"}},
-                {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
-            ]
-            earnings_result = await db.commissions.aggregate(earnings_pipeline).to_list(1)
-            member_earnings = earnings_result[0]["total"] if earnings_result else 0.0
-            total_earnings_all += member_earnings
+            # Count active
+            if not member.get("suspended", False):
+                total_active += 1
             
-            # Get member's referral count
-            referral_count = await db.users.count_documents({"referrer_address": member["address"]})
-            total_referrals_all += referral_count
-        
-        # Get members with pagination
-        members_cursor = db.users.find(filter_query).skip(skip).limit(limit).sort("created_at", -1)
-        members = await members_cursor.to_list(length=None)
-        
-        # Enrich member data with additional info
-        enriched_members = []
-        for member in members:
             # Get referral count
             referral_count = await db.users.count_documents({"referrer_address": member["address"]})
+            total_referrals_all += referral_count
             
             # Get total earnings
             earnings_pipeline = [
@@ -1978,6 +1964,7 @@ async def get_all_members(
             ]
             earnings_result = await db.commissions.aggregate(earnings_pipeline).to_list(1)
             total_earnings = earnings_result[0]["total"] if earnings_result else 0.0
+            total_earnings_all += total_earnings
             
             # Get sponsor info
             sponsor_info = None
@@ -2013,7 +2000,27 @@ async def get_all_members(
                 "kyc_status": member.get("kyc_status", "unverified"),
                 "kyc_verified_at": member.get("kyc_verified_at")
             }
-            enriched_members.append(enriched_member)
+            enriched_all.append(enriched_member)
+        
+        # Sort the enriched members
+        if sort_by:
+            reverse = (sort_direction == "desc")
+            if sort_by == "total_referrals":
+                enriched_all.sort(key=lambda x: x["total_referrals"], reverse=reverse)
+            elif sort_by == "total_earnings":
+                enriched_all.sort(key=lambda x: x["total_earnings"], reverse=reverse)
+            elif sort_by == "created_at":
+                enriched_all.sort(key=lambda x: x["created_at"] if x["created_at"] else datetime.min, reverse=reverse)
+            elif sort_by == "username":
+                enriched_all.sort(key=lambda x: x["username"].lower(), reverse=reverse)
+            elif sort_by == "membership_tier":
+                enriched_all.sort(key=lambda x: x["membership_tier"], reverse=reverse)
+        else:
+            # Default sort by created_at desc
+            enriched_all.sort(key=lambda x: x["created_at"] if x["created_at"] else datetime.min, reverse=True)
+        
+        # Apply pagination AFTER sorting
+        enriched_members = enriched_all[skip:skip + limit]
         
         return {
             "members": enriched_members,
