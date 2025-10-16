@@ -2369,6 +2369,58 @@ function Dashboard() {
           onClick={() => setSidebarOpen(false)}
         />
       )}
+
+      {/* KYC Warning Modal */}
+      {showKYCModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm">
+          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 max-w-md w-full mx-4 border border-yellow-500 shadow-2xl">
+            <div className="text-center mb-6">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-yellow-500 rounded-full mb-4">
+                <AlertTriangle className="h-10 w-10 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-2">KYC Verification Required</h2>
+              <p className="text-gray-300">You've reached the $50 earning limit for unverified accounts</p>
+            </div>
+
+            <div className="bg-white bg-opacity-10 rounded-lg p-4 mb-6">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-gray-400">Current Earnings:</span>
+                <span className="text-white font-bold">${kycStatus?.total_earnings?.toFixed(2) || '0.00'}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-400">Earning Limit:</span>
+                <span className="text-yellow-400 font-bold">$50.00</span>
+              </div>
+            </div>
+
+            <div className="bg-yellow-900 bg-opacity-30 border border-yellow-500 border-opacity-30 rounded-lg p-4 mb-6">
+              <p className="text-yellow-300 text-sm">
+                <strong>Action Required:</strong> Complete KYC verification to continue earning commissions. Your funds will be held until verification is complete.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <button
+                onClick={() => {
+                  setShowKYCModal(false);
+                  setActiveTab('account');
+                  setAccountSubTab('kyc');
+                }}
+                className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold transition-all duration-300 flex items-center justify-center space-x-2"
+              >
+                <Shield className="h-5 w-5" />
+                <span>Complete KYC Now</span>
+              </button>
+              <button
+                onClick={() => setShowKYCModal(false)}
+                className="w-full px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-all duration-300"
+              >
+                Remind Me Later
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
