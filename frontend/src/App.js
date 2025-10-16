@@ -10428,23 +10428,13 @@ function AdminKYCTab({ submissions, page, setPage, totalPages, statusFilter, set
                 {selectedKYC.kyc_documents?.id_document && (
                   <div className="bg-white bg-opacity-10 rounded-lg p-4">
                     <p className="text-gray-400 text-sm mb-2">ID Document</p>
-                    <img
-                      src={`${API_URL}/api/users/kyc/document/${selectedKYC.kyc_documents.id_document}`}
-                      alt="ID Document"
-                      className="w-full h-64 object-contain bg-black rounded-lg"
-                      onError={(e) => { e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"/>' }}
-                    />
+                    <KYCDocumentImage filename={selectedKYC.kyc_documents.id_document} alt="ID Document" />
                   </div>
                 )}
                 {selectedKYC.kyc_documents?.selfie && (
                   <div className="bg-white bg-opacity-10 rounded-lg p-4">
                     <p className="text-gray-400 text-sm mb-2">Selfie</p>
-                    <img
-                      src={`${API_URL}/api/users/kyc/document/${selectedKYC.kyc_documents.selfie}`}
-                      alt="Selfie"
-                      className="w-full h-64 object-contain bg-black rounded-lg"
-                      onError={(e) => { e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"/>' }}
-                    />
+                    <KYCDocumentImage filename={selectedKYC.kyc_documents.selfie} alt="Selfie" />
                   </div>
                 )}
               </div>
