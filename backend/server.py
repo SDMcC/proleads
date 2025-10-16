@@ -3631,6 +3631,17 @@ async def perform_lead_distribution(distribution_id: str):
             }}
         )
         
+        # Send admin email notification
+        try:
+            await send_admin_lead_distribution_status(
+                distribution_id,
+                "completed",
+                total_available_leads,
+                len(eligible_members)
+            )
+        except Exception as e:
+            logger.error(f"Failed to send admin lead distribution email: {str(e)}")
+        
         logger.info(f"Lead distribution completed: {distributions_made} assignments made")
         
     except Exception as e:
