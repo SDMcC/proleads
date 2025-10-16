@@ -2608,6 +2608,9 @@ function OverviewTab({ stats, user }) {
         />
       </div>
 
+      {/* KYC Earnings Card */}
+      <KYCEarningsCard user={user} />
+
       {/* Recent Payments */}
       <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6 mb-8">
         <h3 className="text-xl font-bold text-white mb-4">Recent Payments</h3>
