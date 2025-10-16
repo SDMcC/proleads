@@ -5,6 +5,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 import os
+import sys
 import json
 import hmac
 import hashlib
@@ -21,18 +22,34 @@ from dotenv import load_dotenv
 import csv
 import io
 
+# Add backend directory to Python path
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 # Import email service
-from email_service import (
-    send_new_referral_email,
-    send_lead_distribution_email,
-    send_payment_confirmation_email,
-    send_subscription_reminder_email,
-    send_commission_payout_email,
-    send_referral_upgrade_email,
-    send_admin_milestone_notification,
-    send_admin_payment_confirmation,
-    send_admin_lead_distribution_status
-)
+try:
+    from email_service import (
+        send_new_referral_email,
+        send_lead_distribution_email,
+        send_payment_confirmation_email,
+        send_subscription_reminder_email,
+        send_commission_payout_email,
+        send_referral_upgrade_email,
+        send_admin_milestone_notification,
+        send_admin_payment_confirmation,
+        send_admin_lead_distribution_status
+    )
+except ImportError as e:
+    logging.error(f"Failed to import email_service: {str(e)}")
+    # Define dummy functions if import fails
+    async def send_new_referral_email(*args, **kwargs): pass
+    async def send_lead_distribution_email(*args, **kwargs): pass
+    async def send_payment_confirmation_email(*args, **kwargs): pass
+    async def send_subscription_reminder_email(*args, **kwargs): pass
+    async def send_commission_payout_email(*args, **kwargs): pass
+    async def send_referral_upgrade_email(*args, **kwargs): pass
+    async def send_admin_milestone_notification(*args, **kwargs): pass
+    async def send_admin_payment_confirmation(*args, **kwargs): pass
+    async def send_admin_lead_distribution_status(*args, **kwargs): pass
 
 # Load environment variables
 load_dotenv()
