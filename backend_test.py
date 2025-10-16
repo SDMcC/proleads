@@ -7933,8 +7933,6 @@ def main():
             print(f"❌ Error checking logs: {str(e)}")
 
 if __name__ == "__main__":
-
-if __name__ == "__main__":
     # Check if specific test is requested
     if len(sys.argv) > 1 and sys.argv[1] == "csv_upload":
         print("🎯 RUNNING SPECIFIC TEST: CSV Lead Upload Functionality")
