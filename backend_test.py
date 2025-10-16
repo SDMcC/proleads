@@ -8046,5 +8046,24 @@ if __name__ == "__main__":
         print("=" * 80)
         
         sys.exit(0 if success else 1)
+    elif len(sys.argv) > 1 and sys.argv[1] == "email_notifications":
+        print("🎯 RUNNING SPECIFIC TEST: Email Notification System")
+        print("=" * 80)
+        
+        backend_url = "https://network-tree-vis.preview.emergentagent.com"
+        tester = Web3MembershipTester(backend_url)
+        
+        # Run the specific email notification test
+        success = tester.test_email_notification_system()
+        
+        # Check backend logs for email activity
+        tester.check_backend_logs_for_emails()
+        
+        print("\n" + "=" * 80)
+        print(f"🎯 FINAL RESULT: {'✅ PASSED' if success else '❌ FAILED'}")
+        print(f"📊 Tests passed: {tester.tests_passed}/{tester.tests_run}")
+        print("=" * 80)
+        
+        sys.exit(0 if success else 1)
     else:
         sys.exit(main())
