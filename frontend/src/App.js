@@ -2869,7 +2869,7 @@ function KYCEarningsCard({ user, onNavigateToKYC }) {
         </div>
       )}
 
-      {kycStatus?.earnings_capped && !isVerified && (
+      {kycStatus?.earnings_capped && (
         <div className="mt-4 p-4 bg-red-500 bg-opacity-90 rounded-lg">
           <div className="flex items-start space-x-3">
             <AlertTriangle className="h-6 w-6 text-white mt-0.5 flex-shrink-0" />
