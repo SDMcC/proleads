@@ -3004,7 +3004,24 @@ async def get_user_milestones(current_user: dict = Depends(get_current_user)):
                         "status": "pending"
                     })
                     
-                    # Send notification to admin
+                    # Send notification to admin (in-app)
+                    await create_admin_notification(
+                        notification_type="milestone",
+                        title="User Milestone Achieved",
+                        message=f"{current_user['username']} reached {milestone_count} referrals milestone - ${bonus_amount} bonus earned!",
+                        related_user=user_address
+                    )
+                    
+                    # Send admin email notification
+                    try:
+                        await send_admin_milestone_notification(
+                            current_user['username'],
+                            milestone_count,
+                            bonus_amount
+                        )
+                    except Exception as e:
+                        logger.error(f"Failed to send admin milestone email: {str(e)}")
+                    
                     logger.info(f"MILESTONE ACHIEVED: User {current_user['username']} ({user_address}) reached {milestone_count} paid downlines. Bonus: ${bonus_amount}")
             else:
                 # Calculate progress to next milestone
