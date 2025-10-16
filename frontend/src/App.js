@@ -10324,6 +10324,7 @@ function KYCDocumentImage({ filename, alt }) {
   const [imageUrl, setImageUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [showFullSize, setShowFullSize] = useState(false);
 
   useEffect(() => {
     const fetchImage = async () => {
@@ -10371,11 +10372,47 @@ function KYCDocumentImage({ filename, alt }) {
   }
 
   return (
-    <img
-      src={imageUrl}
-      alt={alt}
-      className="w-full h-64 object-contain bg-black rounded-lg"
-    />
+    <>
+      <div className="relative group">
+        <img
+          src={imageUrl}
+          alt={alt}
+          onClick={() => setShowFullSize(true)}
+          className="w-full h-64 object-contain bg-black rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+        />
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all rounded-lg pointer-events-none">
+          <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity text-sm font-medium">
+            Click to view full size
+          </span>
+        </div>
+      </div>
+
+      {/* Full Size Modal */}
+      {showFullSize && (
+        <div 
+          className="fixed inset-0 z-[9999] bg-black bg-opacity-90 flex items-center justify-center p-4"
+          onClick={() => setShowFullSize(false)}
+        >
+          <div className="relative max-w-7xl max-h-screen">
+            <button
+              onClick={() => setShowFullSize(false)}
+              className="absolute top-4 right-4 p-2 bg-red-600 hover:bg-red-700 text-white rounded-full z-10 transition-all"
+            >
+              <X className="h-6 w-6" />
+            </button>
+            <img
+              src={imageUrl}
+              alt={alt}
+              className="max-w-full max-h-screen object-contain"
+              onClick={(e) => e.stopPropagation()}
+            />
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-70 text-white px-4 py-2 rounded-lg">
+              <p className="text-sm">{alt}</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
