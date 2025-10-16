@@ -2620,7 +2620,7 @@ function AdminNotificationPanel({ bellButtonRef, notifications, onClose, onClear
 }
 
 // Dashboard Tab Components
-function OverviewTab({ stats, user }) {
+function OverviewTab({ stats, user, onNavigateToKYC }) {
   const getShortenedReferralLink = () => {
     if (!user?.referral_code) return '';
     // Create a shortened version using referral code
@@ -2639,18 +2639,12 @@ function OverviewTab({ stats, user }) {
   return (
     <div>
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <StatCard
           icon={<DollarSign className="h-8 w-8 text-green-400" />}
           title="Total Earnings"
           value={`$${stats?.total_earnings?.toFixed(2) || '0.00'} USDC`}
           subtitle="Completed payments"
-        />
-        <StatCard
-          icon={<Activity className="h-8 w-8 text-yellow-400" />}
-          title="Pending Earnings"
-          value={`$${stats?.pending_earnings?.toFixed(2) || '0.00'} USDC`}
-          subtitle="Processing payouts"
         />
         <StatCard
           icon={<Users className="h-8 w-8 text-blue-400" />}
@@ -2683,7 +2677,7 @@ function OverviewTab({ stats, user }) {
       </div>
 
       {/* KYC Earnings Card */}
-      <KYCEarningsCard user={user} />
+      <KYCEarningsCard user={user} onNavigateToKYC={onNavigateToKYC} />
 
       {/* Recent Payments */}
       <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6 mb-8">
