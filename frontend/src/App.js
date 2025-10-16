@@ -8035,6 +8035,26 @@ function LeadsTab() {
         </div>
       ) : (
         <>
+          {/* Summary Stats - Moved to top */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-4 text-center">
+              <div className="text-2xl font-bold text-white">{totalFiles}</div>
+              <div className="text-gray-300">Total Files</div>
+            </div>
+            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-4 text-center">
+              <div className="text-2xl font-bold text-white">
+                {csvFiles.reduce((sum, file) => sum + file.lead_count, 0)}
+              </div>
+              <div className="text-gray-300">Total Leads</div>
+            </div>
+            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-4 text-center">
+              <div className="text-2xl font-bold text-white">
+                {csvFiles.reduce((sum, file) => sum + file.download_count, 0)}
+              </div>
+              <div className="text-gray-300">Total Downloads</div>
+            </div>
+          </div>
+
           {/* CSV Files Table */}
           <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
             <div className="overflow-x-auto">
