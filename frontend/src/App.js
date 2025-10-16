@@ -2348,7 +2348,10 @@ function Dashboard() {
 
         {/* Main Content */}
         <div className="flex-1 p-6 lg:p-8">
-          {activeTab === 'overview' && <OverviewTab stats={stats} user={user} />}
+          {activeTab === 'overview' && <OverviewTab stats={stats} user={user} onNavigateToKYC={() => {
+            setActiveTab('account');
+            setAccountSubTab('kyc');
+          }} />}
           {activeTab === 'network' && <NetworkTreeTab />}
           {activeTab === 'affiliate-tools' && <AffiliateToolsTab user={user} />}
           {activeTab === 'earnings' && <EarningsTab />}
