@@ -7118,6 +7118,16 @@ def main():
     else:
         print("\n✅ Members Management API system test passed")
     
+    # Test Email Notification System
+    email_success = tester.test_email_notification_system()
+    if not email_success:
+        print("\n⚠️ Email Notification System test failed")
+    else:
+        print("\n✅ Email Notification System test passed")
+    
+    # Check backend logs for email activity
+    tester.check_backend_logs_for_emails()
+    
     # Test Payments Management API system (Priority 1c)
     payments_success = tester.test_payments_management_system()
     if not payments_success:
