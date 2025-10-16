@@ -6539,8 +6539,10 @@ function AdminDashboard() {
       fetchCommissions();
     } else if (activeTab === 'milestones') {
       fetchMilestones();
+    } else if (activeTab === 'kyc') {
+      fetchKYCSubmissions();
     }
-  }, [activeTab, memberFilter, memberPage, sortField, sortDirection, paymentUserFilter, paymentTierFilter, paymentStatusFilter, paymentDateFrom, paymentDateTo, paymentPage, commissionUserFilter, commissionTierFilter, commissionStatusFilter, commissionDateFrom, commissionDateTo, commissionPage, milestoneFilters, milestonePage]);
+  }, [activeTab, memberFilter, memberPage, sortField, sortDirection, paymentUserFilter, paymentTierFilter, paymentStatusFilter, paymentDateFrom, paymentDateTo, paymentPage, commissionUserFilter, commissionTierFilter, commissionStatusFilter, commissionDateFrom, commissionDateTo, commissionPage, milestoneFilters, milestonePage, kycStatusFilter, kycPage]);
 
   const fetchAdminData = async () => {
     try {
