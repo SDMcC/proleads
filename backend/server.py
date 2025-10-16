@@ -1980,7 +1980,9 @@ async def get_all_members(
                 "suspended": member.get("suspended", False),
                 "referral_code": member["referral_code"],
                 "subscription_expires_at": subscription_expires_at,
-                "is_expired": is_expired
+                "is_expired": is_expired,
+                "kyc_status": member.get("kyc_status", "unverified"),
+                "kyc_verified_at": member.get("kyc_verified_at")
             }
             enriched_members.append(enriched_member)
         
