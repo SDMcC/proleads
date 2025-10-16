@@ -2642,44 +2642,9 @@ function OverviewTab({ stats, user, onNavigateToKYC }) {
   return (
     <div>
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        <StatCard
-          icon={<DollarSign className="h-8 w-8 text-green-400" />}
-          title="Total Earnings"
-          value={`$${stats?.total_earnings?.toFixed(2) || '0.00'} USDC`}
-          subtitle="Completed payments"
-        />
-        <StatCard
-          icon={<Users className="h-8 w-8 text-blue-400" />}
-          title="Total Referrals"
-          value={stats?.total_referrals || 0}
-          subtitle="All levels"
-        />
-        <StatCard
-          icon={<Award className="h-8 w-8 text-purple-400" />}
-          title="Membership Tier"
-          value={getTierDisplayName(user?.membership_tier || 'affiliate').toUpperCase()}
-          subtitle={(() => {
-            const tier = user?.membership_tier;
-            if (tier === 'affiliate' || tier === 'vip_affiliate') return 'Free';
-            if (tier === 'test') return '$2/month';
-            if (tier === 'bronze') return '$20/month';
-            if (tier === 'silver') return '$50/month';
-            if (tier === 'gold') return '$100/month';
-            return 'Free';
-          })()}
-          action={
-            <button
-              onClick={() => window.location.href = '/payment'}
-              className="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-all duration-300"
-            >
-              Upgrade
-            </button>
-          }
-        />
-      </div>
+      <KYCStatsRow stats={stats} user={user} onNavigateToKYC={onNavigateToKYC} />
 
-      {/* KYC Earnings Card */}
+      {/* KYC Earnings Card - Full Width for Unverified Users */}
       <KYCEarningsCard user={user} onNavigateToKYC={onNavigateToKYC} />
 
       {/* Recent Payments */}
