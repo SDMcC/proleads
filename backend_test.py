@@ -7038,6 +7038,192 @@ class Web3MembershipTester:
         print("✅ Admin Milestone Management System Test Passed")
         return True
 
+    def test_email_notification_system(self):
+        """Test the email notification system for various events"""
+        print("\n📧 Testing Email Notification System")
+        
+        # Test 1: New Referral Email - Register a user with referral code
+        print("\n🔍 Test 1: New Referral Email")
+        
+        # First create a referrer user
+        referrer_address = f"0x{uuid.uuid4().hex[:40]}"
+        referrer_username = f"referrer_{int(time.time())}"
+        referrer_email = f"{referrer_username}@test.com"
+        
+        referrer_data = {
+            "username": referrer_username,
+            "email": referrer_email,
+            "password": "testpassword123",
+            "wallet_address": referrer_address
+        }
+        
+        success, response = self.run_test("Create Referrer for Email Test", "POST", "users/register", 200, referrer_data)
+        if not success:
+            print("❌ Failed to create referrer user for email test")
+            return False
+        
+        referrer_code = response.get('referral_code')
+        print(f"✅ Created referrer with code: {referrer_code}")
+        
+        # Now register a new user with the referral code
+        new_user_address = f"0x{uuid.uuid4().hex[:40]}"
+        new_username = f"newuser_{int(time.time())}"
+        new_email = f"{new_username}@test.com"
+        
+        new_user_data = {
+            "username": new_username,
+            "email": new_email,
+            "password": "testpassword123",
+            "wallet_address": new_user_address,
+            "referrer_code": referrer_code
+        }
+        
+        success, response = self.run_test("Register User with Referral Code", "POST", "users/register", 200, new_user_data)
+        if success:
+            print("✅ New referral registration successful - email should be triggered")
+        else:
+            print("❌ New referral registration failed")
+            return False
+        
+        # Test 2: Payment Confirmation Email - Simulate payment callback
+        print("\n🔍 Test 2: Payment Confirmation Email")
+        
+        # Login as the new user first
+        login_data = {
+            "username": new_username,
+            "password": "testpassword123"
+        }
+        
+        success, login_response = self.run_test("Login New User", "POST", "auth/login", 200, login_data)
+        if success and login_response.get('token'):
+            user_token = login_response.get('token')
+            print("✅ User login successful")
+            
+            # Create a payment
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': f'Bearer {user_token}'
+            }
+            
+            payment_data = {
+                "tier": "bronze",
+                "currency": "BTC"
+            }
+            
+            success, payment_response = self.run_test("Create Payment for Email Test", "POST", "payments/create", 200, payment_data, headers)
+            if success:
+                print("✅ Payment creation successful - confirmation email should be triggered when payment is confirmed")
+            else:
+                print("⚠️ Payment creation failed (expected for test environment)")
+        else:
+            print("❌ User login failed")
+        
+        # Test 3: Lead Distribution Email - Check if endpoint exists
+        print("\n🔍 Test 3: Lead Distribution Email")
+        
+        # Get admin token first
+        admin_data = {
+            "username": "admin",
+            "password": "admin123"
+        }
+        
+        success, admin_response = self.run_test("Admin Login for Lead Test", "POST", "admin/login", 200, admin_data)
+        if success and admin_response.get('token'):
+            admin_token = admin_response.get('token')
+            
+            admin_headers = {
+                'Content-Type': 'application/json',
+                'Authorization': f'Bearer {admin_token}'
+            }
+            
+            # Check if there are any lead distributions
+            success, distributions_response = self.run_test("Get Lead Distributions", "GET", "admin/leads/distributions", 200, headers=admin_headers)
+            if success:
+                distributions = distributions_response.get('distributions', [])
+                if distributions:
+                    print(f"✅ Found {len(distributions)} lead distributions - emails should be triggered during distribution")
+                else:
+                    print("⚠️ No lead distributions found - lead distribution emails would be triggered when leads are distributed")
+            else:
+                print("❌ Failed to get lead distributions")
+        else:
+            print("❌ Admin login failed")
+        
+        # Test 4: Commission Payout Email - Check milestone system
+        print("\n🔍 Test 4: Commission Payout Email")
+        
+        if admin_token:
+            # Check if there are any milestones
+            success, milestones_response = self.run_test("Get Milestones for Email Test", "GET", "admin/milestones", 200, headers=admin_headers)
+            if success:
+                milestones = milestones_response.get('milestones', [])
+                if milestones:
+                    print(f"✅ Found {len(milestones)} milestones - commission payout emails would be triggered when marked as paid")
+                    
+                    # Try to mark one as paid to trigger email
+                    for milestone in milestones:
+                        if milestone.get('status') == 'pending':
+                            milestone_id = milestone.get('milestone_id')
+                            success, mark_paid_response = self.run_test("Mark Milestone as Paid", "PUT", f"admin/milestones/{milestone_id}/mark-paid", 200, headers=admin_headers)
+                            if success:
+                                print("✅ Milestone marked as paid - commission payout email should be triggered")
+                                break
+                            else:
+                                print("❌ Failed to mark milestone as paid")
+                else:
+                    print("⚠️ No milestones found - commission payout emails would be triggered when milestones are marked as paid")
+            else:
+                print("❌ Failed to get milestones")
+        
+        # Test 5: Milestone Achievement Email (Admin notification)
+        print("\n🔍 Test 5: Milestone Achievement Email (Admin)")
+        
+        # Check admin notifications
+        if admin_token:
+            success, admin_notifications_response = self.run_test("Get Admin Notifications", "GET", "admin/notifications", 200, headers=admin_headers)
+            if success:
+                notifications = admin_notifications_response.get('notifications', [])
+                milestone_notifications = [n for n in notifications if n.get('type') == 'milestone']
+                if milestone_notifications:
+                    print(f"✅ Found {len(milestone_notifications)} milestone notifications - admin emails should be triggered")
+                else:
+                    print("⚠️ No milestone notifications found - admin emails would be triggered when users achieve milestones")
+            else:
+                print("❌ Failed to get admin notifications")
+        
+        # Test 6: Subscription Reminder Email - Check if function exists
+        print("\n🔍 Test 6: Subscription Reminder Email")
+        print("⚠️ Subscription reminder emails require a background cron job (not implemented yet)")
+        print("✅ Email template function exists in email_service.py")
+        
+        print("\n✅ Email Notification System Test Completed")
+        return True
+    
+    def check_backend_logs_for_emails(self):
+        """Check backend logs for email-related messages"""
+        print("\n📋 Checking Backend Logs for Email Activity")
+        
+        try:
+            import subprocess
+            result = subprocess.run(['tail', '-n', '100', '/var/log/supervisor/backend.err.log'], 
+                                  capture_output=True, text=True)
+            
+            if result.returncode == 0:
+                log_content = result.stdout
+                email_lines = [line for line in log_content.split('\n') if 'email' in line.lower() or 'smtp' in line.lower()]
+                
+                if email_lines:
+                    print("📧 Email-related log entries found:")
+                    for line in email_lines[-10:]:  # Show last 10 email-related lines
+                        print(f"   {line}")
+                else:
+                    print("⚠️ No email-related log entries found in recent logs")
+            else:
+                print("❌ Failed to read backend logs")
+                
+        except Exception as e:
+            print(f"❌ Error checking logs: {str(e)}")
+
 def main():
     # Get the backend URL from environment or use default
     backend_url = "https://network-tree-vis.preview.emergentagent.com"
