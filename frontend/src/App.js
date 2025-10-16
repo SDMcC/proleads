@@ -5856,8 +5856,17 @@ function KYCVerificationTab({ user }) {
                 disabled={uploading}
                 className="w-full p-3 bg-white bg-opacity-10 border border-gray-600 rounded-lg text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-600 file:text-white hover:file:bg-blue-700 disabled:opacity-50"
               />
+              {uploading && idDocumentFile && !idDocument && (
+                <div className="flex items-center space-x-2 mt-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                  <p className="text-blue-400 text-sm">Uploading ID document...</p>
+                </div>
+              )}
               {idDocument && (
-                <p className="text-green-400 text-sm mt-2">✓ ID document uploaded successfully</p>
+                <p className="text-green-400 text-sm mt-2 flex items-center space-x-2">
+                  <CheckCircle className="h-4 w-4" />
+                  <span>✓ ID document uploaded successfully</span>
+                </p>
               )}
             </div>
 
@@ -5880,8 +5889,17 @@ function KYCVerificationTab({ user }) {
                 disabled={uploading}
                 className="w-full p-3 bg-white bg-opacity-10 border border-gray-600 rounded-lg text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-600 file:text-white hover:file:bg-blue-700 disabled:opacity-50"
               />
+              {uploading && selfieFile && !selfie && (
+                <div className="flex items-center space-x-2 mt-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                  <p className="text-blue-400 text-sm">Uploading selfie...</p>
+                </div>
+              )}
               {selfie && (
-                <p className="text-green-400 text-sm mt-2">✓ Selfie uploaded successfully</p>
+                <p className="text-green-400 text-sm mt-2 flex items-center space-x-2">
+                  <CheckCircle className="h-4 w-4" />
+                  <span>✓ Selfie uploaded successfully</span>
+                </p>
               )}
             </div>
 
