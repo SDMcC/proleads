@@ -5275,13 +5275,7 @@ function AccountTab({ user, accountSubTab, setAccountSubTab }) {
       {/* Account Sub-tab Content */}
       {accountSubTab === 'settings' && <AccountSettingsOnlyTab user={user} />}
       {accountSubTab === 'notifications' && <NotificationSettingsTab user={user} />}
-      {accountSubTab === 'kyc' && (
-        <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-8 text-center">
-          <Shield className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-white mb-2">KYC Verification</h3>
-          <p className="text-gray-300">Complete your Know Your Customer verification process. Coming soon!</p>
-        </div>
-      )}
+      {accountSubTab === 'kyc' && <KYCVerificationTab user={user} />}
       {accountSubTab === 'cancel' && <CancelAccountTab />}
     </div>
   );
