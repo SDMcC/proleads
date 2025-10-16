@@ -797,6 +797,7 @@ async def register_user(user_data: UserRegistration):
             "referrer_address": referrer_address,
             "created_at": datetime.utcnow(),
             "suspended": False,
+            "kyc_status": "unverified",
             "email_notifications": {
                 "new_referrals": True,
                 "lead_distribution": True,
