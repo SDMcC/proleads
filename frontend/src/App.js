@@ -4418,6 +4418,12 @@ function ReferralsTab() {
   const [totalReferrals, setTotalReferrals] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [stats, setStats] = useState({
+    total_referrals: 0,
+    active_referrals: 0,
+    tier_counts: {},
+    total_sub_referrals: 0
+  });
   const limit = 10;
 
   useEffect(() => {
@@ -4435,6 +4441,12 @@ function ReferralsTab() {
       setReferrals(response.data.referrals || []);
       setTotalReferrals(response.data.total_count || 0);
       setTotalPages(response.data.total_pages || 1);
+      setStats(response.data.stats || {
+        total_referrals: 0,
+        active_referrals: 0,
+        tier_counts: {},
+        total_sub_referrals: 0
+      });
     } catch (error) {
       console.error('Failed to fetch referrals:', error);
       alert('Failed to load referrals');
