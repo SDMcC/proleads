@@ -249,6 +249,14 @@ class UpdateNotificationPreferences(BaseModel):
     commission_payouts: Optional[bool] = None
     referral_upgrade: Optional[bool] = None
 
+class KYCSubmission(BaseModel):
+    id_document: str  # Will be file path
+    selfie: str  # Will be file path
+
+class KYCApproval(BaseModel):
+    approved: bool
+    rejection_reason: Optional[str] = None
+
 # WebSocket connection manager
 class ConnectionManager:
     def __init__(self):
