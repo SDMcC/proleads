@@ -10287,6 +10287,66 @@ function CancelAccountTab() {
   );
 }
 
+// KYC Document Image Component with Auth
+function KYCDocumentImage({ filename, alt }) {
+  const [imageUrl, setImageUrl] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const fetchImage = async () => {
+      try {
+        const token = localStorage.getItem('adminToken');
+        const response = await axios.get(`${API_URL}/api/users/kyc/document/${filename}`, {
+          headers: { Authorization: `Bearer ${token}` },
+          responseType: 'blob'
+        });
+        
+        const url = URL.createObjectURL(response.data);
+        setImageUrl(url);
+        setLoading(false);
+      } catch (err) {
+        console.error('Failed to load KYC document:', err);
+        setError(true);
+        setLoading(false);
+      }
+    };
+
+    fetchImage();
+
+    // Cleanup
+    return () => {
+      if (imageUrl) {
+        URL.revokeObjectURL(imageUrl);
+      }
+    };
+  }, [filename]);
+
+  if (loading) {
+    return (
+      <div className="w-full h-64 bg-black rounded-lg flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (error || !imageUrl) {
+    return (
+      <div className="w-full h-64 bg-black rounded-lg flex items-center justify-center">
+        <p className="text-gray-400">Failed to load image</p>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={imageUrl}
+      alt={alt}
+      className="w-full h-64 object-contain bg-black rounded-lg"
+    />
+  );
+}
+
 // Admin KYC Tab Component
 function AdminKYCTab({ submissions, page, setPage, totalPages, statusFilter, setStatusFilter, selectedKYC, setSelectedKYC, showModal, setShowModal, onApprove, onReject, rejectionReason, setRejectionReason }) {
   return (
