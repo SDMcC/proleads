@@ -5274,13 +5274,7 @@ function AccountTab({ user, accountSubTab, setAccountSubTab }) {
 
       {/* Account Sub-tab Content */}
       {accountSubTab === 'settings' && <AccountSettingsOnlyTab user={user} />}
-      {accountSubTab === 'notifications' && (
-        <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-8 text-center">
-          <Bell className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-white mb-2">Notification Settings</h3>
-          <p className="text-gray-300">Manage your email and SMS notification preferences. Coming soon!</p>
-        </div>
-      )}
+      {accountSubTab === 'notifications' && <NotificationSettingsTab user={user} />}
       {accountSubTab === 'kyc' && (
         <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-8 text-center">
           <Shield className="h-16 w-16 text-gray-400 mx-auto mb-4" />
