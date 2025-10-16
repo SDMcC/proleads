@@ -6516,6 +6516,15 @@ function AdminDashboard() {
   const [selectedMilestone, setSelectedMilestone] = useState(null);
   const [showMilestoneModal, setShowMilestoneModal] = useState(false);
 
+  // KYC management state
+  const [kycSubmissions, setKycSubmissions] = useState([]);
+  const [kycPage, setKycPage] = useState(1);
+  const [kycTotalPages, setKycTotalPages] = useState(1);
+  const [kycStatusFilter, setKycStatusFilter] = useState('pending');
+  const [selectedKYC, setSelectedKYC] = useState(null);
+  const [showKYCReviewModal, setShowKYCReviewModal] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState('');
+
   useEffect(() => {
     fetchAdminData();
     fetchAdminNotifications();
