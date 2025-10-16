@@ -2046,7 +2046,11 @@ async def get_member_details(member_id: str, admin: dict = Depends(get_admin_use
                 "last_active": member.get("last_active"),
                 "suspended": member.get("suspended", False),
                 "subscription_expires_at": subscription_expires_at,
-                "is_expired": is_expired
+                "is_expired": is_expired,
+                "kyc_status": member.get("kyc_status", "unverified"),
+                "kyc_submitted_at": member.get("kyc_submitted_at"),
+                "kyc_verified_at": member.get("kyc_verified_at"),
+                "kyc_rejection_reason": member.get("kyc_rejection_reason")
             },
             "sponsor": sponsor_info,
             "stats": {
