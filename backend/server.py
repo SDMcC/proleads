@@ -3580,6 +3580,19 @@ async def perform_lead_distribution(distribution_id: str):
             
             await db.member_csv_files.insert_one(csv_file_doc)
             
+            # Send lead distribution email to member if enabled
+            member_prefs = member.get("email_notifications", {})
+            if member_prefs.get("lead_distribution", True):
+                try:
+                    await send_lead_distribution_email(
+                        member["email"],
+                        member["username"],
+                        len(member_leads),
+                        csv_file_doc["filename"]
+                    )
+                except Exception as e:
+                    logger.error(f"Failed to send lead distribution email to {member['username']}: {str(e)}")
+            
             # Create individual member_leads records for tracking (keep existing structure for now)
             for lead in member_leads:
                 member_lead_doc = {
