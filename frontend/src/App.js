@@ -7210,27 +7210,14 @@ function AdminDashboard() {
               />
             </div>
 
-            {/* Recent Activity */}
-            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
-              <h3 className="text-xl font-bold text-white mb-4">Recent Activity</h3>
-              <div className="space-y-4">
-                {stats?.recent_activity?.length > 0 ? (
-                  stats.recent_activity.map((activity, index) => (
-                    <div key={index} className="flex justify-between items-center py-3 border-b border-gray-600 last:border-b-0">
-                      <div>
-                        <p className="text-white font-medium">{activity.description}</p>
-                        <p className="text-gray-400 text-sm">{activity.user}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-gray-400 text-sm">
-                          {new Date(activity.timestamp).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-gray-400 text-center py-8">No recent activity</p>
-                )}
+            {/* Recent Activity Cards */}
+            <div>
+              <h3 className="text-2xl font-bold text-white mb-6">Recent Activity</h3>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <RecentMembersCard />
+                <RecentPaymentsCard />
+                <RecentMilestonesCard />
+                <RecentTicketsCard />
               </div>
             </div>
           </div>
