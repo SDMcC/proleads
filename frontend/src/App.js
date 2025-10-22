@@ -1966,6 +1966,7 @@ function CommissionStructure() {
 // Register Page Component
 function RegisterPage() {
   const { login } = useAuth();
+  const { isDark } = require('./DarkModeContext').useDarkMode();
   const [formData, setFormData] = useState({
     username: '',
     email: '',
