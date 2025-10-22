@@ -1468,12 +1468,12 @@ function LandingPage() {
               </p>
             </div>
             
-            <div className="text-center p-6">
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Zap className="h-8 w-8 text-purple-600" />
+            <div className="text-center p-6 bg-white dark:bg-dark rounded-xl transition-colors duration-300">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Zap className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">A New Idea</h3>
-              <p className="text-gray-600">
+              <h3 className="text-xl font-bold text-black dark:text-white mb-3">A New Idea</h3>
+              <p className="text-body-color dark:text-body-color-dark">
                 Proleads Network redefines lead generation. Get a consistent supply of high quality leads to fuel your network, 
                 plus earn passive income by sharing the system. Refer just 4 new members, and their commissions can cover 
                 your entire membership cost - making your growth practically free.
