@@ -438,6 +438,10 @@ async def calculate_commissions(new_member_address: str, new_member_tier: str, n
         referrer_tier = referrer.get("membership_tier", "affiliate")
         referrer_commission_rates = MEMBERSHIP_TIERS[referrer_tier]["commissions"]
         
+        # Move to next level up the chain BEFORE checking eligibility
+        # This ensures we continue through all levels even if someone doesn't qualify
+        next_referrer_address = referrer.get("referrer_address")
+        
         # Check if this referrer's tier has enough commission levels
         if level < len(referrer_commission_rates):
             commission_rate = referrer_commission_rates[level]
@@ -478,11 +482,11 @@ async def calculate_commissions(new_member_address: str, new_member_tier: str, n
             else:
                 logger.info(f"No commission for level {level + 1} - rate is 0%")
         else:
-            logger.info(f"Referrer {referrer_tier} tier only has {len(referrer_commission_rates)} commission levels, stopping at level {level + 1}")
-            break
+            logger.info(f"Referrer {referrer_tier} tier only has {len(referrer_commission_rates)} commission levels, skipping level {level + 1}")
+            # Don't break - continue to next level in the chain
         
-        # Move to next level up the chain
-        current_referrer_address = referrer.get("referrer_address")
+        # Update current_referrer_address for next iteration
+        current_referrer_address = next_referrer_address
     
     logger.info(f"Total commissions calculated: {len(commissions_paid)}")
     return commissions_paid
