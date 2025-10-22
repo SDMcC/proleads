@@ -297,6 +297,7 @@ function ProtectedRoute({ children }) {
 // Login Modal Component
 function LoginModal({ onClose }) {
   const { login } = useAuth();
+  const { isDark } = require('./DarkModeContext').useDarkMode();
   const [loginData, setLoginData] = useState({ username: '', password: '' });
   const [loginLoading, setLoginLoading] = useState(false);
 
