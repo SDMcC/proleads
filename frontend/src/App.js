@@ -1380,11 +1380,11 @@ function LandingPage() {
                 </p>
                 
                 {referrerInfo && (
-                  <div className="max-w-md mx-auto mb-8 p-4 bg-primary bg-opacity-10 dark:bg-primary dark:bg-opacity-20 rounded-lg border border-primary border-opacity-30">
-                    <p className="text-primary dark:text-white text-sm font-medium">
+                  <div className="max-w-md mx-auto mb-8 p-4 bg-white/20 backdrop-blur-md rounded-lg border border-white/30">
+                    <p className="text-white text-sm font-medium drop-shadow-md">
                       🎉 You're joining through <strong>{referrerInfo.referrer_username}</strong>'s network!
                     </p>
-                    <p className="text-body-color dark:text-body-color-dark text-xs mt-1">
+                    <p className="text-gray-100 text-xs mt-1 drop-shadow-sm">
                       Tier: {getTierDisplayName(referrerInfo.referrer_tier)}
                     </p>
                   </div>
@@ -1393,13 +1393,13 @@ function LandingPage() {
                 <div className="flex flex-col items-center justify-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
                   <a
                     href={`/register${referralCode ? `?ref=${referralCode}` : ''}`}
-                    className="rounded-lg bg-primary px-8 py-4 text-base font-semibold text-white duration-300 ease-in-out hover:bg-primary/80"
+                    className="rounded-lg bg-primary px-8 py-4 text-base font-semibold text-white duration-300 ease-in-out hover:bg-primary/90 shadow-lg"
                   >
                     Get Started
                   </a>
                   <a
                     href="#about"
-                    className="inline-block rounded-lg bg-black/10 dark:bg-white/10 px-8 py-4 text-base font-semibold text-black dark:text-white duration-300 ease-in-out hover:bg-black/5 dark:hover:bg-white/5"
+                    className="inline-block rounded-lg bg-white/20 backdrop-blur-md px-8 py-4 text-base font-semibold text-white duration-300 ease-in-out hover:bg-white/30 border border-white/30"
                   >
                     Learn More
                   </a>
