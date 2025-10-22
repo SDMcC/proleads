@@ -2091,117 +2091,126 @@ function RegisterPage() {
           </div>
 
           <form onSubmit={handleSubmit}>
-            <div>
-              <label className="block text-white text-sm font-medium mb-2">
-                Username *
+            <div className="mb-8">
+              <label className="text-black dark:text-white mb-3 block text-sm font-medium">
+                Username
               </label>
               <input
                 type="text"
                 value={formData.username}
                 onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
-                className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
+                className="border-stroke dark:text-body-color-dark text-body-color focus:border-primary dark:focus:border-primary w-full rounded-lg border bg-transparent px-6 py-3 text-base outline-none transition-all duration-300 dark:border-stroke-dark"
                 placeholder="Enter your username"
                 required
               />
             </div>
 
-            <div>
-              <label className="block text-white text-sm font-medium mb-2">
-                Email Address *
+            <div className="mb-8">
+              <label className="text-black dark:text-white mb-3 block text-sm font-medium">
+                Email Address
               </label>
               <input
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
+                className="border-stroke dark:text-body-color-dark text-body-color focus:border-primary dark:focus:border-primary w-full rounded-lg border bg-transparent px-6 py-3 text-base outline-none transition-all duration-300 dark:border-stroke-dark"
                 placeholder="Enter your email"
                 required
               />
             </div>
 
-            <div>
-              <label className="block text-white text-sm font-medium mb-2">
-                Password *
+            <div className="mb-8">
+              <label className="text-black dark:text-white mb-3 block text-sm font-medium">
+                Password
               </label>
               <input
                 type="password"
                 value={formData.password}
                 onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
+                className="border-stroke dark:text-body-color-dark text-body-color focus:border-primary dark:focus:border-primary w-full rounded-lg border bg-transparent px-6 py-3 text-base outline-none transition-all duration-300 dark:border-stroke-dark"
                 placeholder="Enter your password"
                 required
                 minLength={6}
               />
             </div>
 
-            <div>
-              <label className="block text-white text-sm font-medium mb-2">
-                Confirm Password *
+            <div className="mb-8">
+              <label className="text-black dark:text-white mb-3 block text-sm font-medium">
+                Confirm Password
               </label>
               <input
                 type="password"
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
+                className="border-stroke dark:text-body-color-dark text-body-color focus:border-primary dark:focus:border-primary w-full rounded-lg border bg-transparent px-6 py-3 text-base outline-none transition-all duration-300 dark:border-stroke-dark"
                 placeholder="Confirm your password"
                 required
               />
             </div>
             
-            <div>
-              <label className="block text-white text-sm font-medium mb-2">
-                Wallet Address *
+            <div className="mb-8">
+              <label className="text-black dark:text-white mb-3 block text-sm font-medium">
+                Wallet Address
               </label>
               <input
                 type="text"
                 value={formData.wallet_address}
                 onChange={(e) => setFormData(prev => ({ ...prev, wallet_address: e.target.value }))}
-                className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
+                className="border-stroke dark:text-body-color-dark text-body-color focus:border-primary dark:focus:border-primary w-full rounded-lg border bg-transparent px-6 py-3 text-base outline-none transition-all duration-300 dark:border-stroke-dark"
                 placeholder="0x1234567890123456789012345678901234567890"
                 required
               />
-              <p className="text-gray-400 text-xs mt-1">You can change this later in your account settings</p>
+              <p className="text-body-color dark:text-body-color-dark text-xs mt-2">You can change this later in your account settings</p>
             </div>
 
-            <div className="flex items-start space-x-3">
-              <input
-                type="checkbox"
-                id="acceptTerms"
-                checked={acceptTerms}
-                onChange={(e) => setAcceptTerms(e.target.checked)}
-                className="mt-1 h-4 w-4 text-blue-600 bg-black bg-opacity-30 border-gray-600 rounded focus:ring-blue-500"
-                required
-              />
-              <label htmlFor="acceptTerms" className="text-white text-sm">
+            <div className="mb-8 flex items-start">
+              <div className="relative">
+                <input
+                  type="checkbox"
+                  id="acceptTerms"
+                  checked={acceptTerms}
+                  onChange={(e) => setAcceptTerms(e.target.checked)}
+                  className="sr-only"
+                  required
+                />
+                <div className="box border-body-color/20 dark:border-white/10 mr-4 flex h-5 w-5 items-center justify-center rounded border">
+                  <span className={acceptTerms ? 'opacity-100' : 'opacity-0'}>
+                    <svg width="11" height="8" viewBox="0 0 11 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M10.0915 0.951972L10.0867 0.946075L10.0813 0.940568C9.90076 0.753564 9.61034 0.753146 9.42927 0.939309L4.16201 6.22962L1.58507 3.63469C1.40401 3.44841 1.11351 3.44879 0.932892 3.63584C0.755703 3.81933 0.755703 4.10875 0.932892 4.29224L0.932878 4.29225L0.934851 4.29424L3.58046 6.95832C3.73676 7.11955 3.94983 7.2 4.1473 7.2C4.36196 7.2 4.55963 7.11773 4.71406 6.9584L10.0468 1.60234C10.2436 1.4199 10.2421 1.1339 10.0915 0.951972Z" fill="#3056D3" stroke="#3056D3" strokeWidth="0.4"/>
+                    </svg>
+                  </span>
+                </div>
+              </div>
+              <label htmlFor="acceptTerms" className="text-body-color dark:text-body-color-dark text-sm cursor-pointer select-none">
                 I accept the{' '}
                 <a 
                   href="/terms" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="text-blue-400 hover:text-blue-300 underline"
+                  className="text-primary hover:underline"
                 >
                   Terms & Conditions
                 </a>
               </label>
             </div>
 
-            <button
-              type="submit"
-              disabled={loading || !acceptTerms}
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
-            >
-              {loading ? 'Creating Account...' : 'Create Account'}
-            </button>
+            <div className="mb-6">
+              <button
+                type="submit"
+                disabled={loading || !acceptTerms}
+                className="bg-primary hover:bg-primary/90 flex w-full items-center justify-center rounded-lg px-9 py-4 text-base font-medium text-white duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Creating Account...' : 'Sign up'}
+              </button>
+            </div>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-gray-300 text-sm">
-              Already have an account?{' '}
-              <a href="/" className="text-blue-400 hover:text-blue-300 font-medium">
-                Sign In
-              </a>
-            </p>
-          </div>
+          <p className="text-body-color dark:text-body-color-dark text-center text-base font-medium">
+            Already have an account?{" "}
+            <a href="/" className="text-primary hover:underline">
+              Sign in
+            </a>
+          </p>
         </div>
       </div>
     </div>
