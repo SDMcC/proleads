@@ -7144,9 +7144,10 @@ function AdminDashboard() {
             <nav className="space-y-2">
               {[
                 { id: 'overview', label: 'Overview', icon: BarChart3 },
+                { id: 'analytics', label: 'Analytics', icon: TrendingUp },
                 { id: 'members', label: 'Members', icon: Users },
                 { id: 'payments', label: 'Payments', icon: DollarSign },
-                { id: 'commissions', label: 'Commissions', icon: TrendingUp },
+                { id: 'commissions', label: 'Commissions', icon: Activity },
                 { id: 'milestones', label: 'Milestones', icon: Award },
                 { id: 'kyc', label: 'KYC Verification', icon: Shield },
                 { id: 'leads', label: 'Leads Distribution', icon: FileText },
