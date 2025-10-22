@@ -1452,8 +1452,8 @@ function LandingPage() {
           </svg>
         </div>
         
-        {/* Animated Background - Bottom Left */}
-        <div className="absolute bottom-0 left-0 z-[-1] opacity-30 lg:opacity-100">
+        {/* Keep SVG backgrounds hidden - video is primary background */}
+        <div className="absolute bottom-0 left-0 z-[-3] opacity-0">
           <svg width="364" height="201" viewBox="0 0 364 201" fill="none">
             <path d="M5.88928 72.3303C33.6599 66.4798 101.397 64.9086 150.178 105.427C211.155 156.076 229.59 162.093 264.333 166.607C299.076 171.12 337.718 183.657 362.889 212.24" stroke="url(#paint0_linear_25:218)" />
             <path d="M-22.1107 72.3303C5.65989 66.4798 73.3965 64.9086 122.178 105.427C183.155 156.076 201.59 162.093 236.333 166.607C271.076 171.12 309.718 183.657 334.889 212.24" stroke="url(#paint1_linear_25:218)" />
