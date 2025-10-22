@@ -12,9 +12,9 @@ export function useDarkMode() {
 
 export function DarkModeProvider({ children }) {
   const [isDark, setIsDark] = useState(() => {
-    // Check localStorage or default to light mode
+    // Check localStorage or default to dark mode
     const saved = localStorage.getItem('darkMode');
-    return saved === 'true';
+    return saved === null ? true : saved === 'true'; // Default to dark mode
   });
 
   useEffect(() => {
