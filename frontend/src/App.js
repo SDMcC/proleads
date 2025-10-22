@@ -1347,7 +1347,7 @@ function LandingPage() {
             playsInline
           >
             <source 
-              src="https://customer-assets.emergentagent.com/job_membership-tier/artifacts/52s0e27o_grok.mp4" 
+              src="/grok-video-loop.mp4" 
               type="video/mp4" 
             />
           </video>
