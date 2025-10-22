@@ -392,22 +392,22 @@ function EnhancedMembershipTiers({ tiers, referralCode, loading }) {
   
   if (loading) {
     return (
-      <section className="py-16 bg-white" id="pricing">
+      <section className="py-16 bg-white dark:bg-gray-dark transition-colors duration-300" id="pricing">
         <div className="container mx-auto px-4 text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto"></div>
         </div>
       </section>
     );
   }
 
   return (
-    <section className="py-16 bg-white" id="pricing">
+    <section className="py-16 bg-white dark:bg-gray-dark transition-colors duration-300" id="pricing">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-black dark:text-white mb-4">
             Choose Your Membership Level
           </h2>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+          <p className="text-lg text-body-color dark:text-body-color-dark max-w-3xl mx-auto">
             Select the tier that matches your network marketing goals. Each membership includes weekly leads and access to our affiliate program.
           </p>
         </div>
