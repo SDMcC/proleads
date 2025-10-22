@@ -1535,8 +1535,20 @@ function LandingPage() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <div className="w-full h-64 bg-gradient-to-br from-primary/20 to-primary/10 dark:from-primary/30 dark:to-primary/20 rounded-lg flex items-center justify-center mb-6">
-                <Users className="h-24 w-24 text-primary" />
+              <div className="w-full rounded-lg overflow-hidden shadow-lg">
+                <video 
+                  className="w-full h-auto"
+                  autoPlay 
+                  loop 
+                  muted 
+                  playsInline
+                >
+                  <source 
+                    src="https://customer-assets.emergentagent.com/job_membership-tier/artifacts/jrak2gxc_path-to-success.mp4" 
+                    type="video/mp4" 
+                  />
+                  Your browser does not support the video tag.
+                </video>
               </div>
             </div>
             <div>
