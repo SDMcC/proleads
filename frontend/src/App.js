@@ -675,37 +675,68 @@ function Footer() {
 
 // Affiliates Page Component
 function AffiliatesPage() {
+  const { isDark, toggleDarkMode } = useDarkMode();
+  
   return (
-    <div className="min-h-screen bg-white">
+    <div className={`min-h-screen transition-colors duration-300 ${isDark ? 'dark bg-dark' : 'bg-white'}`}>
       {/* Header */}
-      <header className="bg-gray-900 text-white">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <a href="/" className="flex items-center space-x-3">
-              <img 
-                src="https://members.proleads.network/assets/images/hero-logo-2.png" 
-                alt="Proleads Network" 
-                className="h-8 w-auto"
-              />
-              <span className="text-xl font-bold">Proleads Network</span>
-            </a>
-            <a href="/" className="text-blue-400 hover:text-blue-300 transition-colors">
-              ← Back to Home
-            </a>
+      <header className="absolute top-0 left-0 z-40 w-full bg-transparent transition-colors duration-300">
+        <div className="container mx-auto">
+          <div className="relative -mx-4 flex items-center justify-between">
+            <div className="w-60 max-w-full px-4">
+              <a href="/" className="flex items-center space-x-3 py-5">
+                <img 
+                  src={isDark ? "https://members.proleads.network/assets/images/hero-logo-2.png" : "https://members.proleads.network/assets/images/hero-logo-4.png"}
+                  alt="Proleads Network" 
+                  className="h-8 w-auto"
+                />
+                <span className="text-xl font-bold text-white dark:text-white">Proleads Network</span>
+              </a>
+            </div>
+            <div className="flex w-full items-center justify-end px-4">
+              <button
+                onClick={toggleDarkMode}
+                className="mr-4 flex h-12 w-12 items-center justify-center rounded-lg bg-white/10 backdrop-blur-md hover:bg-white/20 transition-colors duration-300"
+              >
+                {isDark ? (
+                  <Sun className="h-5 w-5 text-white" />
+                ) : (
+                  <Moon className="h-5 w-5 text-white" />
+                )}
+              </button>
+              <a 
+                href="/" 
+                className="text-white hover:text-blue-300 transition-colors font-medium"
+              >
+                ← Back to Home
+              </a>
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 text-white py-20">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            Join Our Affiliate Program
-          </h1>
-          <p className="text-xl text-blue-200 mb-8 max-w-3xl mx-auto">
-            Earn up to 30% recurring commissions by referring new members to Proleads Network. 
-            Build your network and create passive income with our generous multi-tier commission structure.
-          </p>
+      {/* Hero Section with Background Image */}
+      <section className="relative pt-[120px] pb-20 text-white overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="/network-connection-bg.jpg" 
+            alt="Network background" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-900/90 via-purple-900/90 to-indigo-900/90"></div>
+        </div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="text-center">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+              Join Our Affiliate Program
+            </h1>
+            <p className="text-xl md:text-2xl text-blue-100 mb-8 max-w-3xl mx-auto leading-relaxed">
+              Earn up to 30% recurring commissions by referring new members to Proleads Network. 
+              Build your network and create passive income with our generous multi-tier commission structure.
+            </p>
+          </div>
         </div>
       </section>
 
