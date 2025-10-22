@@ -2073,8 +2073,8 @@ function RegisterPage() {
     >
       {/* Overlay for better readability */}
       <div className="absolute inset-0 bg-black/20 dark:bg-black/40"></div>
-      <div className="max-w-md w-full">
-        <div className="bg-white dark:bg-dark shadow-lg dark:shadow-2xl rounded-lg p-8 sm:p-12 transition-colors duration-300">
+      <div className="max-w-md w-full relative z-10">
+        <div className="bg-white dark:bg-dark shadow-2xl dark:shadow-2xl rounded-lg p-8 sm:p-12 transition-colors duration-300 backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95">
           <div className="text-center mb-8">
             <img 
               src="https://members.proleads.network/assets/images/hero-logo-2.png" 
