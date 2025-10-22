@@ -456,10 +456,10 @@ function EnhancedMembershipTiers({ tiers, referralCode, loading }) {
 
             return (
               <div key={tierId} className={`relative bg-white dark:bg-dark border-2 rounded-lg shadow-lg overflow-hidden transition-colors duration-300 ${
-                tierId === 'gold' ? 'border-yellow-500 dark:border-yellow-400 transform scale-105' : 'border-stroke dark:border-stroke-dark'
+                tierId === 'silver' ? 'border-blue-500 dark:border-blue-400 transform scale-105' : 'border-stroke dark:border-stroke-dark'
               }`}>
-                {tierId === 'gold' && (
-                  <div className="absolute top-0 left-0 right-0 bg-yellow-500 dark:bg-yellow-400 text-white dark:text-black text-center py-1 text-sm font-medium">
+                {tierId === 'silver' && (
+                  <div className="absolute top-0 left-0 right-0 bg-blue-500 dark:bg-blue-400 text-white dark:text-black text-center py-1 text-sm font-medium">
                     Most Popular
                   </div>
                 )}
