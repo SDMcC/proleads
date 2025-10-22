@@ -7224,6 +7224,11 @@ function AdminDashboard() {
           </div>
         )}
 
+
+        {/* Analytics Tab */}
+        {activeTab === 'analytics' && <AnalyticsTab />}
+
+
         {/* Members Management Tab */}
         {activeTab === 'members' && (
           <div className="space-y-6">
