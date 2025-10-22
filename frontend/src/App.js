@@ -1337,7 +1337,10 @@ function LandingPage() {
               <div className="mx-auto max-w-[800px] text-center">
                 <div className="mb-8">
                   <img 
-                    src="https://members.proleads.network/assets/images/hero-logo-2.png" 
+                    src={isDark 
+                      ? "https://members.proleads.network/assets/images/hero-logo-2.png" 
+                      : "https://customer-assets.emergentagent.com/job_membership-tier/artifacts/pnsgppw4_hero-logo-4.png"
+                    }
                     alt="Proleads Network" 
                     className="h-16 w-auto mx-auto mb-6"
                   />
