@@ -10307,13 +10307,6 @@ function AnalyticsGraph({ data, dataKey, color, yAxisLabel, formatValue }) {
   );
 }
 
-
-    </div>
-  );
-}
-
-// Admin Stat Card Component
-
 // Recent Activity Card Components
 function RecentMembersCard() {
   const [recentMembers, setRecentMembers] = useState([]);
