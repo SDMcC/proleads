@@ -705,7 +705,7 @@ function AffiliatesPage() {
             
             <div className="text-center">
               <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <ExternalLink className="h-8 w-8 text-purple-600" />
+                <ExternalLink className="h-8 w-8 text-primary" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">2. Share Your Link</h3>
               <p className="text-gray-600">
@@ -716,7 +716,7 @@ function AffiliatesPage() {
             
             <div className="text-center">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <DollarSign className="h-8 w-8 text-green-600" />
+                <DollarSign className="h-8 w-8 text-primary" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">3. Earn Commissions</h3>
               <p className="text-gray-600">
@@ -800,8 +800,8 @@ function AffiliatesPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             <div className="space-y-6">
               <div className="flex items-start space-x-4">
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Zap className="h-6 w-6 text-green-600" />
+                <div className="w-12 h-12 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Zap className="h-6 w-6 text-primary" />
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-gray-900 mb-2">Instant USDC Payouts</h3>
@@ -826,8 +826,8 @@ function AffiliatesPage() {
               </div>
               
               <div className="flex items-start space-x-4">
-                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Award className="h-6 w-6 text-purple-600" />
+                <div className="w-12 h-12 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Award className="h-6 w-6 text-primary" />
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-gray-900 mb-2">Multi-Tier Structure</h3>
@@ -841,8 +841,8 @@ function AffiliatesPage() {
             
             <div className="space-y-6">
               <div className="flex items-start space-x-4">
-                <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Users className="h-6 w-6 text-yellow-600" />
+                <div className="w-12 h-12 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Users className="h-6 w-6 text-primary" />
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-gray-900 mb-2">Easy Sharing Tools</h3>
@@ -1543,8 +1543,8 @@ function LandingPage() {
               </div>
               
               <div className="flex space-x-6">
-                <div className="w-24 h-24 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <DollarSign className="h-12 w-12 text-green-600" />
+                <div className="w-24 h-24 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <DollarSign className="h-12 w-12 text-primary" />
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-gray-900 mb-3">Cost-Effective Lead Generation</h3>
@@ -1559,8 +1559,8 @@ function LandingPage() {
             
             <div className="space-y-12">
               <div className="flex space-x-6">
-                <div className="w-24 h-24 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Target className="h-12 w-12 text-purple-600" />
+                <div className="w-24 h-24 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Target className="h-12 w-12 text-primary" />
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-gray-900 mb-3">Maximizing ROI with Targeted Leads</h3>
@@ -1573,8 +1573,8 @@ function LandingPage() {
               </div>
               
               <div className="flex space-x-6">
-                <div className="w-24 h-24 bg-yellow-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Award className="h-12 w-12 text-yellow-600" />
+                <div className="w-24 h-24 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Award className="h-12 w-12 text-primary" />
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-gray-900 mb-3">Maximize Your Earnings Potential</h3>
