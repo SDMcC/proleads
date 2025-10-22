@@ -372,7 +372,7 @@ class SubscriptionExpiryTester:
         return all_passed
 
 if __name__ == "__main__":
-    backend_url = "https://network-tree-vis.preview.emergentagent.com"
+    backend_url = "https://membership-tier.preview.emergentagent.com"
     tester = SubscriptionExpiryTester(backend_url)
     success = tester.run_all_tests()
     exit(0 if success else 1)

@@ -310,7 +310,7 @@ class ReviewRequestTester:
 def main():
     if len(sys.argv) != 2:
         print("Usage: python review_request_test.py <base_url>")
-        print("Example: python review_request_test.py https://network-tree-vis.preview.emergentagent.com")
+        print("Example: python review_request_test.py https://membership-tier.preview.emergentagent.com")
         sys.exit(1)
     
     base_url = sys.argv[1].rstrip('/')

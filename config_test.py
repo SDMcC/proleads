@@ -463,7 +463,7 @@ class AdminConfigTester:
 
 if __name__ == "__main__":
     # Get backend URL from environment or use default
-    backend_url = "https://network-tree-vis.preview.emergentagent.com"
+    backend_url = "https://membership-tier.preview.emergentagent.com"
     
     # Create tester instance
     tester = AdminConfigTester(backend_url)

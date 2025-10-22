@@ -255,7 +255,7 @@ class AdminDashboardTester:
             return False
 
 def main():
-    backend_url = "https://network-tree-vis.preview.emergentagent.com"
+    backend_url = "https://membership-tier.preview.emergentagent.com"
     
     print("🚀 Admin Dashboard User Registration Tracking Test")
     print("=" * 55)

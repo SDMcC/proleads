@@ -79,7 +79,7 @@ Great news! {new_member_username} has just joined Proleads Network using your re
 You're building your network and earning commissions. Keep sharing your referral link to grow your team!
 
 Login to your dashboard to see your updated referral network:
-https://network-tree-vis.preview.emergentagent.com
+https://membership-tier.preview.emergentagent.com
 
 Best regards,
 Proleads Network Team
@@ -96,7 +96,7 @@ Good news! {lead_count} new leads have been distributed to your account.
 File: {csv_filename}
 
 Login to your dashboard to download your leads:
-https://network-tree-vis.preview.emergentagent.com
+https://membership-tier.preview.emergentagent.com
 
 Start reaching out to these leads and grow your business!
 
@@ -118,7 +118,7 @@ Payment Details:
 - Status: Confirmed
 
 Your membership benefits are now active. Login to your dashboard:
-https://network-tree-vis.preview.emergentagent.com
+https://membership-tier.preview.emergentagent.com
 
 Best regards,
 Proleads Network Team
@@ -135,7 +135,7 @@ This is a friendly reminder that your {tier.capitalize()} membership will expire
 To continue enjoying your membership benefits, please renew your subscription before it expires.
 
 Login to your dashboard to renew:
-https://network-tree-vis.preview.emergentagent.com
+https://membership-tier.preview.emergentagent.com
 
 Best regards,
 Proleads Network Team
@@ -157,7 +157,7 @@ Milestone Details:
 Keep building your network to reach even bigger milestones!
 
 Login to your dashboard:
-https://network-tree-vis.preview.emergentagent.com
+https://membership-tier.preview.emergentagent.com
 
 Best regards,
 Proleads Network Team
@@ -174,7 +174,7 @@ Exciting news! {referral_username}, one of your referrals, has upgraded their me
 This means you'll earn higher commissions from their network activity. Keep encouraging your team!
 
 Login to your dashboard to see your updated earnings:
-https://network-tree-vis.preview.emergentagent.com
+https://membership-tier.preview.emergentagent.com
 
 Best regards,
 Proleads Network Team
@@ -197,7 +197,7 @@ Milestone Details:
 - Status: Pending Payment
 
 Login to admin dashboard to mark as paid:
-https://network-tree-vis.preview.emergentagent.com/admin
+https://membership-tier.preview.emergentagent.com/admin
 
 Best regards,
 Proleads Network System
@@ -218,7 +218,7 @@ Payment Details:
 - Status: Confirmed
 
 Login to admin dashboard:
-https://network-tree-vis.preview.emergentagent.com/admin
+https://membership-tier.preview.emergentagent.com/admin
 
 Best regards,
 Proleads Network System
@@ -239,7 +239,7 @@ Distribution Details:
 - Eligible Members: {eligible_members}
 
 Login to admin dashboard:
-https://network-tree-vis.preview.emergentagent.com/admin
+https://membership-tier.preview.emergentagent.com/admin
 
 Best regards,
 Proleads Network System
