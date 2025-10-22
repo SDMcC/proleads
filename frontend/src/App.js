@@ -2062,33 +2062,35 @@ function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4" style={{
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-    }}>
+    <div className="min-h-screen bg-white dark:bg-black flex items-center justify-center px-4 py-16 transition-colors duration-300">
       <div className="max-w-md w-full">
-        <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-2xl p-8 shadow-2xl border border-white border-opacity-20">
+        <div className="bg-white dark:bg-dark shadow-lg dark:shadow-2xl rounded-lg p-8 sm:p-12 transition-colors duration-300">
           <div className="text-center mb-8">
             <img 
               src="https://members.proleads.network/assets/images/hero-logo-2.png" 
               alt="Proleads Network" 
               className="h-16 w-auto mx-auto mb-4"
             />
-            <h2 className="text-3xl font-bold text-white mb-2">Join Our Network</h2>
-            <p className="text-gray-200">Create your membership account</p>
+            <h3 className="mb-3 text-center text-2xl font-bold text-black dark:text-white sm:text-3xl">
+              Create your account
+            </h3>
+            <p className="text-body-color dark:text-body-color-dark text-center text-base font-medium">
+              Join our network and start earning today
+            </p>
             
             {referrerInfo && (
-              <div className="mt-4 p-4 bg-blue-600 bg-opacity-30 rounded-lg border border-blue-400 border-opacity-50">
-                <p className="text-blue-100 text-sm">
+              <div className="mt-4 p-4 bg-primary bg-opacity-10 dark:bg-primary dark:bg-opacity-20 rounded-lg border border-primary border-opacity-30">
+                <p className="text-primary dark:text-white text-sm font-medium">
                   🎉 You're joining through <strong>{referrerInfo.referrer_username}</strong>'s network!
                 </p>
-                <p className="text-blue-200 text-xs mt-1">
+                <p className="text-body-color dark:text-body-color-dark text-xs mt-1">
                   Tier: {referrerInfo.referrer_tier.toUpperCase()}
                 </p>
               </div>
             )}
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit}>
             <div>
               <label className="block text-white text-sm font-medium mb-2">
                 Username *
