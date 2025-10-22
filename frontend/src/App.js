@@ -1483,12 +1483,12 @@ function LandingPage() {
               </a>
             </div>
             
-            <div className="text-center p-6">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <TrendingUp className="h-8 w-8 text-green-600" />
+            <div className="text-center p-6 bg-white dark:bg-dark rounded-xl transition-colors duration-300">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <TrendingUp className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Exponential Growth</h3>
-              <p className="text-gray-600">
+              <h3 className="text-xl font-bold text-black dark:text-white mb-3">Exponential Growth</h3>
+              <p className="text-body-color dark:text-body-color-dark">
                 Our subscription model fuels your growth. Weekly leads keep your pipeline full and your downline thriving. 
                 With Proleads Network, you're not just maintaining momentum - you're unlocking the potential to grow faster and smarter.
               </p>
