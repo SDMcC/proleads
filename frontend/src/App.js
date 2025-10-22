@@ -2088,7 +2088,10 @@ function RegisterPage() {
         <div className="bg-white dark:bg-dark shadow-2xl dark:shadow-2xl rounded-lg p-8 sm:p-12 transition-colors duration-300 backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95">
           <div className="text-center mb-8">
             <img 
-              src="https://members.proleads.network/assets/images/hero-logo-2.png" 
+              src={isDark 
+                ? "https://members.proleads.network/assets/images/hero-logo-2.png" 
+                : "https://customer-assets.emergentagent.com/job_membership-tier/artifacts/pnsgppw4_hero-logo-4.png"
+              }
               alt="Proleads Network" 
               className="h-16 w-auto mx-auto mb-4"
             />
