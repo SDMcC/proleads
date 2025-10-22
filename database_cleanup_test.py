@@ -319,7 +319,7 @@ class DatabaseCleanupVerificationTester:
 def main():
     if len(sys.argv) != 2:
         print("Usage: python database_cleanup_test.py <base_url>")
-        print("Example: python database_cleanup_test.py https://membership-tier.preview.emergentagent.com")
+        print("Example: python database_cleanup_test.py https://proleads-hub.preview.emergentagent.com")
         sys.exit(1)
     
     base_url = sys.argv[1].rstrip('/')
