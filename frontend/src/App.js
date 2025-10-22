@@ -926,7 +926,7 @@ function AffiliatesPage() {
                   <Zap className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">Instant USDC Payouts</h3>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Instant USDC Payouts</h3>
                   <p className="text-body-color dark:text-body-color-dark">
                     Receive your commissions instantly in USDC cryptocurrency. No waiting periods, no manual processing - 
                     payments are automated and sent directly to your wallet.
@@ -939,7 +939,7 @@ function AffiliatesPage() {
                   <TrendingUp className="h-6 w-6 text-blue-600" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">Recurring Commissions</h3>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Recurring Commissions</h3>
                   <p className="text-body-color dark:text-body-color-dark">
                     Earn monthly recurring commissions for as long as your referrals remain active members. 
                     Build sustainable passive income with compound growth.
@@ -952,7 +952,7 @@ function AffiliatesPage() {
                   <Award className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">Multi-Tier Structure</h3>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Multi-Tier Structure</h3>
                   <p className="text-body-color dark:text-body-color-dark">
                     Earn from up to 4 levels deep in your network. Higher membership tiers unlock deeper 
                     commission structures and better rates.
@@ -967,7 +967,7 @@ function AffiliatesPage() {
                   <Users className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">Easy Sharing Tools</h3>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Easy Sharing Tools</h3>
                   <p className="text-body-color dark:text-body-color-dark">
                     Get your personalized referral link and tracking tools from your member dashboard. 
                     Monitor your network growth and commission earnings in real-time.
@@ -980,7 +980,7 @@ function AffiliatesPage() {
                   <Target className="h-6 w-6 text-red-600" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">Quality Leads Included</h3>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Quality Leads Included</h3>
                   <p className="text-body-color dark:text-body-color-dark">
                     Paid tiers receive weekly verified leads to help grow your business. Use these leads 
                     for your own network marketing while earning affiliate commissions.
@@ -993,7 +993,7 @@ function AffiliatesPage() {
                   <Activity className="h-6 w-6 text-indigo-600" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">No Experience Required</h3>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">No Experience Required</h3>
                   <p className="text-body-color dark:text-body-color-dark">
                     Perfect for beginners and experienced marketers alike. Our system handles the technical 
                     aspects while you focus on sharing and growing your network.
