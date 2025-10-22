@@ -57,7 +57,9 @@ import {
   User,
   RefreshCcw,
   Ticket,
-  MessageSquare
+  MessageSquare,
+  Sun,
+  Moon
 } from 'lucide-react';
 import './App.css';
 
