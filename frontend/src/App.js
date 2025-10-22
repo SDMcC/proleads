@@ -1498,17 +1498,17 @@ function LandingPage() {
       </section>
 
       {/* Success Path Section */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-white dark:bg-gray-dark transition-colors duration-300">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <div className="w-full h-64 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg flex items-center justify-center mb-6">
-                <Users className="h-24 w-24 text-blue-600" />
+              <div className="w-full h-64 bg-gradient-to-br from-primary/20 to-primary/10 dark:from-primary/30 dark:to-primary/20 rounded-lg flex items-center justify-center mb-6">
+                <Users className="h-24 w-24 text-primary" />
               </div>
             </div>
             <div>
-              <h3 className="text-3xl font-bold text-gray-900 mb-6">Your Path to Success</h3>
-              <p className="text-gray-600 leading-relaxed mb-6">
+              <h3 className="text-3xl font-bold text-black dark:text-white mb-6">Your Path to Success</h3>
+              <p className="text-body-color dark:text-body-color-dark leading-relaxed mb-6">
                 Why Proleads Network? It's built for network marketers who demand results without the hassle. Our done-for-you 
                 system delivers the leads you need - verified and ready to engage so you save time and connect with prospects 
                 who matter. Perfect for those with established networks or those just starting out, our tools make growth effortless. 
