@@ -1522,9 +1522,9 @@ function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-gray-50 dark:bg-bg-color-dark transition-colors duration-300">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-16">Your Leadgen Partner</h2>
+          <h2 className="text-3xl font-bold text-center text-black dark:text-white mb-16">Your Leadgen Partner</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
             <div className="space-y-12">
