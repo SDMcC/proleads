@@ -541,7 +541,7 @@ function FAQSection() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
-          <p className="text-gray-600">Get answers to common questions about Proleads Network</p>
+          <p className="text-body-color dark:text-body-color-dark">Get answers to common questions about Proleads Network</p>
         </div>
         
         <div className="max-w-3xl mx-auto">
@@ -560,7 +560,7 @@ function FAQSection() {
               </button>
               {openFaq === index && (
                 <div className="mt-2 p-6 pt-0 bg-white">
-                  <p className="text-gray-600">{faq.answer}</p>
+                  <p className="text-body-color dark:text-body-color-dark">{faq.answer}</p>
                 </div>
               )}
             </div>
@@ -696,8 +696,8 @@ function AffiliatesPage() {
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Users className="h-8 w-8 text-blue-600" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">1. Become a Member</h3>
-              <p className="text-gray-600">
+              <h3 className="text-xl font-bold text-black dark:text-white mb-3">1. Become a Member</h3>
+              <p className="text-body-color dark:text-body-color-dark">
                 Join any membership tier to automatically become an affiliate. Even our free Affiliate tier 
                 gives you access to the referral program and commission structure.
               </p>
@@ -707,8 +707,8 @@ function AffiliatesPage() {
               <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <ExternalLink className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">2. Share Your Link</h3>
-              <p className="text-gray-600">
+              <h3 className="text-xl font-bold text-black dark:text-white mb-3">2. Share Your Link</h3>
+              <p className="text-body-color dark:text-body-color-dark">
                 Get your unique referral link from your dashboard and share it with your network. 
                 Anyone who joins through your link becomes part of your downline.
               </p>
@@ -718,8 +718,8 @@ function AffiliatesPage() {
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <DollarSign className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">3. Earn Commissions</h3>
-              <p className="text-gray-600">
+              <h3 className="text-xl font-bold text-black dark:text-white mb-3">3. Earn Commissions</h3>
+              <p className="text-body-color dark:text-body-color-dark">
                 Receive instant USDC payouts when your referrals join. Earn recurring monthly commissions 
                 and build passive income through our multi-tier structure.
               </p>
@@ -805,7 +805,7 @@ function AffiliatesPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-gray-900 mb-2">Instant USDC Payouts</h3>
-                  <p className="text-gray-600">
+                  <p className="text-body-color dark:text-body-color-dark">
                     Receive your commissions instantly in USDC cryptocurrency. No waiting periods, no manual processing - 
                     payments are automated and sent directly to your wallet.
                   </p>
@@ -818,7 +818,7 @@ function AffiliatesPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-gray-900 mb-2">Recurring Commissions</h3>
-                  <p className="text-gray-600">
+                  <p className="text-body-color dark:text-body-color-dark">
                     Earn monthly recurring commissions for as long as your referrals remain active members. 
                     Build sustainable passive income with compound growth.
                   </p>
@@ -831,7 +831,7 @@ function AffiliatesPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-gray-900 mb-2">Multi-Tier Structure</h3>
-                  <p className="text-gray-600">
+                  <p className="text-body-color dark:text-body-color-dark">
                     Earn from up to 4 levels deep in your network. Higher membership tiers unlock deeper 
                     commission structures and better rates.
                   </p>
@@ -846,7 +846,7 @@ function AffiliatesPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-gray-900 mb-2">Easy Sharing Tools</h3>
-                  <p className="text-gray-600">
+                  <p className="text-body-color dark:text-body-color-dark">
                     Get your personalized referral link and tracking tools from your member dashboard. 
                     Monitor your network growth and commission earnings in real-time.
                   </p>
@@ -859,7 +859,7 @@ function AffiliatesPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-gray-900 mb-2">Quality Leads Included</h3>
-                  <p className="text-gray-600">
+                  <p className="text-body-color dark:text-body-color-dark">
                     Paid tiers receive weekly verified leads to help grow your business. Use these leads 
                     for your own network marketing while earning affiliate commissions.
                   </p>
@@ -872,7 +872,7 @@ function AffiliatesPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-gray-900 mb-2">No Experience Required</h3>
-                  <p className="text-gray-600">
+                  <p className="text-body-color dark:text-body-color-dark">
                     Perfect for beginners and experienced marketers alike. Our system handles the technical 
                     aspects while you focus on sharing and growing your network.
                   </p>
@@ -1547,8 +1547,8 @@ function LandingPage() {
                   <DollarSign className="h-12 w-12 text-primary" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">Cost-Effective Lead Generation</h3>
-                  <p className="text-gray-600">
+                  <h3 className="text-xl font-bold text-black dark:text-white mb-3">Cost-Effective Lead Generation</h3>
+                  <p className="text-body-color dark:text-body-color-dark">
                     Why spend big on outdated lead sources? Proleads Network delivers quality leads every week at a fraction 
                     of the cost. With no long-term contracts, it's the smartest way to connect with prospects ready to join 
                     or buy, helping you grow your business without breaking the bank.
@@ -1563,8 +1563,8 @@ function LandingPage() {
                   <Target className="h-12 w-12 text-primary" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">Maximizing ROI with Targeted Leads</h3>
-                  <p className="text-gray-600">
+                  <h3 className="text-xl font-bold text-black dark:text-white mb-3">Maximizing ROI with Targeted Leads</h3>
+                  <p className="text-body-color dark:text-body-color-dark">
                     Our leads are built for results. Each one is fresh, verified, and primed for network marketing, 
                     boosting your chances of turning prospects into customers or team members. By prioritizing quality, 
                     we help you maximize your return on investment with every subscription.
@@ -1577,8 +1577,8 @@ function LandingPage() {
                   <Award className="h-12 w-12 text-primary" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">Maximize Your Earnings Potential</h3>
-                  <p className="text-gray-600">
+                  <h3 className="text-xl font-bold text-black dark:text-white mb-3">Maximize Your Earnings Potential</h3>
+                  <p className="text-body-color dark:text-body-color-dark">
                     Proleads Network isn't just about growth — it's about income. Every member becomes an{' '}
                     <a href="/affiliates" className="text-blue-600 hover:text-blue-800 font-medium">affiliate</a>, 
                     earning up to 30% recurring commissions on referrals, plus bonuses up to four tiers deep. 
