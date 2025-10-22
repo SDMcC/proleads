@@ -677,7 +677,7 @@ function Footer() {
 
 // Affiliates Page Component
 function AffiliatesPage() {
-  const { isDark, toggleDarkMode } = useDarkMode();
+  const { isDark, toggleDarkMode } = require('./DarkModeContext').useDarkMode();
   
   return (
     <div className={`min-h-screen transition-colors duration-300 ${isDark ? 'dark bg-dark' : 'bg-white'}`}>
