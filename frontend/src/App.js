@@ -1409,8 +1409,8 @@ function LandingPage() {
           </div>
         </div>
         
-        {/* Animated Background - Right Side */}
-        <div className="absolute right-0 top-0 z-[-1] opacity-30 lg:opacity-100">
+        {/* Keep SVG backgrounds hidden - video is primary background */}
+        <div className="absolute right-0 top-0 z-[-3] opacity-0">
           <svg width="450" height="556" viewBox="0 0 450 556" fill="none">
             <circle cx="277" cy="63" r="225" fill="url(#paint0_linear_25:217)" />
             <circle cx="17.9997" cy="182" r="18" fill="url(#paint1_radial_25:217)" />
