@@ -1658,8 +1658,18 @@ function LandingPage() {
       <FAQSection />
 
       {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 text-white">
-        <div className="container mx-auto px-4 text-center">
+      <section className="relative py-16 text-white overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="/network-connection-bg.jpg" 
+            alt="Network background" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-900/90 via-purple-900/90 to-indigo-900/90"></div>
+        </div>
+        
+        <div className="container mx-auto px-4 text-center relative z-10">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Ready to turn your network into a paycheck?
           </h2>
