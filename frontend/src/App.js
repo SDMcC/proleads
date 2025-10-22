@@ -537,10 +537,10 @@ function FAQSection() {
   ];
 
   return (
-    <section className="py-16 bg-gray-50">
+    <section className="py-16 bg-gray-50 dark:bg-bg-color-dark transition-colors duration-300">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
+          <h2 className="text-3xl font-bold text-black dark:text-white mb-4">Frequently Asked Questions</h2>
           <p className="text-body-color dark:text-body-color-dark">Get answers to common questions about Proleads Network</p>
         </div>
         
@@ -549,17 +549,17 @@ function FAQSection() {
             <div key={index} className="mb-4">
               <button
                 onClick={() => setOpenFaq(openFaq === index ? null : index)}
-                className="w-full text-left p-6 bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 focus:outline-none"
+                className="w-full text-left p-6 bg-white dark:bg-dark rounded-lg shadow-sm hover:shadow-md transition-all duration-300 focus:outline-none"
               >
                 <div className="flex justify-between items-center">
-                  <h3 className="font-semibold text-gray-900">{faq.question}</h3>
-                  <ChevronDown className={`h-5 w-5 text-gray-500 transition-transform duration-300 ${
+                  <h3 className="font-semibold text-black dark:text-white">{faq.question}</h3>
+                  <ChevronDown className={`h-5 w-5 text-body-color dark:text-body-color-dark transition-transform duration-300 ${
                     openFaq === index ? 'transform rotate-180' : ''
                   }`} />
                 </div>
               </button>
               {openFaq === index && (
-                <div className="mt-2 p-6 pt-0 bg-white">
+                <div className="mt-2 p-6 pt-0 bg-white dark:bg-dark rounded-lg transition-colors duration-300">
                   <p className="text-body-color dark:text-body-color-dark">{faq.answer}</p>
                 </div>
               )}
