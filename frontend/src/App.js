@@ -10090,6 +10090,9 @@ function MilestoneDetailsModal({ milestone, onClose, onMarkAsPaid }) {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
 
 // Analytics Tab Component
 function AnalyticsTab() {
