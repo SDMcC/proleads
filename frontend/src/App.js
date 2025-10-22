@@ -1335,9 +1335,28 @@ function LandingPage() {
       {/* Login Modal */}
       {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
 
-      {/* Hero Section with Animated Background */}
-      <section className="relative z-10 overflow-hidden bg-white dark:bg-gray-dark pt-[120px] pb-16 md:pt-[150px] md:pb-[120px] xl:pt-[180px] xl:pb-[160px] transition-colors duration-300">
-        <div className="container mx-auto px-4">
+      {/* Hero Section with Video Background */}
+      <section className="relative z-10 overflow-hidden pt-[120px] pb-16 md:pt-[150px] md:pb-[120px] xl:pt-[180px] xl:pb-[160px]">
+        {/* Video Background */}
+        <div className="absolute inset-0 w-full h-full overflow-hidden z-[-2]">
+          <video 
+            className="absolute top-1/2 left-1/2 min-w-full min-h-full w-auto h-auto transform -translate-x-1/2 -translate-y-1/2 object-cover"
+            autoPlay 
+            loop 
+            muted 
+            playsInline
+          >
+            <source 
+              src="https://customer-assets.emergentagent.com/job_membership-tier/artifacts/52s0e27o_grok.mp4" 
+              type="video/mp4" 
+            />
+          </video>
+        </div>
+        
+        {/* Dark overlay for readability */}
+        <div className="absolute inset-0 bg-black/40 dark:bg-black/60 z-[-1]"></div>
+        
+        <div className="container mx-auto px-4 relative z-10">
           <div className="flex flex-wrap -mx-4">
             <div className="w-full px-4">
               <div className="mx-auto max-w-[800px] text-center">
