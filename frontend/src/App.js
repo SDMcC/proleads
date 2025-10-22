@@ -491,10 +491,10 @@ function EnhancedMembershipTiers({ tiers, referralCode, loading }) {
                     href={`/register?tier=${tierId}${referralCode ? `&ref=${referralCode}` : ''}`}
                     className={`block w-full text-center py-3 px-6 rounded-lg font-semibold transition-all duration-300 ${
                       tierId === 'gold' 
-                        ? 'bg-yellow-500 hover:bg-yellow-600 text-white' 
+                        ? 'bg-yellow-500 hover:bg-yellow-600 dark:bg-yellow-400 dark:hover:bg-yellow-500 text-white dark:text-black' 
                         : tierId === 'affiliate'
-                        ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                        : 'bg-gray-800 hover:bg-gray-900 text-white'
+                        ? 'bg-primary hover:bg-primary/80 text-white'
+                        : 'bg-black hover:bg-black/90 dark:bg-white/10 dark:hover:bg-white/20 text-white'
                     }`}
                   >
                     {isAffiliate ? 'Join Free' : 'Choose Plan'}
