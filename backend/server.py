@@ -5453,6 +5453,227 @@ async def view_ticket_attachment(attachment_id: str, current_user: dict = Depend
         raise HTTPException(status_code=500, detail="Failed to view attachment")
 
 
+# Admin Recent Activity Endpoints
+@app.get("/api/admin/recent/members")
+async def get_recent_members(limit: int = 10, admin: dict = Depends(get_admin_user)):
+    """Get recent members (max 10)"""
+    try:
+        members = await db.users.find().sort("created_at", -1).limit(limit).to_list(None)
+        
+        formatted_members = []
+        for member in members:
+            formatted_members.append({
+                "username": member.get("username"),
+                "tier": member.get("membership_tier"),
+                "join_date": member.get("created_at"),
+                "status": "Suspended" if member.get("suspended", False) else "Active"
+            })
+        
+        return {"recent_members": formatted_members}
+    except Exception as e:
+        logger.error(f"Failed to fetch recent members: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch recent members")
+
+@app.get("/api/admin/recent/payments")
+async def get_recent_payments(limit: int = 10, admin: dict = Depends(get_admin_user)):
+    """Get recent payments (max 10)"""
+    try:
+        payments = await db.payments.find().sort("created_at", -1).limit(limit).to_list(None)
+        
+        formatted_payments = []
+        for payment in payments:
+            # Get user info
+            user = await db.users.find_one({"address": payment.get("user_address")})
+            username = user.get("username", "Unknown") if user else "Unknown"
+            
+            formatted_payments.append({
+                "member_name": username,
+                "amount": payment.get("amount"),
+                "payment_date": payment.get("created_at"),
+                "tier": payment.get("tier"),
+                "status": payment.get("status", "pending")
+            })
+        
+        return {"recent_payments": formatted_payments}
+    except Exception as e:
+        logger.error(f"Failed to fetch recent payments: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch recent payments")
+
+@app.get("/api/admin/recent/milestones")
+async def get_recent_milestones(limit: int = 10, admin: dict = Depends(get_admin_user)):
+    """Get recent milestones (max 10)"""
+    try:
+        milestones = await db.milestones.find().sort("achieved_at", -1).limit(limit).to_list(None)
+        
+        formatted_milestones = []
+        for milestone in milestones:
+            # Get user info
+            user = await db.users.find_one({"address": milestone.get("user_address")})
+            username = user.get("username", "Unknown") if user else "Unknown"
+            
+            formatted_milestones.append({
+                "member_name": username,
+                "milestone_amount": milestone.get("bonus_amount"),
+                "date": milestone.get("achieved_at"),
+                "status": milestone.get("status", "pending"),
+                "referral_count": milestone.get("referral_count", 0)
+            })
+        
+        return {"recent_milestones": formatted_milestones}
+    except Exception as e:
+        logger.error(f"Failed to fetch recent milestones: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch recent milestones")
+
+@app.get("/api/admin/recent/tickets")
+async def get_recent_tickets(limit: int = 10, admin: dict = Depends(get_admin_user)):
+    """Get recent tickets (max 10)"""
+    try:
+        tickets = await db.tickets.find().sort("created_at", -1).limit(limit).to_list(None)
+        
+        formatted_tickets = []
+        for ticket in tickets:
+            formatted_tickets.append({
+                "ticket_id": ticket.get("ticket_id"),
+                "department": ticket.get("category", "general"),
+                "member_name": ticket.get("sender_username", "Unknown"),
+                "subject": ticket.get("subject"),
+                "status": ticket.get("status", "open")
+            })
+        
+        return {"recent_tickets": formatted_tickets}
+    except Exception as e:
+        logger.error(f"Failed to fetch recent tickets: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch recent tickets")
+
+# Admin Analytics Endpoints
+@app.get("/api/admin/analytics/summary")
+async def get_analytics_summary(admin: dict = Depends(get_admin_user)):
+    """Get analytics summary metrics"""
+    try:
+        # Total Income (all confirmed payments)
+        total_income_result = await db.payments.aggregate([
+            {"$match": {"status": "confirmed"}},
+            {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+        ]).to_list(1)
+        total_income = total_income_result[0]["total"] if total_income_result else 0
+        
+        # Total Commissions (all completed commission payouts)
+        total_commission_result = await db.commissions.aggregate([
+            {"$match": {"status": "completed"}},
+            {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+        ]).to_list(1)
+        total_commission = total_commission_result[0]["total"] if total_commission_result else 0
+        
+        # Net Profit
+        net_profit = total_income - total_commission
+        
+        # Held Payments for KYC (users with earnings > $50 and KYC not verified)
+        users_with_kyc = await db.users.find({"kyc_status": {"$ne": "verified"}}).to_list(None)
+        held_payments = 0
+        
+        for user in users_with_kyc:
+            # Calculate total earnings
+            user_earnings = await db.commissions.aggregate([
+                {"$match": {"recipient_address": user["address"], "status": {"$in": ["completed", "pending"]}}},
+                {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+            ]).to_list(1)
+            
+            earnings = user_earnings[0]["total"] if user_earnings else 0
+            if earnings > 50:
+                held_payments += earnings - 50  # Amount held above the $50 limit
+        
+        return {
+            "total_income": total_income,
+            "total_commission": total_commission,
+            "net_profit": net_profit,
+            "held_payments": held_payments
+        }
+    except Exception as e:
+        logger.error(f"Failed to fetch analytics summary: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch analytics summary")
+
+@app.get("/api/admin/analytics/graphs")
+async def get_analytics_graphs(
+    time_filter: str = "1month",  # 1day, 1week, 1month, 1year, all
+    admin: dict = Depends(get_admin_user)
+):
+    """Get analytics data for graphs with time filtering"""
+    try:
+        now = datetime.utcnow()
+        
+        # Determine time range and grouping
+        if time_filter == "1day":
+            start_date = now - timedelta(days=1)
+            group_format = "%Y-%m-%d %H:00"  # Hourly
+        elif time_filter == "1week":
+            start_date = now - timedelta(weeks=1)
+            group_format = "%Y-%m-%d"  # Daily
+        elif time_filter == "1month":
+            start_date = now - timedelta(days=30)
+            group_format = "%Y-%m-%d"  # Daily
+        elif time_filter == "1year":
+            start_date = now - timedelta(days=365)
+            group_format = "%Y-%m"  # Monthly
+        else:  # all
+            start_date = datetime(2020, 1, 1)  # Far back date
+            group_format = "%Y-%m"  # Monthly
+        
+        # Member Growth Data
+        member_growth = await db.users.aggregate([
+            {"$match": {"created_at": {"$gte": start_date}}},
+            {"$group": {
+                "_id": {"$dateToString": {"format": group_format, "date": "$created_at"}},
+                "count": {"$sum": 1}
+            }},
+            {"$sort": {"_id": 1}}
+        ]).to_list(None)
+        
+        # Income Growth Data (confirmed payments)
+        income_growth = await db.payments.aggregate([
+            {"$match": {"status": "confirmed", "created_at": {"$gte": start_date}}},
+            {"$group": {
+                "_id": {"$dateToString": {"format": group_format, "date": "$created_at"}},
+                "amount": {"$sum": "$amount"}
+            }},
+            {"$sort": {"_id": 1}}
+        ]).to_list(None)
+        
+        # Commission Growth Data (completed payouts)
+        commission_growth = await db.commissions.aggregate([
+            {"$match": {"status": "completed", "created_at": {"$gte": start_date}}},
+            {"$group": {
+                "_id": {"$dateToString": {"format": group_format, "date": "$created_at"}},
+                "amount": {"$sum": "$amount"}
+            }},
+            {"$sort": {"_id": 1}}
+        ]).to_list(None)
+        
+        # Calculate profit growth (income - commission)
+        # Create a combined dictionary for easier calculation
+        income_dict = {item["_id"]: item["amount"] for item in income_growth}
+        commission_dict = {item["_id"]: item["amount"] for item in commission_growth}
+        
+        # Get all unique time periods
+        all_periods = sorted(set(list(income_dict.keys()) + list(commission_dict.keys())))
+        
+        profit_growth = []
+        for period in all_periods:
+            income = income_dict.get(period, 0)
+            commission = commission_dict.get(period, 0)
+            profit = income - commission
+            profit_growth.append({"_id": period, "amount": profit})
+        
+        return {
+            "member_growth": member_growth,
+            "income_growth": income_growth,
+            "profit_growth": profit_growth,
+            "time_filter": time_filter
+        }
+    except Exception as e:
+        logger.error(f"Failed to fetch analytics graphs: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch analytics graphs")
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
