@@ -331,56 +331,77 @@ function LoginModal({ onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-md w-full p-6">
-        {/* Header with close button */}
-        <div className="flex justify-end mb-4">
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-            <X className="h-6 w-6" />
-          </button>
-        </div>
+    <div className="fixed inset-0 bg-black bg-opacity-70 dark:bg-opacity-80 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+      <div className="bg-white dark:bg-dark shadow-lg dark:shadow-2xl rounded-lg max-w-md w-full p-8 sm:p-12 relative transition-colors duration-300">
+        {/* Close button */}
+        <button 
+          onClick={onClose} 
+          className="absolute top-4 right-4 text-body-color dark:text-body-color-dark hover:text-primary transition-colors"
+        >
+          <X className="h-6 w-6" />
+        </button>
         
         {/* Centered logo and title */}
-        <div className="text-center mb-6">
+        <div className="text-center mb-8">
           <img 
-            src="https://customer-assets.emergentagent.com/job_ticketing-portal-1/artifacts/yiq2jxan_hero-logo-4.png" 
+            src="https://members.proleads.network/assets/images/hero-logo-2.png" 
             alt="Proleads Network" 
             className="h-16 w-auto mx-auto mb-4"
           />
-          <h2 className="text-2xl font-bold text-gray-900">Login to your Account</h2>
+          <h3 className="mb-3 text-center text-2xl font-bold text-black dark:text-white sm:text-3xl">
+            Sign in to your account
+          </h3>
+          <p className="text-body-color dark:text-body-color-dark text-center text-base font-medium">
+            Login to your account for faster access
+          </p>
         </div>
         
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label className="block text-gray-700 text-sm font-medium mb-2">Username</label>
+        <form onSubmit={handleLogin}>
+          <div className="mb-8">
+            <label className="text-black dark:text-white mb-3 block text-sm font-medium">
+              Username
+            </label>
             <input
               type="text"
               value={loginData.username}
               onChange={(e) => setLoginData(prev => ({ ...prev, username: e.target.value }))}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-blue-500"
               placeholder="Enter your username"
+              className="border-stroke dark:text-body-color-dark text-body-color focus:border-primary dark:focus:border-primary w-full rounded-lg border bg-transparent px-6 py-3 text-base outline-none transition-all duration-300 dark:border-stroke-dark"
               required
             />
           </div>
-          <div>
-            <label className="block text-gray-700 text-sm font-medium mb-2">Password</label>
+          
+          <div className="mb-8">
+            <label className="text-black dark:text-white mb-3 block text-sm font-medium">
+              Password
+            </label>
             <input
               type="password"
               value={loginData.password}
               onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-blue-500"
               placeholder="Enter your password"
+              className="border-stroke dark:text-body-color-dark text-body-color focus:border-primary dark:focus:border-primary w-full rounded-lg border bg-transparent px-6 py-3 text-base outline-none transition-all duration-300 dark:border-stroke-dark"
               required
             />
           </div>
-          <button
-            type="submit"
-            disabled={loginLoading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg font-semibold transition-all duration-300 disabled:opacity-50"
-          >
-            {loginLoading ? 'Logging in...' : 'Login'}
-          </button>
+          
+          <div className="mb-6">
+            <button
+              type="submit"
+              disabled={loginLoading}
+              className="bg-primary hover:bg-primary/90 flex w-full items-center justify-center rounded-lg px-9 py-4 text-base font-medium text-white duration-300 disabled:opacity-50"
+            >
+              {loginLoading ? 'Signing in...' : 'Sign in'}
+            </button>
+          </div>
         </form>
+        
+        <p className="text-body-color dark:text-body-color-dark text-center text-base font-medium">
+          Don't have an account?{" "}
+          <a href="/register" className="text-primary hover:underline">
+            Sign up
+          </a>
+        </p>
       </div>
     </div>
   );
