@@ -2062,7 +2062,17 @@ function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black flex items-center justify-center px-4 py-16 transition-colors duration-300">
+    <div 
+      className="min-h-screen bg-white dark:bg-black flex items-center justify-center px-4 py-16 transition-colors duration-300 relative"
+      style={{
+        backgroundImage: 'url(https://customer-assets.emergentagent.com/job_membership-tier/artifacts/7me6y0cn_abstract-luxury-gradient-blue-background-smooth-dark-blue-with-black-vignette-studio-banner.jpg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
+      {/* Overlay for better readability */}
+      <div className="absolute inset-0 bg-black/20 dark:bg-black/40"></div>
       <div className="max-w-md w-full">
         <div className="bg-white dark:bg-dark shadow-lg dark:shadow-2xl rounded-lg p-8 sm:p-12 transition-colors duration-300">
           <div className="text-center mb-8">
