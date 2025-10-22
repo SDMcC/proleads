@@ -1284,7 +1284,10 @@ function LandingPage() {
             {/* Logo */}
             <div className="flex items-center space-x-3">
               <img 
-                src="https://members.proleads.network/assets/images/hero-logo-2.png" 
+                src={isDark 
+                  ? "https://members.proleads.network/assets/images/hero-logo-2.png" 
+                  : "https://customer-assets.emergentagent.com/job_membership-tier/artifacts/pnsgppw4_hero-logo-4.png"
+                }
                 alt="Proleads Network" 
                 className="h-8 w-auto"
               />
