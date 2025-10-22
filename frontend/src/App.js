@@ -1202,6 +1202,7 @@ function TermsPage() {
 // Landing Page Component - ProLeads Network Style
 function LandingPage() {
   const { user } = useAuth();
+  const { isDark, toggleDarkMode } = require('./DarkModeContext').useDarkMode();
   const [referralCode, setReferralCode] = useState('');
   const [referrerInfo, setReferrerInfo] = useState(null);
   const [showLogin, setShowLogin] = useState(false);
