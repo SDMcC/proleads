@@ -10090,6 +10090,240 @@ function MilestoneDetailsModal({ milestone, onClose, onMarkAsPaid }) {
 }
 
 // Admin Stat Card Component
+
+// Recent Activity Card Components
+function RecentMembersCard() {
+  const [recentMembers, setRecentMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchRecentMembers();
+  }, []);
+
+  const fetchRecentMembers = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await axios.get(`${API_URL}/api/admin/recent/members?limit=10`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setRecentMembers(response.data.recent_members);
+    } catch (error) {
+      console.error('Failed to fetch recent members:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h4 className="text-lg font-bold text-white flex items-center">
+          <Users className="h-5 w-5 mr-2" />
+          Recent Members
+        </h4>
+      </div>
+      <div className="space-y-3">
+        {loading ? (
+          <p className="text-gray-400 text-center py-4">Loading...</p>
+        ) : recentMembers.length > 0 ? (
+          recentMembers.map((member, index) => (
+            <div key={index} className="flex justify-between items-center py-2 border-b border-gray-700 last:border-b-0">
+              <div>
+                <p className="text-white font-medium">{member.username}</p>
+                <p className="text-gray-400 text-sm">{getTierDisplayName(member.tier)}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-gray-300 text-sm">{new Date(member.join_date).toLocaleDateString()}</p>
+                <span className={`text-xs px-2 py-1 rounded ${member.status === 'Active' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
+                  {member.status}
+                </span>
+              </div>
+            </div>
+          ))
+        ) : (
+          <p className="text-gray-400 text-center py-4">No recent members</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function RecentPaymentsCard() {
+  const [recentPayments, setRecentPayments] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchRecentPayments();
+  }, []);
+
+  const fetchRecentPayments = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await axios.get(`${API_URL}/api/admin/recent/payments?limit=10`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setRecentPayments(response.data.recent_payments);
+    } catch (error) {
+      console.error('Failed to fetch recent payments:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h4 className="text-lg font-bold text-white flex items-center">
+          <DollarSign className="h-5 w-5 mr-2" />
+          Recent Payments
+        </h4>
+      </div>
+      <div className="space-y-3">
+        {loading ? (
+          <p className="text-gray-400 text-center py-4">Loading...</p>
+        ) : recentPayments.length > 0 ? (
+          recentPayments.map((payment, index) => (
+            <div key={index} className="flex justify-between items-center py-2 border-b border-gray-700 last:border-b-0">
+              <div>
+                <p className="text-white font-medium">{payment.member_name}</p>
+                <p className="text-gray-400 text-sm">{getTierDisplayName(payment.tier)}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-green-400 font-bold">${payment.amount}</p>
+                <p className="text-gray-300 text-xs">{new Date(payment.payment_date).toLocaleDateString()}</p>
+              </div>
+            </div>
+          ))
+        ) : (
+          <p className="text-gray-400 text-center py-4">No recent payments</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function RecentMilestonesCard() {
+  const [recentMilestones, setRecentMilestones] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchRecentMilestones();
+  }, []);
+
+  const fetchRecentMilestones = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await axios.get(`${API_URL}/api/admin/recent/milestones?limit=10`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setRecentMilestones(response.data.recent_milestones);
+    } catch (error) {
+      console.error('Failed to fetch recent milestones:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h4 className="text-lg font-bold text-white flex items-center">
+          <Award className="h-5 w-5 mr-2" />
+          Recent Milestones
+        </h4>
+      </div>
+      <div className="space-y-3">
+        {loading ? (
+          <p className="text-gray-400 text-center py-4">Loading...</p>
+        ) : recentMilestones.length > 0 ? (
+          recentMilestones.map((milestone, index) => (
+            <div key={index} className="flex justify-between items-center py-2 border-b border-gray-700 last:border-b-0">
+              <div>
+                <p className="text-white font-medium">{milestone.member_name}</p>
+                <p className="text-gray-400 text-sm">{milestone.referral_count} referrals</p>
+              </div>
+              <div className="text-right">
+                <p className="text-yellow-400 font-bold">${milestone.milestone_amount}</p>
+                <span className={`text-xs px-2 py-1 rounded ${milestone.status === 'paid' ? 'bg-green-500 text-white' : 'bg-yellow-500 text-black'}`}>
+                  {milestone.status}
+                </span>
+              </div>
+            </div>
+          ))
+        ) : (
+          <p className="text-gray-400 text-center py-4">No recent milestones</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function RecentTicketsCard() {
+  const [recentTickets, setRecentTickets] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchRecentTickets();
+  }, []);
+
+  const fetchRecentTickets = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await axios.get(`${API_URL}/api/admin/recent/tickets?limit=10`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setRecentTickets(response.data.recent_tickets);
+    } catch (error) {
+      console.error('Failed to fetch recent tickets:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'open': return 'bg-blue-500 text-white';
+      case 'in_progress': return 'bg-yellow-500 text-black';
+      case 'closed': return 'bg-gray-500 text-white';
+      default: return 'bg-gray-500 text-white';
+    }
+  };
+
+  return (
+    <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h4 className="text-lg font-bold text-white flex items-center">
+          <MessageCircle className="h-5 w-5 mr-2" />
+          Recent Tickets
+        </h4>
+      </div>
+      <div className="space-y-3">
+        {loading ? (
+          <p className="text-gray-400 text-center py-4">Loading...</p>
+        ) : recentTickets.length > 0 ? (
+          recentTickets.map((ticket, index) => (
+            <div key={index} className="flex justify-between items-center py-2 border-b border-gray-700 last:border-b-0">
+              <div className="flex-1">
+                <p className="text-white font-medium">#{ticket.ticket_id.slice(0, 8)}</p>
+                <p className="text-gray-400 text-sm truncate">{ticket.subject}</p>
+                <p className="text-gray-500 text-xs">{ticket.member_name} • {ticket.department}</p>
+              </div>
+              <div className="text-right ml-4">
+                <span className={`text-xs px-2 py-1 rounded ${getStatusColor(ticket.status)}`}>
+                  {ticket.status}
+                </span>
+              </div>
+            </div>
+          ))
+        ) : (
+          <p className="text-gray-400 text-center py-4">No recent tickets</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
 function AdminStatCard({ icon, title, value, subtitle }) {
   return (
     <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
