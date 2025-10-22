@@ -790,62 +790,114 @@ function AffiliatesPage() {
       </section>
 
       {/* Commission Structure */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-gray-light dark:bg-dark-2 transition-colors duration-300">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Commission Structure by Tier</h2>
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-black dark:text-white mb-4">
+              Commission Structure by Tier
+            </h2>
+            <p className="text-lg text-body-color dark:text-body-color-dark max-w-2xl mx-auto">
+              Higher tiers unlock deeper commission levels and better rates
+            </p>
+          </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="border border-gray-200 rounded-lg p-6">
-              <h3 className="text-lg font-bold text-blue-600 mb-4">Affiliate (Free)</h3>
-              <ul className="space-y-2 text-sm">
-                <li>Tier 1: 25%</li>
-                <li>Tier 2: 5%</li>
+            <div className="bg-white dark:bg-dark border-2 border-stroke dark:border-stroke-dark rounded-xl p-6 shadow-lg transition-colors duration-300">
+              <h3 className="text-lg font-bold text-primary mb-4">Affiliate (Free)</h3>
+              <ul className="space-y-2 text-body-color dark:text-body-color-dark">
+                <li className="flex items-center">
+                  <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                  Tier 1: 25%
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                  Tier 2: 5%
+                </li>
                 <li className="text-gray-400">No weekly leads</li>
-                <li className="text-blue-600 font-medium">Perfect for beginners</li>
+                <li className="text-primary font-medium mt-4">Perfect for beginners</li>
               </ul>
             </div>
             
-            <div className="border border-gray-200 rounded-lg p-6">
-              <h3 className="text-lg font-bold text-orange-600 mb-4">Bronze ($20/month)</h3>
-              <ul className="space-y-2 text-sm">
-                <li>Tier 1: 25%</li>
-                <li>Tier 2: 5%</li>
-                <li>Tier 3: 3%</li>
-                <li>Tier 4: 2%</li>
-                <li className="text-orange-600 font-medium">100 leads/week</li>
+            <div className="bg-white dark:bg-dark border-2 border-stroke dark:border-stroke-dark rounded-xl p-6 shadow-lg transition-colors duration-300">
+              <h3 className="text-lg font-bold text-orange-600 dark:text-orange-400 mb-4">Bronze ($20/month)</h3>
+              <ul className="space-y-2 text-body-color dark:text-body-color-dark">
+                <li className="flex items-center">
+                  <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                  Tier 1: 25%
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                  Tier 2: 5%
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                  Tier 3: 3%
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                  Tier 4: 2%
+                </li>
+                <li className="text-orange-600 dark:text-orange-400 font-medium mt-4">100 leads/week</li>
               </ul>
             </div>
             
-            <div className="border border-gray-200 rounded-lg p-6">
-              <h3 className="text-lg font-bold text-gray-600 mb-4">Silver ($50/month)</h3>
-              <ul className="space-y-2 text-sm">
-                <li>Tier 1: 27%</li>
-                <li>Tier 2: 10%</li>
-                <li>Tier 3: 5%</li>
-                <li>Tier 4: 3%</li>
-                <li className="text-gray-600 font-medium">250 leads/week</li>
+            <div className="bg-white dark:bg-dark border-2 border-blue-500 dark:border-blue-400 rounded-xl p-6 shadow-xl transform scale-105 transition-colors duration-300">
+              <div className="bg-blue-500 dark:bg-blue-400 text-white dark:text-black text-center py-1 text-xs font-medium rounded-md mb-4">
+                MOST POPULAR
+              </div>
+              <h3 className="text-lg font-bold text-blue-600 dark:text-blue-400 mb-4">Silver ($50/month)</h3>
+              <ul className="space-y-2 text-body-color dark:text-body-color-dark">
+                <li className="flex items-center">
+                  <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                  Tier 1: 27%
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                  Tier 2: 10%
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                  Tier 3: 5%
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                  Tier 4: 3%
+                </li>
+                <li className="text-blue-600 dark:text-blue-400 font-medium mt-4">250 leads/week</li>
               </ul>
             </div>
             
-            <div className="border border-yellow-500 rounded-lg p-6 bg-yellow-50">
-              <h3 className="text-lg font-bold text-yellow-600 mb-4">Gold ($100/month)</h3>
-              <ul className="space-y-2 text-sm">
-                <li>Tier 1: 30%</li>
-                <li>Tier 2: 15%</li>
-                <li>Tier 3: 10%</li>
-                <li>Tier 4: 5%</li>
-                <li className="text-yellow-600 font-medium">500 leads/week</li>
+            <div className="bg-white dark:bg-dark border-2 border-stroke dark:border-stroke-dark rounded-xl p-6 shadow-lg transition-colors duration-300">
+              <h3 className="text-lg font-bold text-yellow-600 dark:text-yellow-400 mb-4">Gold ($100/month)</h3>
+              <ul className="space-y-2 text-body-color dark:text-body-color-dark">
+                <li className="flex items-center">
+                  <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                  Tier 1: 30%
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                  Tier 2: 15%
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                  Tier 3: 10%
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                  Tier 4: 5%
+                </li>
+                <li className="text-yellow-600 dark:text-yellow-400 font-medium mt-4">500 leads/week</li>
               </ul>
             </div>
           </div>
           
           <div className="text-center mt-12">
-            <p className="text-gray-600 mb-6">
+            <p className="text-body-color dark:text-body-color-dark mb-6 text-lg">
               Higher membership tiers earn better commission rates and receive more weekly leads to grow your business.
             </p>
             <a 
               href="/#pricing"
-              className="bg-blue-600 hover:bg-blue-700 text-white py-3 px-8 rounded-lg font-semibold transition-all duration-300"
+              className="bg-primary hover:bg-primary/80 text-white py-3 px-8 rounded-lg font-semibold transition-all duration-300 inline-block"
             >
               View All Plans
             </a>
