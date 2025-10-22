@@ -741,14 +741,21 @@ function AffiliatesPage() {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-white dark:bg-gray-dark transition-colors duration-300">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">How The Affiliate Program Works</h2>
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-black dark:text-white mb-4">
+              How The Affiliate Program Works
+            </h2>
+            <p className="text-lg text-body-color dark:text-body-color-dark max-w-2xl mx-auto">
+              Three simple steps to start earning recurring commissions
+            </p>
+          </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="h-8 w-8 text-blue-600" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center p-6 bg-white dark:bg-dark rounded-xl shadow-lg transition-colors duration-300">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Users className="h-8 w-8 text-primary" />
               </div>
               <h3 className="text-xl font-bold text-black dark:text-white mb-3">1. Become a Member</h3>
               <p className="text-body-color dark:text-body-color-dark">
@@ -757,8 +764,8 @@ function AffiliatesPage() {
               </p>
             </div>
             
-            <div className="text-center">
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="text-center p-6 bg-white dark:bg-dark rounded-xl shadow-lg transition-colors duration-300">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <ExternalLink className="h-8 w-8 text-primary" />
               </div>
               <h3 className="text-xl font-bold text-black dark:text-white mb-3">2. Share Your Link</h3>
@@ -768,8 +775,8 @@ function AffiliatesPage() {
               </p>
             </div>
             
-            <div className="text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="text-center p-6 bg-white dark:bg-dark rounded-xl shadow-lg transition-colors duration-300">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <DollarSign className="h-8 w-8 text-primary" />
               </div>
               <h3 className="text-xl font-bold text-black dark:text-white mb-3">3. Earn Commissions</h3>
