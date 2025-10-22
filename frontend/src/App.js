@@ -3205,9 +3205,10 @@ function NetworkTreeTab() {
               orientation="vertical"
               pathFunc="step"
               translate={{ x: 400, y: 150 }}
-              separation={{ siblings: 1.8, nonSiblings: 2.2 }}
+              separation={{ siblings: 1.2, nonSiblings: 1.5 }}
               nodeSize={{ x: 280, y: 220 }}
               allowForeignObjects
+              pathClassFunc={() => 'custom-tree-link'}
               renderCustomNodeElement={({ nodeDatum, toggleNode }) => (
                 <g>
                   <foreignObject
