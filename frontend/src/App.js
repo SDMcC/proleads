@@ -461,25 +461,25 @@ function EnhancedMembershipTiers({ tiers, referralCode, loading }) {
                       </span>
                     </li>
                     <li className="flex items-center">
-                      <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
-                      <span className="text-gray-600">
+                      <CheckCircle className="h-5 w-5 text-green-500 dark:text-green-400 mr-3" />
+                      <span className="text-body-color dark:text-body-color-dark">
                         {commissions.length === 4 ? '4-tier commissions' : '2-tier commissions'}
                       </span>
                     </li>
                     <li className="flex items-center">
-                      <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
-                      <span className="text-gray-600">Instant USDC payouts</span>
+                      <CheckCircle className="h-5 w-5 text-green-500 dark:text-green-400 mr-3" />
+                      <span className="text-body-color dark:text-body-color-dark">Instant USDC payouts</span>
                     </li>
                     <li className="flex items-center">
-                      <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
-                      <span className="text-gray-600">Member dashboard</span>
+                      <CheckCircle className="h-5 w-5 text-green-500 dark:text-green-400 mr-3" />
+                      <span className="text-body-color dark:text-body-color-dark">Member dashboard</span>
                     </li>
                   </ul>
 
                   {commissions.length > 0 && (
                     <div className="mb-6">
-                      <h4 className="text-sm font-medium text-gray-700 mb-2">Commission Structure:</h4>
-                      <div className="text-xs text-gray-600 space-y-1">
+                      <h4 className="text-sm font-medium text-black dark:text-white mb-2">Commission Structure:</h4>
+                      <div className="text-xs text-body-color dark:text-body-color-dark space-y-1">
                         {commissions.map((rate, index) => (
                           <div key={index}>Tier {index + 1}: {Math.round(rate * 100)}%</div>
                         ))}
