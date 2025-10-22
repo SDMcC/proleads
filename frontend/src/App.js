@@ -515,7 +515,9 @@ function EnhancedMembershipTiers({ tiers, referralCode, loading }) {
                   <a 
                     href={`/register?tier=${tierId}${referralCode ? `&ref=${referralCode}` : ''}`}
                     className={`block w-full text-center py-3 px-6 rounded-lg font-semibold transition-all duration-300 ${
-                      tierId === 'gold' 
+                      tierId === 'silver' 
+                        ? 'bg-blue-500 hover:bg-blue-600 dark:bg-blue-400 dark:hover:bg-blue-500 text-white dark:text-black' 
+                        : tierId === 'gold' 
                         ? 'bg-yellow-500 hover:bg-yellow-600 dark:bg-yellow-400 dark:hover:bg-yellow-500 text-white dark:text-black' 
                         : tierId === 'affiliate'
                         ? 'bg-primary hover:bg-primary/80 text-white'
