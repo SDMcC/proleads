@@ -430,33 +430,33 @@ function EnhancedMembershipTiers({ tiers, referralCode, loading }) {
             }[tierId] || 0;
 
             return (
-              <div key={tierId} className={`relative bg-white border-2 rounded-lg shadow-lg overflow-hidden ${
-                tierId === 'gold' ? 'border-yellow-500 transform scale-105' : 'border-gray-200'
+              <div key={tierId} className={`relative bg-white dark:bg-dark border-2 rounded-lg shadow-lg overflow-hidden transition-colors duration-300 ${
+                tierId === 'gold' ? 'border-yellow-500 dark:border-yellow-400 transform scale-105' : 'border-stroke dark:border-stroke-dark'
               }`}>
                 {tierId === 'gold' && (
-                  <div className="absolute top-0 left-0 right-0 bg-yellow-500 text-white text-center py-1 text-sm font-medium">
+                  <div className="absolute top-0 left-0 right-0 bg-yellow-500 dark:bg-yellow-400 text-white dark:text-black text-center py-1 text-sm font-medium">
                     Most Popular
                   </div>
                 )}
                 
                 <div className="p-6">
                   <div className="text-center mb-6">
-                    <h3 className="text-xl font-bold text-gray-900 capitalize mb-2">
+                    <h3 className="text-xl font-bold text-black dark:text-white capitalize mb-2">
                       {getTierDisplayName(tierId)}
                     </h3>
-                    <div className="text-3xl font-bold text-gray-900 mb-2">
+                    <div className="text-3xl font-bold text-black dark:text-white mb-2">
                       {isAffiliate ? 'FREE' : `$${price}`}
-                      {!isAffiliate && <span className="text-lg text-gray-500">/month</span>}
+                      {!isAffiliate && <span className="text-lg text-body-color dark:text-body-color-dark">/month</span>}
                     </div>
                     {isAffiliate && (
-                      <p className="text-sm text-gray-500">Lifetime Access</p>
+                      <p className="text-sm text-body-color dark:text-body-color-dark">Lifetime Access</p>
                     )}
                   </div>
 
                   <ul className="space-y-3 mb-6">
                     <li className="flex items-center">
-                      <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
-                      <span className="text-gray-600">
+                      <CheckCircle className="h-5 w-5 text-green-500 dark:text-green-400 mr-3" />
+                      <span className="text-body-color dark:text-body-color-dark">
                         {leadsPerWeek > 0 ? `${leadsPerWeek} leads/week` : 'Affiliate program access'}
                       </span>
                     </li>
