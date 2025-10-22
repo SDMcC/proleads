@@ -1529,12 +1529,12 @@ function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
             <div className="space-y-12">
               <div className="flex space-x-6">
-                <div className="w-24 h-24 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Users className="h-12 w-12 text-blue-600" />
+                <div className="w-24 h-24 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Users className="h-12 w-12 text-primary" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">Empowering Your Business Growth</h3>
-                  <p className="text-gray-600">
+                  <h3 className="text-xl font-bold text-black dark:text-white mb-3">Empowering Your Business Growth</h3>
+                  <p className="text-body-color dark:text-body-color-dark">
                     Proleads Network takes your network marketing to the next level by handling lead generation for you. 
                     Your leads arrive weekly, complete with verified information, so you can focus on building relationships 
                     and expanding your team. Designed for marketers like you, our system turns your existing reach into unstoppable momentum.
