@@ -5881,6 +5881,51 @@ function NotificationSettingsTab({ user }) {
     }
   };
 
+  const fetchNotifications = async () => {
+    try {
+      setNotificationsLoading(true);
+      const token = localStorage.getItem('token');
+      const response = await axios.get(
+        `${API_URL}/api/users/notifications?page=${currentPage}&limit=${itemsPerPage}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setNotifications(response.data.notifications);
+      setTotalPages(response.data.total_pages);
+      setTotalNotifications(response.data.total);
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error);
+    } finally {
+      setNotificationsLoading(false);
+    }
+  };
+
+  const viewNotification = async (notificationId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(
+        `${API_URL}/api/users/notifications/${notificationId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setSelectedNotification(response.data);
+      setShowNotificationModal(true);
+      // Refresh the notifications list to update read status
+      fetchNotifications();
+    } catch (error) {
+      console.error('Failed to fetch notification details:', error);
+    }
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   const handleToggle = async (key) => {
     const newValue = !preferences[key];
     const newPreferences = { ...preferences, [key]: newValue };
