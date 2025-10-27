@@ -4645,7 +4645,7 @@ async def create_ticket(
                         "uploaded_by": current_user["address"]
                     })
                     if attachment:
-                        attachment_urls.append(f"/api/tickets/attachment/{attachment_id}")
+                        attachment_urls.append(f"/tickets/attachment/{attachment_id}")
                         ticket_doc["attachment_count"] += 1
             except json.JSONDecodeError:
                 pass
@@ -4869,7 +4869,7 @@ async def reply_to_ticket(
                         "uploaded_by": current_user.get("address") or current_user.get("username")
                     })
                     if attachment:
-                        attachment_urls.append(f"/api/tickets/attachment/{attachment_id}")
+                        attachment_urls.append(f"/tickets/attachment/{attachment_id}")
             except json.JSONDecodeError:
                 pass
         
@@ -5184,7 +5184,7 @@ async def admin_reply_to_ticket(
                         "attachment_id": attachment_id
                     })
                     if attachment:
-                        attachment_urls.append(f"/api/tickets/attachment/{attachment_id}")
+                        attachment_urls.append(f"/tickets/attachment/{attachment_id}")
             except json.JSONDecodeError:
                 pass
         
@@ -5421,7 +5421,7 @@ async def send_mass_message(
         raise HTTPException(status_code=500, detail="Failed to send mass message")
 
 # Get attachment file
-@app.get("/api/tickets/attachment/{attachment_id}")
+@app.get("/tickets/attachment/{attachment_id}")
 async def get_ticket_attachment(attachment_id: str, current_user: dict = Depends(get_current_user)):
     """Download ticket attachment"""
     try:
@@ -5437,7 +5437,7 @@ async def get_ticket_attachment(attachment_id: str, current_user: dict = Depends
         if uploader_identifier != user_identifier:
             # Check if user is involved in any tickets with this attachment
             ticket_messages = await db.ticket_messages.find({
-                "attachment_urls": f"/api/tickets/attachment/{attachment_id}"
+                "attachment_urls": f"/tickets/attachment/{attachment_id}"
             }).to_list(None)
             
             has_access = False
@@ -5480,7 +5480,7 @@ async def get_ticket_attachment(attachment_id: str, current_user: dict = Depends
         raise HTTPException(status_code=500, detail="Failed to download attachment")
 
 # Generate temporary view URL for attachment
-@app.get("/api/tickets/attachment/{attachment_id}/view-url")
+@app.get("/tickets/attachment/{attachment_id}/view-url")
 async def generate_attachment_view_url(attachment_id: str, current_user: dict = Depends(get_current_user)):
     """Generate a temporary authenticated URL for viewing attachment"""
     try:
@@ -5496,7 +5496,7 @@ async def generate_attachment_view_url(attachment_id: str, current_user: dict = 
         if uploader_identifier != user_identifier:
             # Check if user is involved in any tickets with this attachment
             ticket_messages = await db.ticket_messages.find({
-                "attachment_urls": f"/api/tickets/attachment/{attachment_id}"
+                "attachment_urls": f"/tickets/attachment/{attachment_id}"
             }).to_list(None)
             
             has_access = False
@@ -5516,7 +5516,7 @@ async def generate_attachment_view_url(attachment_id: str, current_user: dict = 
         
         # For now, return the view URL - we'll handle auth differently
         return {
-            "view_url": f"/api/tickets/attachment/{attachment_id}/view",
+            "view_url": f"/tickets/attachment/{attachment_id}/view",
             "filename": attachment["filename"],
             "content_type": attachment["content_type"]
         }
@@ -5528,7 +5528,7 @@ async def generate_attachment_view_url(attachment_id: str, current_user: dict = 
         raise HTTPException(status_code=500, detail="Failed to generate view URL")
 
 # View attachment in browser (for images, PDFs, etc.)
-@app.get("/api/tickets/attachment/{attachment_id}/view")
+@app.get("/tickets/attachment/{attachment_id}/view")
 async def view_ticket_attachment(attachment_id: str, current_user: dict = Depends(get_current_user)):
     """View ticket attachment in browser"""
     try:
@@ -5544,7 +5544,7 @@ async def view_ticket_attachment(attachment_id: str, current_user: dict = Depend
         if uploader_identifier != user_identifier:
             # Check if user is involved in any tickets with this attachment
             ticket_messages = await db.ticket_messages.find({
-                "attachment_urls": f"/api/tickets/attachment/{attachment_id}"
+                "attachment_urls": f"/tickets/attachment/{attachment_id}"
             }).to_list(None)
             
             has_access = False
