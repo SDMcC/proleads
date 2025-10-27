@@ -2279,6 +2279,8 @@ function Dashboard() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [notificationsPanelOpen, setNotificationsPanelOpen] = useState(false);
   const [bellButtonRef, setBellButtonRef] = useState(null);
+  const [selectedNotificationForView, setSelectedNotificationForView] = useState(null);
+  const [showNotificationViewModal, setShowNotificationViewModal] = useState(false);
   
   // KYC Modal state
   const [showKYCModal, setShowKYCModal] = useState(false);
