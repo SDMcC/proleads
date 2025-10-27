@@ -57,7 +57,7 @@ import {
 } from 'lucide-react';
 import './App.css';
 
-const API_URL = process.env.REACT_APP_BACKEND_URL;
+const API_URL = API_URL;
 
 // Utility function to get tier display name
 const getTierDisplayName = (tier) => {
@@ -4977,7 +4977,7 @@ function TicketsTab() {
       if (filters.category) params.append('category_filter', filters.category);
 
       const response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/api/tickets/user?${params}`,
+        `${API_URL}/api/tickets/user?${params}`,
         { headers: { Authorization: `Bearer ${token}` }}
       );
       
@@ -4994,7 +4994,7 @@ function TicketsTab() {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/api/tickets/downline-contacts`,
+        `${API_URL}/api/tickets/downline-contacts`,
         { headers: { Authorization: `Bearer ${token}` }}
       );
       setDownlineContacts(response.data.contacts || []);
@@ -5016,7 +5016,7 @@ function TicketsTab() {
         formData.append('file', file);
         
         const response = await axios.post(
-          `${process.env.REACT_APP_BACKEND_URL}/api/tickets/upload-attachment`,
+          `${API_URL}/api/tickets/upload-attachment`,
           formData,
           { 
             headers: { 
@@ -5066,7 +5066,7 @@ function TicketsTab() {
       }
 
       await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/api/tickets/create`,
+        `${API_URL}/api/tickets/create`,
         formData,
         { 
           headers: { 
@@ -5101,7 +5101,7 @@ function TicketsTab() {
       setLoading(true);
       const token = localStorage.getItem('token');
       const response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/api/tickets/${ticketId}`,
+        `${API_URL}/api/tickets/${ticketId}`,
         { headers: { Authorization: `Bearer ${token}` }}
       );
       
@@ -5128,7 +5128,7 @@ function TicketsTab() {
       }
 
       await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/api/tickets/${selectedTicket.ticket.ticket_id}/reply`,
+        `${API_URL}/api/tickets/${selectedTicket.ticket.ticket_id}/reply`,
         formData,
         { 
           headers: { 
@@ -5155,7 +5155,7 @@ function TicketsTab() {
     try {
       const token = localStorage.getItem('token');
       await axios.delete(
-        `${process.env.REACT_APP_BACKEND_URL}/api/tickets/${ticketId}`,
+        `${API_URL}/api/tickets/${ticketId}`,
         { headers: { Authorization: `Bearer ${token}` }}
       );
 
@@ -8909,7 +8909,7 @@ function AdminTicketsTab({
       if (filters.user) params.append('user_filter', filters.user);
 
       const response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/api/admin/tickets?${params}`,
+        `${API_URL}/api/admin/tickets?${params}`,
         { headers: { Authorization: `Bearer ${token}` }}
       );
       
@@ -8927,7 +8927,7 @@ function AdminTicketsTab({
       setLoading(true);
       const token = localStorage.getItem('adminToken');
       const response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/api/admin/tickets/${ticketId}`,
+        `${API_URL}/api/admin/tickets/${ticketId}`,
         { headers: { Authorization: `Bearer ${token}` }}
       );
       
@@ -8945,7 +8945,7 @@ function AdminTicketsTab({
     try {
       const token = localStorage.getItem('adminToken');
       await axios.put(
-        `${process.env.REACT_APP_BACKEND_URL}/api/admin/tickets/${ticketId}/status`,
+        `${API_URL}/api/admin/tickets/${ticketId}/status`,
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` }}
       );
