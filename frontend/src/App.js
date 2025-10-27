@@ -9045,7 +9045,7 @@ function AdminTicketsTab({
   const downloadAttachment = async (url, filename) => {
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}${url}`, {
+      const response = await fetch(`${API_URL}${url}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
