@@ -684,57 +684,7 @@ async def update_profile(profile_data: UpdateProfile, current_user: dict = Depen
         logger.error(f"Profile update failed: {str(e)}")
         raise HTTPException(status_code=500, detail="Profile update failed")
 
-# Original nonce-based auth endpoints (keeping for backward compatibility)
-@app.post("/api/auth/nonce")
-async def generate_nonce(request: NonceRequest):
-    """Generate nonce for wallet authentication"""
-    nonce = str(uuid.uuid4())
-    
-    await db.auth_sessions.update_one(
-        {"address": request.address.lower()},
-        {
-            "$set": {
-                "nonce": nonce,
-                "expires_at": datetime.utcnow() + timedelta(minutes=5)
-            }
-        },
-        upsert=True
-    )
-    
-    return {"nonce": nonce}
-
-@app.post("/api/auth/verify")
-async def verify_signature(request: VerifySignature):
-    """Verify wallet signature and return JWT token"""
-    session = await db.auth_sessions.find_one({"address": request.address.lower()})
-    
-    if not session or session["expires_at"] < datetime.utcnow():
-        raise HTTPException(status_code=404, detail="Nonce expired or not found")
-    
-    message = f"Sign this message to authenticate: {session['nonce']}"
-    
-    try:
-        recovered_address = Account.recover_message(
-            encode_defunct(text=message),
-            signature=request.signature
-        )
-        
-        if recovered_address.lower() != request.address.lower():
-            raise HTTPException(status_code=401, detail="Invalid signature")
-    except Exception:
-        raise HTTPException(status_code=401, detail="Signature verification failed")
-    
-    # Generate JWT token
-    token_data = {
-        "address": request.address.lower(),
-        "exp": datetime.utcnow() + timedelta(days=7)
-    }
-    token = jwt.encode(token_data, JWT_SECRET, algorithm=JWT_ALGORITHM)
-    
-    # Clean up session
-    await db.auth_sessions.delete_one({"address": request.address.lower()})
-    
-    return {"token": token, "address": request.address}
+# Legacy Web3 authentication endpoints removed - app now uses username/password authentication only
 
 # Admin authentication endpoint
 @app.post("/api/admin/login")
