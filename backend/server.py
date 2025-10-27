@@ -934,6 +934,12 @@ async def get_user_notifications(
         # Get total count
         total = await db.notifications.count_documents({"user_email": user_email})
         
+        # Get unread count
+        unread_count = await db.notifications.count_documents({
+            "user_email": user_email,
+            "read": False
+        })
+        
         # Get paginated notifications, sorted by most recent first
         notifications = await db.notifications.find(
             {"user_email": user_email}
@@ -948,6 +954,7 @@ async def get_user_notifications(
         return {
             "notifications": notifications,
             "total": total,
+            "unread_count": unread_count,
             "page": page,
             "limit": limit,
             "total_pages": total_pages
