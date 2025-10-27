@@ -9003,7 +9003,7 @@ function AdminTicketsTab({
 
       const token = localStorage.getItem('adminToken');
       await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/api/admin/tickets/mass-message`,
+        `${API_URL}/api/admin/tickets/mass-message`,
         massMessageForm,
         { headers: { Authorization: `Bearer ${token}` }}
       );
