@@ -8425,6 +8425,177 @@ def main():
         print("✅ Backend is ready for deployment")
         return True
 
+    def test_login_investigation(self):
+        """URGENT: Investigate login issues for deployed site"""
+        print("\n🚨 URGENT LOGIN INVESTIGATION - Deployed Site Issues")
+        print("User reports:")
+        print("- Admin login: 'Invalid credentials. Please try again.'")
+        print("- User login: 'Login failed: Not Found'")
+        print("=" * 80)
+        
+        investigation_results = {
+            "admin_user_exists": False,
+            "admin_login_works": False,
+            "user_login_works": False,
+            "database_connection": False,
+            "api_routing": False,
+            "environment_vars": False
+        }
+        
+        # 1. Check Admin User Exists in Database
+        print("\n1️⃣ CHECKING ADMIN USER EXISTS IN DATABASE")
+        admin_login_success, admin_response = self.test_admin_login_success()
+        if admin_login_success:
+            investigation_results["admin_user_exists"] = True
+            investigation_results["admin_login_works"] = True
+            print("✅ Admin user exists and login works correctly")
+        else:
+            print("❌ CRITICAL: Admin login failed - checking database connection")
+            
+        # 2. Test Login Endpoints Directly
+        print("\n2️⃣ TESTING LOGIN ENDPOINTS DIRECTLY")
+        
+        # Test admin login endpoint
+        print("\n🔍 Testing POST /api/admin/login with admin/admin123")
+        admin_data = {"username": "admin", "password": "admin123"}
+        admin_test_success, admin_test_response = self.run_test(
+            "Admin Login Direct Test", "POST", "admin/login", 200, admin_data
+        )
+        
+        if admin_test_success:
+            investigation_results["admin_login_works"] = True
+            print("✅ Admin login endpoint working correctly")
+        else:
+            print("❌ CRITICAL: Admin login endpoint failing")
+            
+        # Test user login endpoint with test credentials
+        print("\n🔍 Testing POST /api/auth/login with test user")
+        user_data = {"username": "testuser", "password": "testpass"}
+        user_test_success, user_test_response = self.run_test(
+            "User Login Direct Test", "POST", "auth/login", 401, user_data
+        )
+        
+        if user_test_success:  # 401 is expected for non-existent user
+            investigation_results["user_login_works"] = True
+            print("✅ User login endpoint responding correctly (401 for invalid user)")
+        else:
+            print("❌ CRITICAL: User login endpoint not responding correctly")
+            
+        # 3. Check Environment Variables
+        print("\n3️⃣ CHECKING ENVIRONMENT VARIABLES")
+        
+        # Test database connection by checking membership tiers
+        tiers_success, tiers_response = self.test_get_membership_tiers()
+        if tiers_success:
+            investigation_results["database_connection"] = True
+            investigation_results["environment_vars"] = True
+            print("✅ Database connection working - MONGO_URL is correct")
+            print("✅ Environment variables properly configured")
+        else:
+            print("❌ CRITICAL: Database connection failed - check MONGO_URL")
+            
+        # 4. Database Content Verification
+        print("\n4️⃣ VERIFYING DATABASE CONTENT")
+        
+        if investigation_results["admin_login_works"]:
+            # Get admin token and check members
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': f'Bearer {admin_response.get("token") if admin_response else self.admin_token}'
+            }
+            
+            members_success, members_response = self.run_test(
+                "Check Database Users", "GET", "admin/members", 200, headers=headers
+            )
+            
+            if members_success:
+                total_users = members_response.get('total_count', 0)
+                print(f"✅ Database contains {total_users} users")
+                
+                if total_users == 0:
+                    print("⚠️ WARNING: Database appears to be empty - this might be a fresh production database")
+                else:
+                    members = members_response.get('members', [])
+                    print(f"✅ Found users in database:")
+                    for member in members[:5]:  # Show first 5 users
+                        print(f"   - {member.get('username')} ({member.get('email')}) - {member.get('membership_tier')}")
+            else:
+                print("❌ CRITICAL: Cannot access database through admin API")
+        
+        # 5. API Routing Test
+        print("\n5️⃣ TESTING API ROUTING")
+        
+        # Test if endpoints exist (should return 401, not 404)
+        routing_tests = [
+            ("admin/login", "POST"),
+            ("auth/login", "POST"),
+            ("users/profile", "GET"),
+            ("admin/dashboard/overview", "GET")
+        ]
+        
+        routing_working = True
+        for endpoint, method in routing_tests:
+            if method == "POST":
+                success, response = self.run_test(f"Route Test {endpoint}", method, endpoint, 400, {})  # 400 for missing data
+            else:
+                success, response = self.run_test(f"Route Test {endpoint}", method, endpoint, 401, {})  # 401 for missing auth
+                
+            if not success:
+                print(f"❌ CRITICAL: Route {endpoint} not found (404 error)")
+                routing_working = False
+            else:
+                print(f"✅ Route {endpoint} exists and responding")
+        
+        investigation_results["api_routing"] = routing_working
+        
+        # 6. FINAL DIAGNOSIS
+        print("\n" + "=" * 80)
+        print("🔍 INVESTIGATION SUMMARY")
+        print("=" * 80)
+        
+        critical_issues = []
+        warnings = []
+        
+        if not investigation_results["admin_login_works"]:
+            critical_issues.append("Admin login not working - check admin credentials in environment")
+        
+        if not investigation_results["database_connection"]:
+            critical_issues.append("Database connection failed - check MONGO_URL configuration")
+            
+        if not investigation_results["api_routing"]:
+            critical_issues.append("API routing issues - endpoints returning 404")
+            
+        if not investigation_results["environment_vars"]:
+            critical_issues.append("Environment variables not properly configured")
+        
+        # Check for empty database
+        if investigation_results["admin_login_works"] and members_success and members_response.get('total_count', 0) == 0:
+            warnings.append("Database appears to be empty - might need to create test users")
+        
+        if critical_issues:
+            print("❌ CRITICAL ISSUES FOUND:")
+            for issue in critical_issues:
+                print(f"   • {issue}")
+        
+        if warnings:
+            print("\n⚠️ WARNINGS:")
+            for warning in warnings:
+                print(f"   • {warning}")
+        
+        if not critical_issues:
+            print("✅ NO CRITICAL ISSUES FOUND")
+            print("   All login endpoints are working correctly")
+            print("   Database connection is functional")
+            print("   API routing is working")
+            
+            if warnings:
+                print("\n💡 RECOMMENDATIONS:")
+                print("   • Check if this is a fresh production database")
+                print("   • Verify admin credentials match environment variables")
+                print("   • Test with actual user accounts if they exist")
+        
+        return len(critical_issues) == 0, investigation_results
+
 if __name__ == "__main__":
     # Check if specific test is requested
     if len(sys.argv) > 1 and sys.argv[1] == "csv_upload":
