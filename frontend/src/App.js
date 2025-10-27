@@ -147,7 +147,7 @@ function App() {
               </div>
             </Router>
           </AuthProvider>
-        </WalletErrorBoundary>
+        </ErrorBoundary>
       </QueryClientProvider>
     </WagmiProvider>
   );
