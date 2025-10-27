@@ -1,11 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
-import { createWeb3Modal } from '@web3modal/wagmi/react';
-import { defaultWagmiConfig } from '@web3modal/wagmi/react/config';
-import { WagmiProvider } from 'wagmi';
-import { arbitrum, mainnet } from 'wagmi/chains';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useAccount, useSignMessage } from 'wagmi';
 import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import Tree from 'react-d3-tree';
@@ -63,37 +57,6 @@ import {
 } from 'lucide-react';
 import './App.css';
 
-// 1. Get projectId at https://cloud.walletconnect.com
-const projectId = process.env.REACT_APP_WC_PROJECT_ID || 'af44774b87514c0aab24072250c2baa8';
-
-// 2. Create wagmiConfig
-const metadata = {
-  name: 'Proleads Network',
-  description: 'Multi-tier affiliate membership platform',
-  url: window.location.origin,
-  icons: ['https://members.proleads.network/assets/images/hero-logo-2.png']
-};
-
-const chains = [mainnet, arbitrum];
-const config = defaultWagmiConfig({
-  chains,
-  projectId,
-  metadata,
-  ssr: true
-});
-
-// 3. Create modal with error handling
-try {
-  createWeb3Modal({
-    wagmiConfig: config,
-    projectId,
-    enableAnalytics: true
-  });
-} catch (error) {
-  console.warn('Web3Modal creation failed (this is fine for traditional auth):', error.message);
-}
-
-const queryClient = new QueryClient();
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 // Utility function to get tier display name
