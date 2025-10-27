@@ -8574,5 +8574,30 @@ if __name__ == "__main__":
         print("=" * 80)
         
         sys.exit(0 if success else 1)
+    elif len(sys.argv) > 1 and sys.argv[1] == "deployment_validation":
+        print("🎯 RUNNING DEPLOYMENT VALIDATION TESTS")
+        print("=" * 80)
+        
+        backend_url = "https://kyc-portal-3.preview.emergentagent.com"
+        tester = Web3MembershipTester(backend_url)
+        
+        # Run deployment validation tests
+        success = tester.test_deployment_validation()
+        
+        print("\n" + "=" * 80)
+        print("🏁 Deployment Validation Summary")
+        print(f"   Tests Run: {tester.tests_run}")
+        print(f"   Tests Passed: {tester.tests_passed}")
+        print(f"   Tests Failed: {tester.tests_run - tester.tests_passed}")
+        print(f"   Success Rate: {(tester.tests_passed / tester.tests_run * 100):.1f}%")
+        
+        if success:
+            print("✅ DEPLOYMENT VALIDATION PASSED - Ready for deployment!")
+        else:
+            print("❌ DEPLOYMENT VALIDATION FAILED - Fix required before deployment!")
+        
+        print("=" * 80)
+        
+        sys.exit(0 if success else 1)
     else:
         sys.exit(main())
