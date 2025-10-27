@@ -9635,6 +9635,16 @@ function ConfigurationTab() {
         >
           Payment Processors
         </button>
+        <button
+          onClick={() => setActiveSection('tools')}
+          className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+            activeSection === 'tools'
+              ? 'bg-red-600 text-white'
+              : 'bg-white bg-opacity-10 text-gray-300 hover:bg-opacity-20'
+          }`}
+        >
+          System Tools
+        </button>
       </div>
 
       {unsavedChanges && (
