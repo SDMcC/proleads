@@ -277,9 +277,7 @@ class ConnectionManager:
 
 websocket_manager = ConnectionManager()
 
-def generate_referral_code(address: str) -> str:
-    """Generate unique referral code"""
-    return f"REF{address[:6].upper()}{str(uuid.uuid4())[:8].upper()}"
+# Legacy referral code generator - removed in favor of username-based codes
 
 async def load_system_config():
     """Load system configuration from database"""
