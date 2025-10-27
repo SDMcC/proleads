@@ -8976,7 +8976,7 @@ function AdminTicketsTab({
       formData.append('message', adminReplyMessage);
 
       await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/api/admin/tickets/${selectedTicket.ticket.ticket_id}/reply`,
+        `${API_URL}/api/admin/tickets/${selectedTicket.ticket.ticket_id}/reply`,
         formData,
         { 
           headers: { 
