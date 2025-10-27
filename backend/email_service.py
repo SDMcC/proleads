@@ -14,9 +14,17 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 
-# Database connection for storing notifications
-client = AsyncIOMotorClient(os.getenv("MONGO_URL"))
-db = client[os.getenv("DB_NAME")]
+# Database connection for storing notifications - lazy initialization
+_client = None
+_db = None
+
+def get_db():
+    """Get database connection (lazy initialization)"""
+    global _client, _db
+    if _db is None:
+        _client = AsyncIOMotorClient(os.getenv("MONGO_URL"))
+        _db = _client[os.getenv("DB_NAME")]
+    return _db
 
 # SMTP Configuration (will be loaded from env or Ethereal)
 SMTP_HOST = os.getenv("SMTP_HOST", "smtp.ethereal.email")
