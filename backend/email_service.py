@@ -4,8 +4,15 @@ from email.mime.multipart import MIMEMultipart
 import os
 import logging
 import httpx
+from motor.motor_asyncio import AsyncIOMotorClient
+from datetime import datetime
+import uuid
 
 logger = logging.getLogger(__name__)
+
+# Database connection for storing notifications
+client = AsyncIOMotorClient(os.getenv("MONGO_URL"))
+db = client[os.getenv("DB_NAME")]
 
 # SMTP Configuration (will be loaded from env or Ethereal)
 SMTP_HOST = os.getenv("SMTP_HOST", "smtp.ethereal.email")
