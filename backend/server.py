@@ -1,11 +1,18 @@
+import os
+import sys
+
+# Add parent directory to Python path for proper module imports
+# This allows 'backend.server' to be imported when running from /app/backend
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
 from fastapi import FastAPI, HTTPException, Depends, Request, WebSocket, WebSocketDisconnect, Header, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
-import os
-import sys
 import json
 import hmac
 import hashlib
