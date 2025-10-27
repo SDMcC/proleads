@@ -959,6 +959,132 @@ async def update_notification_preferences(
         logger.error(f"Failed to update notification preferences: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to update notification preferences")
 
+
+@app.get("/api/users/notifications")
+async def get_user_notifications(
+    page: int = 1,
+    limit: int = 10,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get paginated notification history for the current user"""
+    try:
+        user = await db.users.find_one({"address": current_user["address"]})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        user_email = user.get("email")
+        if not user_email:
+            return {
+                "notifications": [],
+                "total": 0,
+                "page": page,
+                "limit": limit,
+                "total_pages": 0
+            }
+        
+        # Calculate skip for pagination
+        skip = (page - 1) * limit
+        
+        # Get total count
+        total = await db.notifications.count_documents({"user_email": user_email})
+        
+        # Get paginated notifications, sorted by most recent first
+        notifications = await db.notifications.find(
+            {"user_email": user_email}
+        ).sort("created_at", -1).skip(skip).limit(limit).to_list(length=limit)
+        
+        # Clean up MongoDB _id field
+        for notification in notifications:
+            notification.pop("_id", None)
+        
+        total_pages = (total + limit - 1) // limit  # Ceiling division
+        
+        return {
+            "notifications": notifications,
+            "total": total,
+            "page": page,
+            "limit": limit,
+            "total_pages": total_pages
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to fetch notifications: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch notifications")
+
+@app.put("/api/users/notifications/{notification_id}/read")
+async def mark_notification_read(
+    notification_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Mark a notification as read"""
+    try:
+        user = await db.users.find_one({"address": current_user["address"]})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        user_email = user.get("email")
+        
+        # Update notification
+        result = await db.notifications.update_one(
+            {
+                "notification_id": notification_id,
+                "user_email": user_email
+            },
+            {"$set": {"read": True}}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Notification not found")
+        
+        return {"message": "Notification marked as read"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to mark notification as read: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to update notification")
+
+@app.get("/api/users/notifications/{notification_id}")
+async def get_notification_details(
+    notification_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get details of a specific notification"""
+    try:
+        user = await db.users.find_one({"address": current_user["address"]})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        user_email = user.get("email")
+        
+        notification = await db.notifications.find_one({
+            "notification_id": notification_id,
+            "user_email": user_email
+        })
+        
+        if not notification:
+            raise HTTPException(status_code=404, detail="Notification not found")
+        
+        # Remove MongoDB _id
+        notification.pop("_id", None)
+        
+        # Mark as read when viewing
+        await db.notifications.update_one(
+            {"notification_id": notification_id},
+            {"$set": {"read": True}}
+        )
+        
+        return notification
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to fetch notification details: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch notification")
+
+
 # KYC System Endpoints
 @app.post("/api/users/kyc/upload-document")
 async def upload_kyc_document(
