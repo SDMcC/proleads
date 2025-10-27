@@ -127,7 +127,7 @@ function App() {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <WalletErrorBoundary>
+        <ErrorBoundary>
           <AuthProvider>
             <Router>
               <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
