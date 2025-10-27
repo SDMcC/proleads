@@ -167,7 +167,7 @@ function AuthProvider({ children }) {
 
   const fetchUserProfile = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/users/profile`, {
+      const response = await axios.get(`${API_URL}/users/profile`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUser(response.data);
@@ -268,7 +268,7 @@ function LoginModal({ onClose }) {
 
     setLoginLoading(true);
     try {
-      const response = await axios.post(`${API_URL}/api/auth/login`, {
+      const response = await axios.post(`${API_URL}/auth/login`, {
         username: loginData.username,
         password: loginData.password
       });
@@ -1320,7 +1320,7 @@ function LandingPage() {
 
   const fetchReferrerInfo = async (code) => {
     try {
-      const response = await axios.get(`${API_URL}/api/referral/${code}`);
+      const response = await axios.get(`${API_URL}/referral/${code}`);
       setReferrerInfo(response.data);
     } catch (error) {
       console.error('Failed to fetch referrer info:', error);
@@ -1329,7 +1329,7 @@ function LandingPage() {
 
   const fetchMembershipTiers = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/membership/tiers`);
+      const response = await axios.get(`${API_URL}/membership/tiers`);
       setMembershipTiers(response.data.tiers);
     } catch (error) {
       console.error('Failed to fetch tiers:', error);
@@ -1799,7 +1799,7 @@ function MembershipTiers({ referralCode }) {
   useEffect(() => {
     const fetchTiers = async () => {
       try {
-        const response = await axios.get(`${API_URL}/api/membership/tiers`);
+        const response = await axios.get(`${API_URL}/membership/tiers`);
         setTiers(response.data.tiers || {});
       } catch (error) {
         console.error('Failed to fetch tiers:', error);
@@ -1876,7 +1876,7 @@ function TierCard({ tier, referralCode }) {
       }
 
       // Create payment with default ETH currency
-      const response = await axios.post(`${API_URL}/api/payments/create`, {
+      const response = await axios.post(`${API_URL}/payments/create`, {
         tier: tier.name.toLowerCase(),
         currency: 'ETH' // Default to ETH
       }, {
@@ -2013,7 +2013,7 @@ function RegisterPage() {
 
   const fetchReferrerInfo = async (code) => {
     try {
-      const response = await axios.get(`${API_URL}/api/referral/${code}`);
+      const response = await axios.get(`${API_URL}/referral/${code}`);
       setReferrerInfo(response.data);
     } catch (error) {
       console.error('Failed to fetch referrer info:', error);
@@ -2054,7 +2054,7 @@ function RegisterPage() {
     try {
       // Register user
       console.log('Attempting registration...');
-      const registerResponse = await axios.post(`${API_URL}/api/users/register`, {
+      const registerResponse = await axios.post(`${API_URL}/users/register`, {
         username: formData.username,
         email: formData.email,
         password: formData.password,
@@ -2064,7 +2064,7 @@ function RegisterPage() {
       console.log('Registration successful:', registerResponse.data);
 
       // Auto-login after registration
-      const loginResponse = await axios.post(`${API_URL}/api/auth/login`, {
+      const loginResponse = await axios.post(`${API_URL}/auth/login`, {
         username: formData.username,
         password: formData.password
       });
@@ -2304,7 +2304,7 @@ function Dashboard() {
   const checkKYCStatus = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/users/kyc/status`, {
+      const response = await axios.get(`${API_URL}/users/kyc/status`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setKycStatus(response.data);
@@ -2323,7 +2323,7 @@ function Dashboard() {
   const fetchDashboardStats = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/dashboard/stats`, {
+      const response = await axios.get(`${API_URL}/dashboard/stats`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setStats(response.data);
@@ -2338,7 +2338,7 @@ function Dashboard() {
     try {
       const token = localStorage.getItem('token');
       // Fetch recent notifications for bell icon (show last 10)
-      const response = await axios.get(`${API_URL}/api/users/notifications?page=1&limit=10`, {
+      const response = await axios.get(`${API_URL}/users/notifications?page=1&limit=10`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNotifications(response.data.notifications || []);
@@ -2359,7 +2359,7 @@ function Dashboard() {
       const wasUnread = notification && !notification.read;
       
       // Mark as read in backend
-      await axios.put(`${API_URL}/api/users/notifications/${notificationId}/read`, {}, {
+      await axios.put(`${API_URL}/users/notifications/${notificationId}/read`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -2392,7 +2392,7 @@ function Dashboard() {
   const markAllNotificationsRead = async () => {
     try {
       const token = localStorage.getItem('token');
-      await axios.post(`${API_URL}/api/users/notifications/mark-read`, {}, {
+      await axios.post(`${API_URL}/users/notifications/mark-read`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       // Update local state
@@ -2921,7 +2921,7 @@ function KYCStatsRow({ stats, user, onNavigateToKYC }) {
     const fetchKYCStatus = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`${API_URL}/api/users/kyc/status`, {
+        const response = await axios.get(`${API_URL}/users/kyc/status`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setKycStatus(response.data);
@@ -3087,7 +3087,7 @@ function KYCEarningsCard({ user, onNavigateToKYC }) {
   const fetchKYCStatus = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/users/kyc/status`, {
+      const response = await axios.get(`${API_URL}/users/kyc/status`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setKycStatus(response.data);
@@ -3188,7 +3188,7 @@ function NetworkTreeTab() {
   const fetchNetworkTree = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/users/network-tree?depth=${depth}`, {
+      const response = await axios.get(`${API_URL}/users/network-tree?depth=${depth}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNetworkData(response.data);
@@ -3846,7 +3846,7 @@ function EarningsTab() {
       params.append('page', page.toString());
       params.append('limit', '10');
 
-      const response = await axios.get(`${API_URL}/api/users/earnings?${params}`, {
+      const response = await axios.get(`${API_URL}/users/earnings?${params}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -3867,7 +3867,7 @@ function EarningsTab() {
       if (dateFrom) params.append('date_from', dateFrom);
       if (dateTo) params.append('date_to', dateTo);
 
-      const response = await axios.get(`${API_URL}/api/users/earnings/export?${params}`, {
+      const response = await axios.get(`${API_URL}/users/earnings/export?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
         responseType: 'blob'
       });
@@ -4071,7 +4071,7 @@ function PaymentHistoryTab() {
       params.append('page', page.toString());
       params.append('limit', '10');
 
-      const response = await axios.get(`${API_URL}/api/users/payments?${params}`, {
+      const response = await axios.get(`${API_URL}/users/payments?${params}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -4093,7 +4093,7 @@ function PaymentHistoryTab() {
       if (dateFrom) params.append('date_from', dateFrom);
       if (dateTo) params.append('date_to', dateTo);
 
-      const response = await axios.get(`${API_URL}/api/users/payments/export?${params}`, {
+      const response = await axios.get(`${API_URL}/users/payments/export?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
         responseType: 'blob'
       });
@@ -4320,7 +4320,7 @@ function MilestonesTab() {
   const fetchMilestones = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/users/milestones`, {
+      const response = await axios.get(`${API_URL}/users/milestones`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setMilestones(response.data);
@@ -4535,7 +4535,7 @@ function AccountSettingsTab({ user }) {
       }
 
       const token = localStorage.getItem('token');
-      const response = await axios.put(`${API_URL}/api/users/profile`, updateData, {
+      const response = await axios.put(`${API_URL}/users/profile`, updateData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -4572,7 +4572,7 @@ function AccountSettingsTab({ user }) {
 
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`${API_URL}/api/users/cancel-account`, {
+      await axios.delete(`${API_URL}/users/cancel-account`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -4725,7 +4725,7 @@ function ReferralsTab() {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/users/referrals?page=${currentPage}&limit=${limit}`, {
+      const response = await axios.get(`${API_URL}/users/referrals?page=${currentPage}&limit=${limit}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -4979,7 +4979,7 @@ function TicketsTab() {
       if (filters.category) params.append('category_filter', filters.category);
 
       const response = await axios.get(
-        `${API_URL}/api/tickets/user?${params}`,
+        `${API_URL}/tickets/user?${params}`,
         { headers: { Authorization: `Bearer ${token}` }}
       );
       
@@ -4996,7 +4996,7 @@ function TicketsTab() {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get(
-        `${API_URL}/api/tickets/downline-contacts`,
+        `${API_URL}/tickets/downline-contacts`,
         { headers: { Authorization: `Bearer ${token}` }}
       );
       setDownlineContacts(response.data.contacts || []);
@@ -5018,7 +5018,7 @@ function TicketsTab() {
         formData.append('file', file);
         
         const response = await axios.post(
-          `${API_URL}/api/tickets/upload-attachment`,
+          `${API_URL}/tickets/upload-attachment`,
           formData,
           { 
             headers: { 
@@ -5068,7 +5068,7 @@ function TicketsTab() {
       }
 
       await axios.post(
-        `${API_URL}/api/tickets/create`,
+        `${API_URL}/tickets/create`,
         formData,
         { 
           headers: { 
@@ -5103,7 +5103,7 @@ function TicketsTab() {
       setLoading(true);
       const token = localStorage.getItem('token');
       const response = await axios.get(
-        `${API_URL}/api/tickets/${ticketId}`,
+        `${API_URL}/tickets/${ticketId}`,
         { headers: { Authorization: `Bearer ${token}` }}
       );
       
@@ -5130,7 +5130,7 @@ function TicketsTab() {
       }
 
       await axios.post(
-        `${API_URL}/api/tickets/${selectedTicket.ticket.ticket_id}/reply`,
+        `${API_URL}/tickets/${selectedTicket.ticket.ticket_id}/reply`,
         formData,
         { 
           headers: { 
@@ -5157,7 +5157,7 @@ function TicketsTab() {
     try {
       const token = localStorage.getItem('token');
       await axios.delete(
-        `${API_URL}/api/tickets/${ticketId}`,
+        `${API_URL}/tickets/${ticketId}`,
         { headers: { Authorization: `Bearer ${token}` }}
       );
 
@@ -5832,7 +5832,7 @@ function NotificationSettingsTab({ user }) {
   const fetchPreferences = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/users/notification-preferences`, {
+      const response = await axios.get(`${API_URL}/users/notification-preferences`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setPreferences(response.data.email_notifications);
@@ -5848,7 +5848,7 @@ function NotificationSettingsTab({ user }) {
       setNotificationsLoading(true);
       const token = localStorage.getItem('token');
       const response = await axios.get(
-        `${API_URL}/api/users/notifications?page=${currentPage}&limit=${itemsPerPage}`,
+        `${API_URL}/users/notifications?page=${currentPage}&limit=${itemsPerPage}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setNotifications(response.data.notifications);
@@ -5865,7 +5865,7 @@ function NotificationSettingsTab({ user }) {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get(
-        `${API_URL}/api/users/notifications/${notificationId}`,
+        `${API_URL}/users/notifications/${notificationId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setSelectedNotification(response.data);
@@ -5900,7 +5900,7 @@ function NotificationSettingsTab({ user }) {
       setSaving(true);
       const token = localStorage.getItem('token');
       await axios.put(
-        `${API_URL}/api/users/notification-preferences`,
+        `${API_URL}/users/notification-preferences`,
         { [key]: newValue },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -6194,7 +6194,7 @@ function KYCVerificationTab({ user }) {
   const fetchKYCStatus = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/users/kyc/status`, {
+      const response = await axios.get(`${API_URL}/users/kyc/status`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setKycStatus(response.data);
@@ -6214,7 +6214,7 @@ function KYCVerificationTab({ user }) {
 
       const token = localStorage.getItem('token');
       const response = await axios.post(
-        `${API_URL}/api/users/kyc/upload-document`,
+        `${API_URL}/users/kyc/upload-document`,
         formData,
         {
           headers: {
@@ -6252,7 +6252,7 @@ function KYCVerificationTab({ user }) {
       setSubmitting(true);
       const token = localStorage.getItem('token');
       await axios.post(
-        `${API_URL}/api/users/kyc/submit`,
+        `${API_URL}/users/kyc/submit`,
         { id_document: idDocument, selfie: selfie },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -6497,7 +6497,7 @@ function RecentPayments() {
   const fetchRecentPayments = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/payments/recent`, {
+      const response = await axios.get(`${API_URL}/payments/recent`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setPayments(response.data.payments || []);
@@ -6587,7 +6587,7 @@ function PaymentPage() {
 
     const fetchTiers = async () => {
       try {
-        const response = await axios.get(`${API_URL}/api/membership/tiers`);
+        const response = await axios.get(`${API_URL}/membership/tiers`);
         setTiers(response.data.tiers || {});
       } catch (error) {
         console.error('Failed to fetch tiers:', error);
@@ -6602,7 +6602,7 @@ function PaymentPage() {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post(`${API_URL}/api/payments/create`, {
+      const response = await axios.post(`${API_URL}/payments/create`, {
         tier: selectedTier,
         currency: selectedCurrency // Use the selected currency from the form
       }, {
@@ -6925,7 +6925,7 @@ function AdminLoginPage() {
     setLoading(true);
     
     try {
-      const response = await axios.post(`${API_URL}/api/admin/login`, credentials);
+      const response = await axios.post(`${API_URL}/admin/login`, credentials);
       const { token } = response.data;
       
       localStorage.setItem("adminToken", token);
@@ -7116,7 +7116,7 @@ function AdminDashboard() {
       const headers = { Authorization: `Bearer ${token}` };
 
       // Fetch dashboard overview
-      const overviewResponse = await axios.get(`${API_URL}/api/admin/dashboard/overview`, { headers });
+      const overviewResponse = await axios.get(`${API_URL}/admin/dashboard/overview`, { headers });
       setStats(overviewResponse.data);
       
       // Fetch members data if on members tab
@@ -7134,7 +7134,7 @@ function AdminDashboard() {
   const fetchAdminNotifications = async () => {
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await axios.get(`${API_URL}/api/admin/notifications`, {
+      const response = await axios.get(`${API_URL}/admin/notifications`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAdminNotifications(response.data.notifications);
@@ -7147,7 +7147,7 @@ function AdminDashboard() {
   const clearAdminNotification = async (notificationId) => {
     try {
       const token = localStorage.getItem('adminToken');
-      await axios.delete(`${API_URL}/api/admin/notifications/${notificationId}`, {
+      await axios.delete(`${API_URL}/admin/notifications/${notificationId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       // Remove from local state
@@ -7162,7 +7162,7 @@ function AdminDashboard() {
   const markAllAdminNotificationsRead = async () => {
     try {
       const token = localStorage.getItem('adminToken');
-      await axios.post(`${API_URL}/api/admin/notifications/mark-read`, {}, {
+      await axios.post(`${API_URL}/admin/notifications/mark-read`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       // Update local state
@@ -7185,7 +7185,7 @@ function AdminDashboard() {
       params.append('page', page.toString());
       params.append('limit', '10');
       
-      const response = await axios.get(`${API_URL}/api/admin/members?${params}`, { headers });
+      const response = await axios.get(`${API_URL}/admin/members?${params}`, { headers });
       
       // Backend now handles sorting, no need to sort on frontend
       setMembers(response.data.members || []);
@@ -7210,7 +7210,7 @@ function AdminDashboard() {
       params.append('page', paymentPage.toString());
       params.append('limit', '10');
       
-      const response = await axios.get(`${API_URL}/api/admin/payments?${params}`, { headers });
+      const response = await axios.get(`${API_URL}/admin/payments?${params}`, { headers });
       setPayments(response.data.payments || []);
       setPaymentTotalPages(response.data.total_pages || 1);
       
@@ -7233,7 +7233,7 @@ function AdminDashboard() {
       params.append('page', commissionPage.toString());
       params.append('limit', '10');
       
-      const response = await axios.get(`${API_URL}/api/admin/commissions?${params}`, { headers });
+      const response = await axios.get(`${API_URL}/admin/commissions?${params}`, { headers });
       setCommissions(response.data.commissions || []);
       setCommissionTotalPages(response.data.total_pages || 1);
       
@@ -7256,7 +7256,7 @@ function AdminDashboard() {
       params.append('page', milestonePage.toString());
       params.append('limit', '10');
       
-      const response = await axios.get(`${API_URL}/api/admin/milestones?${params}`, { headers });
+      const response = await axios.get(`${API_URL}/admin/milestones?${params}`, { headers });
       setMilestones(response.data.milestones || []);
       setMilestoneTotalPages(response.data.total_pages || 1);
       
@@ -7274,7 +7274,7 @@ function AdminDashboard() {
       const token = localStorage.getItem('adminToken');
       const headers = { Authorization: `Bearer ${token}` };
       
-      await axios.put(`${API_URL}/api/admin/milestones/${milestoneId}/mark-paid`, {}, { headers });
+      await axios.put(`${API_URL}/admin/milestones/${milestoneId}/mark-paid`, {}, { headers });
       
       // Refresh milestones list
       fetchMilestones();
@@ -7298,7 +7298,7 @@ function AdminDashboard() {
       if (milestoneFilters.minAmount) params.append('award_filter', milestoneFilters.minAmount);
       if (milestoneFilters.status) params.append('status_filter', milestoneFilters.status);
       
-      const response = await axios.get(`${API_URL}/api/admin/milestones/export?${params}`, { 
+      const response = await axios.get(`${API_URL}/admin/milestones/export?${params}`, { 
         headers, 
         responseType: 'blob' 
       });
@@ -7330,7 +7330,7 @@ function AdminDashboard() {
       params.append('page', kycPage.toString());
       params.append('limit', '20');
       
-      const response = await axios.get(`${API_URL}/api/admin/kyc/submissions?${params}`, { headers });
+      const response = await axios.get(`${API_URL}/admin/kyc/submissions?${params}`, { headers });
       setKycSubmissions(response.data.submissions || []);
       setKycTotalPages(response.data.total_pages || 1);
       
@@ -7348,7 +7348,7 @@ function AdminDashboard() {
       const token = localStorage.getItem('adminToken');
       const headers = { Authorization: `Bearer ${token}` };
       
-      await axios.put(`${API_URL}/api/admin/kyc/${userId}/review`, { approved: true }, { headers });
+      await axios.put(`${API_URL}/admin/kyc/${userId}/review`, { approved: true }, { headers });
       
       // Refresh KYC list
       fetchKYCSubmissions();
@@ -7376,7 +7376,7 @@ function AdminDashboard() {
       const token = localStorage.getItem('adminToken');
       const headers = { Authorization: `Bearer ${token}` };
       
-      await axios.put(`${API_URL}/api/admin/kyc/${userId}/review`, { 
+      await axios.put(`${API_URL}/admin/kyc/${userId}/review`, { 
         approved: false, 
         rejection_reason: rejectionReason 
       }, { headers });
@@ -7399,7 +7399,7 @@ function AdminDashboard() {
       const token = localStorage.getItem('adminToken');
       const headers = { Authorization: `Bearer ${token}` };
       
-      const response = await axios.get(`${API_URL}/api/admin/members/${memberId}`, { headers });
+      const response = await axios.get(`${API_URL}/admin/members/${memberId}`, { headers });
       setSelectedMember(response.data);
       setShowMemberModal(true);
       
@@ -7414,7 +7414,7 @@ function AdminDashboard() {
       const token = localStorage.getItem('adminToken');
       const headers = { Authorization: `Bearer ${token}` };
       
-      await axios.put(`${API_URL}/api/admin/members/${memberId}`, updateData, { headers });
+      await axios.put(`${API_URL}/admin/members/${memberId}`, updateData, { headers });
       
       // Refresh members list
       fetchMembers(memberFilter, memberPage);
@@ -7438,7 +7438,7 @@ function AdminDashboard() {
       const token = localStorage.getItem('adminToken');
       const headers = { Authorization: `Bearer ${token}` };
       
-      await axios.delete(`${API_URL}/api/admin/members/${memberId}`, { headers });
+      await axios.delete(`${API_URL}/admin/members/${memberId}`, { headers });
       
       // Refresh members list
       fetchMembers(memberFilter, memberPage);
@@ -7460,7 +7460,7 @@ function AdminDashboard() {
       const token = localStorage.getItem('adminToken');
       const headers = { Authorization: `Bearer ${token}` };
       
-      await axios.post(`${API_URL}/api/admin/members/${memberId}/unsuspend`, {}, { headers });
+      await axios.post(`${API_URL}/admin/members/${memberId}/unsuspend`, {}, { headers });
       
       // Refresh members list
       fetchMembers(memberFilter, memberPage);
@@ -7501,7 +7501,7 @@ function AdminDashboard() {
       if (paymentDateFrom) params.append('date_from', paymentDateFrom);
       if (paymentDateTo) params.append('date_to', paymentDateTo);
       
-      const response = await axios.get(`${API_URL}/api/admin/payments/export?${params}`, { 
+      const response = await axios.get(`${API_URL}/admin/payments/export?${params}`, { 
         headers,
         responseType: 'blob'
       });
@@ -7545,7 +7545,7 @@ function AdminDashboard() {
       if (commissionDateFrom) params.append('date_from', commissionDateFrom);
       if (commissionDateTo) params.append('date_to', commissionDateTo);
       
-      const response = await axios.get(`${API_URL}/api/admin/commissions/export?${params}`, { 
+      const response = await axios.get(`${API_URL}/admin/commissions/export?${params}`, { 
         headers,
         responseType: 'blob'
       });
@@ -8471,7 +8471,7 @@ function LeadsTab() {
   const fetchCsvFiles = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/users/leads?page=${currentPage}&limit=${limit}`, {
+      const response = await axios.get(`${API_URL}/users/leads?page=${currentPage}&limit=${limit}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -8489,7 +8489,7 @@ function LeadsTab() {
   const downloadCsvFile = async (fileId, filename) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/users/leads/download/${fileId}`, {
+      const response = await axios.get(`${API_URL}/users/leads/download/${fileId}`, {
         headers: { Authorization: `Bearer ${token}` },
         responseType: 'blob'
       });
@@ -8689,7 +8689,7 @@ function LeadsManagementTab() {
   const fetchDistributions = async () => {
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await axios.get(`${API_URL}/api/admin/leads/distributions?page=${page}&limit=10`, {
+      const response = await axios.get(`${API_URL}/admin/leads/distributions?page=${page}&limit=10`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -8715,7 +8715,7 @@ function LeadsManagementTab() {
       const formData = new FormData();
       formData.append('csv_file', csvFile);
 
-      const response = await axios.post(`${API_URL}/api/admin/leads/upload`, formData, {
+      const response = await axios.post(`${API_URL}/admin/leads/upload`, formData, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
@@ -8736,7 +8736,7 @@ function LeadsManagementTab() {
   const triggerDistribution = async (distributionId) => {
     try {
       const token = localStorage.getItem('adminToken');
-      await axios.post(`${API_URL}/api/admin/leads/distribute/${distributionId}`, {}, {
+      await axios.post(`${API_URL}/admin/leads/distribute/${distributionId}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -8911,7 +8911,7 @@ function AdminTicketsTab({
       if (filters.user) params.append('user_filter', filters.user);
 
       const response = await axios.get(
-        `${API_URL}/api/admin/tickets?${params}`,
+        `${API_URL}/admin/tickets?${params}`,
         { headers: { Authorization: `Bearer ${token}` }}
       );
       
@@ -8929,7 +8929,7 @@ function AdminTicketsTab({
       setLoading(true);
       const token = localStorage.getItem('adminToken');
       const response = await axios.get(
-        `${API_URL}/api/admin/tickets/${ticketId}`,
+        `${API_URL}/admin/tickets/${ticketId}`,
         { headers: { Authorization: `Bearer ${token}` }}
       );
       
@@ -8947,7 +8947,7 @@ function AdminTicketsTab({
     try {
       const token = localStorage.getItem('adminToken');
       await axios.put(
-        `${API_URL}/api/admin/tickets/${ticketId}/status`,
+        `${API_URL}/admin/tickets/${ticketId}/status`,
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` }}
       );
@@ -8978,7 +8978,7 @@ function AdminTicketsTab({
       formData.append('message', adminReplyMessage);
 
       await axios.post(
-        `${API_URL}/api/admin/tickets/${selectedTicket.ticket.ticket_id}/reply`,
+        `${API_URL}/admin/tickets/${selectedTicket.ticket.ticket_id}/reply`,
         formData,
         { 
           headers: { 
@@ -9005,7 +9005,7 @@ function AdminTicketsTab({
 
       const token = localStorage.getItem('adminToken');
       await axios.post(
-        `${API_URL}/api/admin/tickets/mass-message`,
+        `${API_URL}/admin/tickets/mass-message`,
         massMessageForm,
         { headers: { Authorization: `Bearer ${token}` }}
       );
@@ -9573,7 +9573,7 @@ function ConfigurationTab() {
   const fetchConfiguration = async () => {
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await axios.get(`${API_URL}/api/admin/config/system`, {
+      const response = await axios.get(`${API_URL}/admin/config/system`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -9628,7 +9628,7 @@ function ConfigurationTab() {
         };
       });
 
-      const response = await axios.put(`${API_URL}/api/admin/config/membership-tiers`, tiersData, {
+      const response = await axios.put(`${API_URL}/admin/config/membership-tiers`, tiersData, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -9662,7 +9662,7 @@ function ConfigurationTab() {
         };
       });
 
-      const response = await axios.put(`${API_URL}/api/admin/config/payment-processors`, processorsData, {
+      const response = await axios.put(`${API_URL}/admin/config/payment-processors`, processorsData, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -9685,7 +9685,7 @@ function ConfigurationTab() {
     setSaving(true);
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await axios.post(`${API_URL}/api/admin/config/reset-to-defaults`, {}, {
+      const response = await axios.post(`${API_URL}/admin/config/reset-to-defaults`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -10019,7 +10019,7 @@ function MigrationButton() {
 
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await axios.post(`${API_URL}/api/admin/migrate/referral-codes`, {}, {
+      const response = await axios.post(`${API_URL}/admin/migrate/referral-codes`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -10789,7 +10789,7 @@ function AnalyticsTab() {
   const fetchAnalyticsSummary = async () => {
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await axios.get(`${API_URL}/api/admin/analytics/summary`, {
+      const response = await axios.get(`${API_URL}/admin/analytics/summary`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAnalyticsData(response.data);
@@ -10803,7 +10803,7 @@ function AnalyticsTab() {
   const fetchGraphsData = async () => {
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await axios.get(`${API_URL}/api/admin/analytics/graphs?time_filter=${timeFilter}`, {
+      const response = await axios.get(`${API_URL}/admin/analytics/graphs?time_filter=${timeFilter}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setGraphsData(response.data);
@@ -10996,7 +10996,7 @@ function RecentMembersCard() {
   const fetchRecentMembers = async () => {
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await axios.get(`${API_URL}/api/admin/recent/members?limit=10`, {
+      const response = await axios.get(`${API_URL}/admin/recent/members?limit=10`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setRecentMembers(response.data.recent_members);
@@ -11052,7 +11052,7 @@ function RecentPaymentsCard() {
   const fetchRecentPayments = async () => {
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await axios.get(`${API_URL}/api/admin/recent/payments?limit=10`, {
+      const response = await axios.get(`${API_URL}/admin/recent/payments?limit=10`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setRecentPayments(response.data.recent_payments);
@@ -11106,7 +11106,7 @@ function RecentMilestonesCard() {
   const fetchRecentMilestones = async () => {
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await axios.get(`${API_URL}/api/admin/recent/milestones?limit=10`, {
+      const response = await axios.get(`${API_URL}/admin/recent/milestones?limit=10`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setRecentMilestones(response.data.recent_milestones);
@@ -11162,7 +11162,7 @@ function RecentTicketsCard() {
   const fetchRecentTickets = async () => {
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await axios.get(`${API_URL}/api/admin/recent/tickets?limit=10`, {
+      const response = await axios.get(`${API_URL}/admin/recent/tickets?limit=10`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setRecentTickets(response.data.recent_tickets);
@@ -11299,7 +11299,7 @@ function AccountSettingsOnlyTab({ user }) {
       }
 
       const token = localStorage.getItem('token');
-      const response = await axios.put(`${API_URL}/api/users/profile`, updateData, {
+      const response = await axios.put(`${API_URL}/users/profile`, updateData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -11430,7 +11430,7 @@ function CancelAccountTab() {
 
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`${API_URL}/api/users/cancel-account`, {
+      await axios.delete(`${API_URL}/users/cancel-account`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -11477,7 +11477,7 @@ function KYCDocumentImage({ filename, alt }) {
     const fetchImage = async () => {
       try {
         const token = localStorage.getItem('adminToken');
-        const response = await axios.get(`${API_URL}/api/users/kyc/document/${filename}`, {
+        const response = await axios.get(`${API_URL}/users/kyc/document/${filename}`, {
           headers: { Authorization: `Bearer ${token}` },
           responseType: 'blob'
         });
