@@ -14,7 +14,7 @@ b. New referrals
 c. Lead distribution
 
 ## 4. Wrong URL in email notifications
-- Issue: Using `https://proleads-hub.preview.emergentagent.com`
+- Issue: Using `https://kyc-portal-3.preview.emergentagent.com`
 - Should be: `https://proleads.network`
 - Solution: Replace hardcoded URL with environment variable or production URL
 
