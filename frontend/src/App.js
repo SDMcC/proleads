@@ -2818,17 +2818,19 @@ function AdminNotificationPanel({ bellButtonRef, notifications, onClose, onClear
             <div 
               key={notification.notification_id}
               className={`p-4 border-b border-gray-700 last:border-b-0 ${
-                !notification.read_status ? 'bg-blue-900 bg-opacity-20' : ''
+                !notification.read ? 'bg-blue-900 bg-opacity-20' : ''
               }`}
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center space-x-2 mb-1">
-                    {notification.type === 'payment' && <DollarSign className="h-4 w-4 text-green-500" />}
-                    {notification.type === 'milestone' && <Award className="h-4 w-4 text-yellow-500" />}
-                    <h4 className="text-sm font-medium text-white">{notification.title}</h4>
+                    {notification.type === 'payment_confirmation' && <DollarSign className="h-4 w-4 text-green-500" />}
+                    {notification.type === 'commission_payout' && <Award className="h-4 w-4 text-yellow-500" />}
+                    {notification.type === 'lead_distribution' && <Gift className="h-4 w-4 text-purple-500" />}
+                    {notification.type === 'new_referral' && <Users className="h-4 w-4 text-blue-500" />}
+                    <h4 className="text-sm font-medium text-white">{notification.subject}</h4>
                   </div>
-                  <p className="text-sm text-gray-300">{notification.message}</p>
+                  <p className="text-sm text-gray-300 line-clamp-2">{notification.body}</p>
                   <p className="text-xs text-gray-500 mt-1">
                     {new Date(notification.created_at).toLocaleDateString()} {new Date(notification.created_at).toLocaleTimeString()}
                   </p>
