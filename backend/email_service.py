@@ -7,6 +7,10 @@ import httpx
 from motor.motor_asyncio import AsyncIOMotorClient
 from datetime import datetime
 import uuid
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 
