@@ -5851,6 +5851,16 @@ function NotificationSettingsTab({ user }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
+  
+  // Notification history state
+  const [notifications, setNotifications] = useState([]);
+  const [notificationsLoading, setNotificationsLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalNotifications, setTotalNotifications] = useState(0);
+  const [selectedNotification, setSelectedNotification] = useState(null);
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     fetchPreferences();
