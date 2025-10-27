@@ -111,7 +111,7 @@ https://proleads-hub.preview.emergentagent.com
 Best regards,
 Proleads Network Team
 """
-    return await send_email(to_email, subject, body)
+    return await send_email(to_email, subject, body, notification_type="new_referral")
 
 async def send_lead_distribution_email(to_email: str, username: str, lead_count: int, csv_filename: str):
     """Send email when new leads are distributed"""
@@ -130,7 +130,7 @@ Start reaching out to these leads and grow your business!
 Best regards,
 Proleads Network Team
 """
-    return await send_email(to_email, subject, body)
+    return await send_email(to_email, subject, body, notification_type="lead_distribution")
 
 async def send_payment_confirmation_email(to_email: str, username: str, tier: str, amount: float):
     """Send email after successful payment"""
@@ -150,7 +150,7 @@ https://proleads-hub.preview.emergentagent.com
 Best regards,
 Proleads Network Team
 """
-    return await send_email(to_email, subject, body)
+    return await send_email(to_email, subject, body, notification_type="payment_confirmation")
 
 async def send_subscription_reminder_email(to_email: str, username: str, tier: str, expires_at: str):
     """Send email reminder 3 days before subscription expires"""
@@ -167,7 +167,7 @@ https://proleads-hub.preview.emergentagent.com
 Best regards,
 Proleads Network Team
 """
-    return await send_email(to_email, subject, body)
+    return await send_email(to_email, subject, body, notification_type="subscription_reminder")
 
 async def send_commission_payout_email(to_email: str, username: str, amount: float, milestone_count: int):
     """Send email when milestone commission is marked as paid"""
