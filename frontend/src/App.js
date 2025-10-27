@@ -2710,7 +2710,7 @@ function Dashboard() {
   );
 }
 // Notification Panel Component (using Portal)
-function NotificationPanel({ bellButtonRef, notifications, onClose, onClearNotification, setActiveTab }) {
+function NotificationPanel({ bellButtonRef, notifications, onClose, onClearNotification, onViewNotification, setActiveTab }) {
   const [position, setPosition] = useState({ top: 0, right: 0 });
 
   useEffect(() => {
