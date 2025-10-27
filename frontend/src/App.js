@@ -7025,6 +7025,13 @@ function AdminDashboard() {
   useEffect(() => {
     fetchAdminData();
     fetchAdminNotifications();
+    
+    // Auto-refresh admin notifications every 30 seconds
+    const adminNotificationInterval = setInterval(() => {
+      fetchAdminNotifications();
+    }, 30000);
+    
+    return () => clearInterval(adminNotificationInterval);
   }, []);
 
   useEffect(() => {
