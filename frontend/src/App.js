@@ -2350,15 +2350,27 @@ function Dashboard() {
   const clearNotification = async (notificationId) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`${API_URL}/api/users/notifications/${notificationId}`, {
+      // Find notification to check if it was unread
+      const notification = notifications.find(n => n.notification_id === notificationId);
+      const wasUnread = notification && !notification.read;
+      
+      // Mark as read in backend
+      await axios.put(`${API_URL}/api/users/notifications/${notificationId}/read`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      // Remove from local state
-      setNotifications(notifications.filter(n => n.notification_id !== notificationId));
-      setUnreadCount(Math.max(0, unreadCount - 1));
+      
+      // Update local state
+      setNotifications(notifications.map(n => 
+        n.notification_id === notificationId ? { ...n, read: true } : n
+      ));
+      
+      // Decrease unread count if notification was unread
+      if (wasUnread) {
+        setUnreadCount(Math.max(0, unreadCount - 1));
+      }
     } catch (error) {
-      console.error('Failed to clear notification:', error);
-      alert('Failed to clear notification');
+      console.error('Failed to mark notification as read:', error);
+      alert('Failed to update notification');
     }
   };
 
