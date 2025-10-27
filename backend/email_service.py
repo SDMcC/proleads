@@ -42,9 +42,29 @@ async def create_ethereal_account():
         logger.error(f"Failed to create Ethereal account: {str(e)}")
     return None
 
-async def send_email(to_email: str, subject: str, body: str, html: bool = False):
-    """Send email via SMTP"""
+async def store_notification(user_email: str, subject: str, body: str, notification_type: str = "general"):
+    """Store notification in database for history"""
     try:
+        notification = {
+            "notification_id": str(uuid.uuid4()),
+            "user_email": user_email,
+            "subject": subject,
+            "body": body,
+            "type": notification_type,
+            "read": False,
+            "created_at": datetime.utcnow().isoformat(),
+        }
+        await db.notifications.insert_one(notification)
+        logger.info(f"Stored notification for {user_email}: {subject}")
+    except Exception as e:
+        logger.error(f"Failed to store notification: {str(e)}")
+
+async def send_email(to_email: str, subject: str, body: str, html: bool = False, notification_type: str = "general", store_in_history: bool = True):
+    """Send email via SMTP and optionally store in notification history"""
+    try:
+        # Store notification in database first
+        if store_in_history:
+            await store_notification(to_email, subject, body, notification_type)
         # Create message
         message = MIMEMultipart("alternative")
         message["From"] = f"{SMTP_FROM_NAME} <{SMTP_FROM_EMAIL}>"
