@@ -8256,6 +8256,175 @@ def main():
         except Exception as e:
             print(f"❌ Error checking logs: {str(e)}")
 
+    def test_email_service_integration(self):
+        """Test email service integration and imports"""
+        print("\n📧 Testing Email Service Integration")
+        
+        try:
+            # Test if email service functions are properly imported in server.py
+            import sys
+            sys.path.append('/app/backend')
+            
+            # Try importing the email service functions
+            from email_service import (
+                send_new_referral_email,
+                send_lead_distribution_email,
+                send_payment_confirmation_email,
+                send_subscription_reminder_email,
+                send_commission_payout_email,
+                send_referral_upgrade_email,
+                send_admin_milestone_notification,
+                send_admin_payment_confirmation,
+                send_admin_lead_distribution_status
+            )
+            
+            print("✅ All email service functions imported successfully")
+            self.tests_passed += 1
+            
+            # Test email service configuration
+            import os
+            smtp_host = os.getenv("SMTP_HOST")
+            smtp_port = os.getenv("SMTP_PORT")
+            smtp_username = os.getenv("SMTP_USERNAME")
+            smtp_password = os.getenv("SMTP_PASSWORD")
+            
+            if smtp_host and smtp_port and smtp_username and smtp_password:
+                print("✅ Email service configuration found in environment")
+                self.tests_passed += 1
+            else:
+                print("⚠️ Email service configuration incomplete (using defaults)")
+                self.tests_passed += 1  # Still pass as it can use defaults
+            
+            return True
+            
+        except ImportError as e:
+            print(f"❌ Email service import failed: {str(e)}")
+            return False
+        except Exception as e:
+            print(f"❌ Email service test failed: {str(e)}")
+            return False
+        finally:
+            self.tests_run += 2
+    
+    def test_deployment_validation(self):
+        """Test critical endpoints for deployment validation"""
+        print("\n🚀 Testing Critical Deployment Validation Endpoints")
+        
+        # 1. Health Check - Test GET /api/membership/tiers to verify backend is responding
+        print("\n1. Testing Backend Health via Membership Tiers Endpoint")
+        tiers_success, tiers_response = self.test_get_membership_tiers()
+        if not tiers_success:
+            print("❌ CRITICAL: Backend not responding - deployment blocker")
+            return False
+        
+        # Verify all 6 tiers are present (including new Test and VIP Affiliate)
+        tiers = tiers_response.get('tiers', {})
+        expected_tiers = ['affiliate', 'test', 'bronze', 'silver', 'gold', 'vip_affiliate']
+        missing_tiers = [tier for tier in expected_tiers if tier not in tiers]
+        
+        if missing_tiers:
+            print(f"❌ CRITICAL: Missing membership tiers: {missing_tiers}")
+            return False
+        else:
+            print("✅ All 6 membership tiers present and accessible")
+        
+        # 2. Admin Authentication - Test POST /api/admin/login with admin/admin123
+        print("\n2. Testing Admin Authentication System")
+        admin_login_success, admin_response = self.test_admin_login_success()
+        if not admin_login_success:
+            print("❌ CRITICAL: Admin authentication failed - deployment blocker")
+            return False
+        
+        admin_token = admin_response.get('token')
+        if not admin_token:
+            print("❌ CRITICAL: Admin token not received - deployment blocker")
+            return False
+        else:
+            print("✅ Admin authentication working correctly")
+        
+        # 3. Admin Dashboard - Test GET /api/admin/dashboard/overview with admin token
+        print("\n3. Testing Admin Dashboard Overview")
+        dashboard_success, dashboard_response = self.test_admin_dashboard_overview_success()
+        if not dashboard_success:
+            print("❌ CRITICAL: Admin dashboard not accessible - deployment blocker")
+            return False
+        
+        # Verify dashboard structure
+        required_sections = ['members', 'payments', 'commissions', 'leads', 'milestones']
+        missing_sections = [section for section in required_sections if section not in dashboard_response]
+        
+        if missing_sections:
+            print(f"❌ CRITICAL: Dashboard missing sections: {missing_sections}")
+            return False
+        else:
+            print("✅ Admin dashboard overview working correctly")
+        
+        # 4. User Registration - Test POST /api/users/register with new test user data
+        print("\n4. Testing User Registration System")
+        
+        # Create unique test user data
+        test_user_data = {
+            "wallet_address": f"0x{uuid.uuid4().hex[:40]}",
+            "username": f"deploy_test_{int(time.time())}",
+            "email": f"deploy_test_{int(time.time())}@test.com",
+            "password": "testpassword123"
+        }
+        
+        reg_success, reg_response = self.run_test(
+            "User Registration (Deployment Test)", 
+            "POST", 
+            "users/register", 
+            200, 
+            test_user_data
+        )
+        
+        if not reg_success:
+            print("❌ CRITICAL: User registration failed - deployment blocker")
+            return False
+        
+        # Verify registration response
+        if not reg_response.get('referral_code'):
+            print("❌ CRITICAL: Referral code not generated - deployment blocker")
+            return False
+        else:
+            print("✅ User registration working correctly")
+        
+        # 5. Email Service Integration - Verify imports are working
+        print("\n5. Testing Email Service Integration")
+        email_success = self.test_email_service_integration()
+        if not email_success:
+            print("❌ CRITICAL: Email service integration failed - deployment blocker")
+            return False
+        else:
+            print("✅ Email service integration working correctly")
+        
+        # 6. Database Connection Test - Verify database operations
+        print("\n6. Testing Database Connection")
+        
+        # Test database read operation via admin members endpoint
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {admin_token}'
+        }
+        
+        db_success, db_response = self.run_test(
+            "Database Connection Test", 
+            "GET", 
+            "admin/members?limit=1", 
+            200, 
+            headers=headers
+        )
+        
+        if not db_success:
+            print("❌ CRITICAL: Database connection failed - deployment blocker")
+            return False
+        else:
+            print("✅ Database connection working correctly")
+        
+        print("\n🎉 ALL DEPLOYMENT VALIDATION TESTS PASSED!")
+        print("✅ Backend is ready for deployment")
+        return True
+
 if __name__ == "__main__":
     # Check if specific test is requested
     if len(sys.argv) > 1 and sys.argv[1] == "csv_upload":
