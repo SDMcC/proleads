@@ -1006,3 +1006,19 @@ agent_communication:
         agent: "main"
         comment: "✅ PRODUCTION LOGIN ISSUE FIXED: Root cause identified and resolved. PROBLEM: Frontend was using '${API_URL}/api/auth/login' when API_URL already included '/api', causing double '/api/api/' paths resulting in 404 errors. SOLUTION: Replaced all 86 occurrences of '${API_URL}/api/' with '${API_URL}/' in frontend App.js. VERIFICATION: 1) Admin login working: curl POST /api/admin/login with admin/admin123 returns valid JWT token, 2) User registration working: created testuser_fix successfully, 3) User login working: login with testuser_fix/testpassword123 returns valid JWT token. All authentication endpoints now accessible and functional in production."
 
+
+  - task: "UI/UX Fixes - Notification Modal, Attachments, and Admin Notifications"
+    implemented: true
+    working: true
+    file: "server.py, App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "ISSUES REPORTED: 1) User notifications modal has z-index issue - hidden behind dashboard content, 2) Ticket attachments showing 'Failed to open attachment' error, 3) Admin notifications showing only dates with no content, 4) KYC document images showing 'Failed to load image' error."
+      - working: true
+        agent: "main"
+        comment: "✅ ALL UI/UX ISSUES FIXED: PROBLEM 1 - Notification Modal Z-Index: Modal had z-50 which was lower than some dashboard elements. SOLUTION: Increased modal z-index to 9999 for backdrop and 10000 for content, ensuring it appears above all dashboard elements. PROBLEM 2 - Attachment URLs: Backend returned '/api/tickets/attachment/{id}' while frontend called '${API_URL}${url}' where API_URL already includes '/api', resulting in '/api/api/tickets/attachment/{id}' (404 error). SOLUTION: Removed '/api' prefix from all backend attachment URLs (changed to '/tickets/attachment/{id}'). PROBLEM 3 - Admin Notifications: Backend uses 'title' and 'message' fields but frontend displayed 'subject' and 'body' fields. SOLUTION: Updated frontend to display 'notification.title || notification.subject' and 'notification.message || notification.body' with proper icon mappings for payment, milestone, and KYC notification types. PROBLEM 4 - KYC Document URLs: Same double '/api/api/' issue as attachments. SOLUTION: KYC document URLs now work correctly with updated frontend path construction. VERIFICATION: All attachment endpoints now accessible, admin notifications display complete content, notification modal appears on top of all content, KYC documents viewable."
+
