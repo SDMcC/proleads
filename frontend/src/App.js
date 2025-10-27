@@ -9870,9 +9870,166 @@ function ConfigurationTab() {
           </div>
         </div>
       )}
+
+      {/* System Tools Section */}
+      {activeSection === 'tools' && (
+        <div className="space-y-6">
+          {/* Referral Code Migration Tool */}
+          <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+            <div className="flex items-start space-x-4 mb-6">
+              <div className="p-3 bg-blue-600 bg-opacity-20 rounded-lg">
+                <RefreshCcw className="h-6 w-6 text-blue-400" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-white mb-2">Migrate Referral Codes</h3>
+                <p className="text-gray-300">
+                  Update all user referral codes to use the new username-based format. This will change referral URLs from 
+                  <code className="mx-1 px-2 py-1 bg-black bg-opacity-30 rounded text-blue-300">REFFIRSTUSER5DCBEE</code>
+                  to 
+                  <code className="mx-1 px-2 py-1 bg-black bg-opacity-30 rounded text-green-300">firstuser</code>
+                </p>
+              </div>
+            </div>
+
+            <MigrationButton />
+          </div>
+
+          {/* Future tools can be added here */}
+          <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+            <div className="text-center text-gray-400 py-8">
+              <Settings className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>More system tools will be added here in future updates</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
+// Migration Button Component
+function MigrationButton() {
+  const [migrating, setMigrating] = useState(false);
+  const [result, setResult] = useState(null);
+
+  const runMigration = async () => {
+    if (!window.confirm('Are you sure you want to migrate all referral codes? This will update all users in the production database.')) {
+      return;
+    }
+
+    setMigrating(true);
+    setResult(null);
+
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await axios.post(`${API_URL}/api/admin/migrate/referral-codes`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      setResult({
+        success: true,
+        data: response.data
+      });
+
+      alert(`Migration completed successfully!\n\nTotal users: ${response.data.total_users}\nUpdated: ${response.data.updated}\nSkipped: ${response.data.skipped}`);
+
+    } catch (error) {
+      console.error('Migration failed:', error);
+      setResult({
+        success: false,
+        error: error.response?.data?.detail || error.message
+      });
+      alert('Migration failed: ' + (error.response?.data?.detail || error.message));
+    } finally {
+      setMigrating(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <button
+        onClick={runMigration}
+        disabled={migrating}
+        className={`w-full px-6 py-3 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center space-x-2 ${
+          migrating
+            ? 'bg-gray-600 cursor-not-allowed'
+            : 'bg-blue-600 hover:bg-blue-700'
+        } text-white`}
+      >
+        {migrating ? (
+          <>
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+            <span>Migrating...</span>
+          </>
+        ) : (
+          <>
+            <RefreshCcw className="h-5 w-5" />
+            <span>Run Migration</span>
+          </>
+        )}
+      </button>
+
+      {result && (
+        <div className={`border rounded-lg p-4 ${
+          result.success
+            ? 'bg-green-900 bg-opacity-20 border-green-500'
+            : 'bg-red-900 bg-opacity-20 border-red-500'
+        }`}>
+          <div className="flex items-start space-x-3">
+            {result.success ? (
+              <CheckCircle className="h-6 w-6 text-green-400 flex-shrink-0 mt-0.5" />
+            ) : (
+              <AlertTriangle className="h-6 w-6 text-red-400 flex-shrink-0 mt-0.5" />
+            )}
+            <div className="flex-1">
+              <h4 className={`font-bold mb-2 ${result.success ? 'text-green-300' : 'text-red-300'}`}>
+                {result.success ? 'Migration Successful!' : 'Migration Failed'}
+              </h4>
+              {result.success ? (
+                <div className="text-gray-300 space-y-1">
+                  <p><strong>Total Users:</strong> {result.data.total_users}</p>
+                  <p><strong>Updated:</strong> {result.data.updated}</p>
+                  <p><strong>Skipped:</strong> {result.data.skipped}</p>
+                  {result.data.errors && result.data.errors.length > 0 && (
+                    <div className="mt-2">
+                      <p className="text-yellow-300"><strong>Warnings:</strong></p>
+                      <ul className="list-disc list-inside text-sm">
+                        {result.data.errors.map((err, idx) => (
+                          <li key={idx}>{err}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  <p className="mt-3 text-sm text-gray-400">
+                    ✅ All users can now log out and log back in to see their new referral URLs
+                  </p>
+                </div>
+              ) : (
+                <p className="text-red-300">{result.error}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="bg-yellow-900 bg-opacity-20 border border-yellow-600 rounded-lg p-4">
+        <div className="flex items-start space-x-3">
+          <AlertTriangle className="h-5 w-5 text-yellow-400 flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-yellow-200">
+            <p className="font-semibold mb-2">Important Notes:</p>
+            <ul className="list-disc list-inside space-y-1">
+              <li>This migration is safe to run multiple times</li>
+              <li>Users will need to log out and log back in to see updated URLs</li>
+              <li>Old referral links will continue to work</li>
+              <li>This only updates the database - no code changes required</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Member Modal Component
 function MemberModal({ member, editingMember, onClose, onUpdate, onSuspend, onUnsuspend, onEdit }) {
   const [formData, setFormData] = useState({
