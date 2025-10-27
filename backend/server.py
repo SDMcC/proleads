@@ -13,8 +13,6 @@ import httpx
 import asyncio
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
-from eth_account import Account
-from eth_account.messages import encode_defunct
 import uuid
 from decimal import Decimal
 import logging
