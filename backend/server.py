@@ -5421,7 +5421,7 @@ async def send_mass_message(
         raise HTTPException(status_code=500, detail="Failed to send mass message")
 
 # Get attachment file
-@app.get("/tickets/attachment/{attachment_id}")
+@app.get("/api/tickets/attachment/{attachment_id}")
 async def get_ticket_attachment(attachment_id: str, current_user: dict = Depends(get_current_user)):
     """Download ticket attachment"""
     try:
@@ -5480,7 +5480,7 @@ async def get_ticket_attachment(attachment_id: str, current_user: dict = Depends
         raise HTTPException(status_code=500, detail="Failed to download attachment")
 
 # Generate temporary view URL for attachment
-@app.get("/tickets/attachment/{attachment_id}/view-url")
+@app.get("/api/tickets/attachment/{attachment_id}/view-url")
 async def generate_attachment_view_url(attachment_id: str, current_user: dict = Depends(get_current_user)):
     """Generate a temporary authenticated URL for viewing attachment"""
     try:
@@ -5528,7 +5528,7 @@ async def generate_attachment_view_url(attachment_id: str, current_user: dict = 
         raise HTTPException(status_code=500, detail="Failed to generate view URL")
 
 # View attachment in browser (for images, PDFs, etc.)
-@app.get("/tickets/attachment/{attachment_id}/view")
+@app.get("/api/tickets/attachment/{attachment_id}/view")
 async def view_ticket_attachment(attachment_id: str, current_user: dict = Depends(get_current_user)):
     """View ticket attachment in browser"""
     try:
