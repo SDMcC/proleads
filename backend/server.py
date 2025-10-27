@@ -5226,6 +5226,61 @@ async def admin_reply_to_ticket(
 
 # Send mass news message
 @app.post("/api/admin/tickets/mass-message")
+
+
+# Admin utility endpoint for database migrations
+@app.post("/api/admin/migrate/referral-codes")
+async def migrate_referral_codes_to_usernames(admin: dict = Depends(get_admin_user)):
+    """
+    Migrate all existing referral codes to use lowercase usernames
+    This is a one-time migration endpoint for production database
+    """
+    try:
+        logger.info("Starting referral code migration to username format...")
+        
+        # Get all users
+        users = await db.users.find({}).to_list(length=None)
+        
+        updated_count = 0
+        skipped_count = 0
+        errors = []
+        
+        for user in users:
+            try:
+                old_code = user.get("referral_code", "")
+                new_code = user.get("username", "").lower()
+                
+                if old_code != new_code and new_code:
+                    # Update the user's referral code
+                    await db.users.update_one(
+                        {"_id": user["_id"]},
+                        {"$set": {"referral_code": new_code}}
+                    )
+                    logger.info(f"Updated referral code for {user['username']}: {old_code} -> {new_code}")
+                    updated_count += 1
+                else:
+                    skipped_count += 1
+                    
+            except Exception as e:
+                error_msg = f"Error updating user {user.get('username', 'unknown')}: {str(e)}"
+                logger.error(error_msg)
+                errors.append(error_msg)
+        
+        logger.info(f"Referral code migration complete. Updated: {updated_count}, Skipped: {skipped_count}")
+        
+        return {
+            "success": True,
+            "message": "Referral code migration completed successfully",
+            "total_users": len(users),
+            "updated": updated_count,
+            "skipped": skipped_count,
+            "errors": errors
+        }
+        
+    except Exception as e:
+        logger.error(f"Referral code migration failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Migration failed: {str(e)}")
+
 async def send_mass_message(
     message_data: MassNewsMessage,
     admin: dict = Depends(get_admin_user)
