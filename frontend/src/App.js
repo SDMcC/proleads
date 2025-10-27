@@ -6051,6 +6051,164 @@ function NotificationSettingsTab({ user }) {
           </div>
         </div>
       </div>
+
+      {/* Notification History Section */}
+      <div className="mt-8 bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-8">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-xl font-semibold text-white mb-2">Notification History</h3>
+            <p className="text-gray-300 text-sm">View all your past notifications</p>
+          </div>
+          {totalNotifications > 0 && (
+            <div className="px-4 py-2 bg-blue-600 bg-opacity-30 rounded-lg">
+              <span className="text-white text-sm font-medium">{totalNotifications} Total</span>
+            </div>
+          )}
+        </div>
+
+        {notificationsLoading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+            <p className="text-gray-300 mt-4">Loading notifications...</p>
+          </div>
+        ) : notifications.length === 0 ? (
+          <div className="text-center py-12">
+            <Bell className="h-16 w-16 text-gray-600 mx-auto mb-4" />
+            <p className="text-gray-400 text-lg">No notifications yet</p>
+            <p className="text-gray-500 text-sm mt-2">You'll see your notifications here when you receive them</p>
+          </div>
+        ) : (
+          <>
+            {/* Notifications Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-white border-opacity-10">
+                    <th className="text-left py-3 px-4 text-gray-300 font-medium text-sm">Date</th>
+                    <th className="text-left py-3 px-4 text-gray-300 font-medium text-sm">Subject</th>
+                    <th className="text-left py-3 px-4 text-gray-300 font-medium text-sm">Status</th>
+                    <th className="text-center py-3 px-4 text-gray-300 font-medium text-sm">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {notifications.map((notification) => (
+                    <tr 
+                      key={notification.notification_id} 
+                      className="border-b border-white border-opacity-5 hover:bg-white hover:bg-opacity-5 transition-colors"
+                    >
+                      <td className="py-4 px-4 text-gray-300 text-sm">
+                        {formatDate(notification.created_at)}
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="flex items-center space-x-2">
+                          {!notification.read && (
+                            <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+                          )}
+                          <span className={`text-sm ${notification.read ? 'text-gray-400' : 'text-white font-medium'}`}>
+                            {notification.subject}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          notification.read 
+                            ? 'bg-gray-600 bg-opacity-50 text-gray-300' 
+                            : 'bg-blue-600 bg-opacity-50 text-blue-300'
+                        }`}>
+                          {notification.read ? 'Read' : 'Unread'}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4 text-center">
+                        <button
+                          onClick={() => viewNotification(notification.notification_id)}
+                          className="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors duration-200"
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between mt-6 pt-4 border-t border-white border-opacity-10">
+                <div className="text-gray-400 text-sm">
+                  Page {currentPage} of {totalPages}
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                      currentPage === 1
+                        ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                        : 'bg-blue-600 hover:bg-blue-700 text-white'
+                    }`}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                      currentPage === totalPages
+                        ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                        : 'bg-blue-600 hover:bg-blue-700 text-white'
+                    }`}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Notification View Modal */}
+      {showNotificationModal && selectedNotification && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-900 rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-700">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-white mb-2">{selectedNotification.subject}</h3>
+                  <p className="text-gray-400 text-sm">{formatDate(selectedNotification.created_at)}</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowNotificationModal(false);
+                    setSelectedNotification(null);
+                  }}
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="text-gray-300 whitespace-pre-wrap leading-relaxed">
+                {selectedNotification.body}
+              </div>
+            </div>
+            <div className="p-6 border-t border-gray-700">
+              <button
+                onClick={() => {
+                  setShowNotificationModal(false);
+                  setSelectedNotification(null);
+                }}
+                className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
