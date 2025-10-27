@@ -125,31 +125,27 @@ class ErrorBoundary extends React.Component {
 
 function App() {
   return (
-    <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>
-        <ErrorBoundary>
-          <AuthProvider>
-            <Router>
-              <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
-                <Routes>
-                  <Route path="/" element={<LandingPage />} />
-                  <Route path="/affiliates" element={<AffiliatesPage />} />
-                  <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-                  <Route path="/terms" element={<TermsPage />} />
-                  <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                  <Route path="/register" element={<RegisterPage />} />
-                  <Route path="/r/:code" element={<ReferralRedirect />} />
-                  <Route path="/payment" element={<ProtectedRoute><PaymentPage /></ProtectedRoute>} />
-                  <Route path="/payment/success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
-                  <Route path="/admin/login" element={<AdminLoginPage />} />
-                  <Route path="/admin/dashboard" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
-                </Routes>
-              </div>
-            </Router>
-          </AuthProvider>
-        </ErrorBoundary>
-      </QueryClientProvider>
-    </WagmiProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <Router>
+          <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/affiliates" element={<AffiliatesPage />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+              <Route path="/terms" element={<TermsPage />} />
+              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/r/:code" element={<ReferralRedirect />} />
+              <Route path="/payment" element={<ProtectedRoute><PaymentPage /></ProtectedRoute>} />
+              <Route path="/payment/success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
+              <Route path="/admin/login" element={<AdminLoginPage />} />
+              <Route path="/admin/dashboard" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
+            </Routes>
+          </div>
+        </Router>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 
