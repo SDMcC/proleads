@@ -2711,9 +2711,10 @@ function NotificationPanel({ bellButtonRef, notifications, onClose, onClearNotif
           notifications.map((notification) => (
             <div 
               key={notification.notification_id}
-              className={`p-4 border-b border-gray-700 last:border-b-0 ${
+              className={`p-4 border-b border-gray-700 last:border-b-0 cursor-pointer hover:bg-white hover:bg-opacity-5 transition-colors ${
                 !notification.read ? 'bg-blue-900 bg-opacity-20' : ''
               }`}
+              onClick={() => onViewNotification(notification)}
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
