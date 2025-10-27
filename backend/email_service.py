@@ -189,7 +189,7 @@ https://proleads-hub.preview.emergentagent.com
 Best regards,
 Proleads Network Team
 """
-    return await send_email(to_email, subject, body)
+    return await send_email(to_email, subject, body, notification_type="commission_payout")
 
 async def send_referral_upgrade_email(to_email: str, referrer_name: str, referral_username: str, new_tier: str):
     """Send email when a referral upgrades their membership"""
@@ -206,7 +206,7 @@ https://proleads-hub.preview.emergentagent.com
 Best regards,
 Proleads Network Team
 """
-    return await send_email(to_email, subject, body)
+    return await send_email(to_email, subject, body, notification_type="referral_upgrade")
 
 # Admin Email Templates
 
