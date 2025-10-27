@@ -2326,13 +2326,17 @@ function Dashboard() {
   const fetchNotifications = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/users/notifications`, {
+      // Fetch recent notifications for bell icon (show last 10)
+      const response = await axios.get(`${API_URL}/api/users/notifications?page=1&limit=10`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setNotifications(response.data.notifications);
-      setUnreadCount(response.data.unread_count);
+      setNotifications(response.data.notifications || []);
+      setUnreadCount(response.data.unread_count || 0);
     } catch (error) {
       console.error('Failed to fetch notifications:', error);
+      // Set empty state on error
+      setNotifications([]);
+      setUnreadCount(0);
     }
   };
 
