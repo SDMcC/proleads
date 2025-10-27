@@ -5864,7 +5864,8 @@ function NotificationSettingsTab({ user }) {
 
   useEffect(() => {
     fetchPreferences();
-  }, []);
+    fetchNotifications();
+  }, [currentPage]);
 
   const fetchPreferences = async () => {
     try {
