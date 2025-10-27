@@ -57,6 +57,7 @@ async def create_ethereal_account():
 async def store_notification(user_email: str, subject: str, body: str, notification_type: str = "general"):
     """Store notification in database for history"""
     try:
+        db = get_db()
         notification = {
             "notification_id": str(uuid.uuid4()),
             "user_email": user_email,
