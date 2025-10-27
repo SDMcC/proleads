@@ -11494,15 +11494,17 @@ function KYCDocumentImage({ filename, alt }) {
       }
     };
 
-    fetchImage();
+    if (filename) {
+      fetchImage();
+    }
 
-    // Cleanup
+    // Cleanup - revoke URL when component unmounts or filename changes
     return () => {
       if (imageUrl) {
         URL.revokeObjectURL(imageUrl);
       }
     };
-  }, [filename]);
+  }, [filename]); // Only depend on filename, not imageUrl
 
   if (loading) {
     return (
