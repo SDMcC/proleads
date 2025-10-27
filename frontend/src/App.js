@@ -1758,76 +1758,9 @@ function LandingPage() {
   );
 }
 
-// Wallet Connect Button (Legacy - kept for backward compatibility)
-function WalletConnectButton() {
-  const [walletError, setWalletError] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const { user, login } = useAuth();
-
-  // Safely access wallet hooks with error handling
-  let address, isConnected, signMessageAsync;
-  
-  // Always call hooks at top level - no conditional calls
-  const accountHook = useAccount();
-  const signHook = useSignMessage();
-  
-  try {
-    address = accountHook.address;
-    isConnected = accountHook.isConnected;
-    signMessageAsync = signHook.signMessageAsync;
-  } catch (error) {
-    console.warn('Wallet connection not available:', error.message);
-    setWalletError(true);
-  }
-
-  const handleAuth = async () => {
-    if (!address || walletError) return;
-    
-    setLoading(true);
-    try {
-      const nonceResponse = await axios.post(`${API_URL}/api/auth/nonce`, {
-        address: address.toLowerCase()
-      });
-      
-      const { nonce } = nonceResponse.data;
-      const message = `Sign this message to authenticate: ${nonce}`;
-      
-      const signature = await signMessageAsync({ message });
-      
-      const verifyResponse = await axios.post(`${API_URL}/api/auth/verify`, {
-        address: address.toLowerCase(),
-        signature
-      });
-      
-      const { token } = verifyResponse.data;
-      login(token);
-      
-    } catch (error) {
-      console.error('Authentication failed:', error);
-      if (error.response?.status === 404 || error.response?.status === 401) {
-        // User not registered, redirect to registration
-        window.location.href = '/register';
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Only attempt auto-authentication if wallet is properly connected and no errors
-  useEffect(() => {
-    if (!walletError && isConnected && address && !user && !loading) {
-      // Only auto-authenticate on specific pages, avoid during registration flow
-      const currentPath = window.location.pathname;
-      if (currentPath === '/' || currentPath === '/payment') {
-        // Add a small delay to avoid conflicts with registration flow
-        setTimeout(() => {
-          if (!user && !loading) {
-            handleAuth();
-          }
-        }, 1000);
-      }
-    }
-  }, [isConnected, address, user, walletError]);
+// Login Button Component for Landing Page
+function LoginButton() {
+  const { user } = useAuth();
 
   if (user) {
     return (
@@ -1840,28 +1773,13 @@ function WalletConnectButton() {
     );
   }
 
-  if (loading) {
-    return (
-      <button className="px-6 py-3 bg-gray-600 text-white font-semibold rounded-lg">
-        Authenticating...
-      </button>
-    );
-  }
-
-  // Show traditional login link if wallet connection has errors
-  if (walletError) {
-    return (
-      <button 
-        onClick={() => window.location.href = '/'}
-        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all duration-300"
-      >
-        Login with Email
-      </button>
-    );
-  }
-
   return (
-    <w3m-button />
+    <a 
+      href="/"
+      className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all duration-300 inline-block"
+    >
+      Login
+    </a>
   );
 }
 
