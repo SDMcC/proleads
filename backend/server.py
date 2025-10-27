@@ -726,8 +726,8 @@ async def register_user(user_data: UserRegistration):
         # Hash password
         password_hash = bcrypt.hashpw(user_data.password.encode('utf-8'), bcrypt.gensalt())
         
-        # Generate referral code
-        referral_code = f"REF{user_data.username.upper()}{uuid.uuid4().hex[:6].upper()}"
+        # Generate referral code - use lowercase username for clean URLs
+        referral_code = user_data.username.lower()
         
         # Handle referrer
         referrer_address = None
