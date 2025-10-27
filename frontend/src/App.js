@@ -2376,6 +2376,17 @@ function Dashboard() {
     }
   };
 
+  const viewNotification = async (notification) => {
+    // Mark as read when viewing
+    if (!notification.read) {
+      await clearNotification(notification.notification_id);
+    }
+    // Close notification panel and open modal
+    setNotificationsPanelOpen(false);
+    setSelectedNotificationForView(notification);
+    setShowNotificationViewModal(true);
+  };
+
   const markAllNotificationsRead = async () => {
     try {
       const token = localStorage.getItem('token');
