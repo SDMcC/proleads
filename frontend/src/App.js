@@ -6170,7 +6170,8 @@ function NotificationSettingsTab({ user }) {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
