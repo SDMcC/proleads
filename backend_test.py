@@ -7463,7 +7463,7 @@ class Web3MembershipTester:
         routing_working = True
         for endpoint, method in routing_tests:
             if method == "POST":
-                success, response = self.run_test(f"Route Test {endpoint}", method, endpoint, 400, {})  # 400 for missing data
+                success, response = self.run_test(f"Route Test {endpoint}", method, endpoint, 422, {})  # 422 for validation error (missing fields)
             else:
                 success, response = self.run_test(f"Route Test {endpoint}", method, endpoint, 401, {})  # 401 for missing auth
                 
@@ -8588,7 +8588,7 @@ def main():
         routing_working = True
         for endpoint, method in routing_tests:
             if method == "POST":
-                success, response = self.run_test(f"Route Test {endpoint}", method, endpoint, 400, {})  # 400 for missing data
+                success, response = self.run_test(f"Route Test {endpoint}", method, endpoint, 422, {})  # 422 for validation error (missing fields)
             else:
                 success, response = self.run_test(f"Route Test {endpoint}", method, endpoint, 401, {})  # 401 for missing auth
                 
