@@ -57,7 +57,9 @@ import {
 } from 'lucide-react';
 import './App.css';
 
-const API_URL = API_URL;
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API_URL = `${BACKEND_URL}/api`;
 
 // Utility function to get tier display name
 const getTierDisplayName = (tier) => {
