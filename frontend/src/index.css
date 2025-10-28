@@ -15,3 +15,16 @@ code {
     font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
         monospace;
 }
+
+/* Force notification modal to be on top of everything */
+.notification-modal-overlay {
+    z-index: 2147483647 !important;
+    position: fixed !important;
+    isolation: isolate !important;
+}
+
+.notification-modal-content {
+    z-index: 2147483647 !important;
+    position: relative !important;
+    isolation: isolate !important;
+}
