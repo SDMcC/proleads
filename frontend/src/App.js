@@ -2489,15 +2489,30 @@ function Dashboard() {
                 />
               )}
               
-              {/* Notification View Modal */}
-              {showNotificationViewModal && selectedNotificationForView && (
-                <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-                  <div className="bg-gray-900 rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
-                    <div className="p-6 border-b border-gray-700">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h3 className="text-xl font-bold text-white mb-2">{selectedNotificationForView.subject}</h3>
-                          <p className="text-gray-400 text-sm">
+              {/* Notification View Slide-Out Panel (Header Bell) */}
+              {showNotificationViewModal && selectedNotificationForView && ReactDOM.createPortal(
+                <>
+                  {/* Backdrop */}
+                  <div 
+                    className="fixed inset-0 bg-black bg-opacity-50 transition-opacity duration-300"
+                    style={{ zIndex: 1000 }}
+                    onClick={() => {
+                      setShowNotificationViewModal(false);
+                      setSelectedNotificationForView(null);
+                    }}
+                  />
+                  
+                  {/* Slide-out Panel */}
+                  <div 
+                    className="fixed top-0 right-0 h-full w-full sm:w-[500px] bg-gray-900 shadow-2xl transform transition-transform duration-300 ease-out overflow-hidden flex flex-col"
+                    style={{ zIndex: 1001 }}
+                  >
+                    {/* Panel Header */}
+                    <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 flex-shrink-0">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h2 className="text-2xl font-bold text-white">Notification</h2>
+                          <p className="text-blue-100 text-sm mt-1">
                             {new Date(selectedNotificationForView.created_at).toLocaleDateString()} {new Date(selectedNotificationForView.created_at).toLocaleTimeString()}
                           </p>
                         </div>
@@ -2506,30 +2521,30 @@ function Dashboard() {
                             setShowNotificationViewModal(false);
                             setSelectedNotificationForView(null);
                           }}
-                          className="text-gray-400 hover:text-white transition-colors"
+                          className="text-white hover:bg-white/20 p-2 rounded-lg transition-colors"
                         >
                           <X className="h-6 w-6" />
                         </button>
                       </div>
                     </div>
-                    <div className="p-6">
-                      <div className="text-gray-300 whitespace-pre-wrap leading-relaxed">
-                        {selectedNotificationForView.body}
+
+                    {/* Panel Content - Scrollable */}
+                    <div className="flex-1 overflow-y-auto p-6">
+                      <div className="bg-gray-800 rounded-xl p-6 space-y-4">
+                        <div>
+                          <h3 className="text-xl font-bold text-white mb-4">{selectedNotificationForView.subject}</h3>
+                        </div>
+                        
+                        <div className="border-t border-gray-700 pt-4">
+                          <div className="text-gray-300 whitespace-pre-wrap leading-relaxed">
+                            {selectedNotificationForView.body}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <div className="p-6 border-t border-gray-700">
-                      <button
-                        onClick={() => {
-                          setShowNotificationViewModal(false);
-                          setSelectedNotificationForView(null);
-                        }}
-                        className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
-                      >
-                        Close
-                      </button>
-                    </div>
                   </div>
-                </div>
+                </>,
+                document.body
               )}
               
               <button
