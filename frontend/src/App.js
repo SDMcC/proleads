@@ -5872,7 +5872,7 @@ function NotificationSettingsTab({ user }) {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setSelectedNotification(response.data);
-      setShowNotificationModal(true);
+      setShowNotificationPanel(true);
       // Refresh the notifications list to update read status
       fetchNotifications();
     } catch (error) {
@@ -6150,7 +6150,7 @@ function NotificationSettingsTab({ user }) {
                 </div>
                 <button
                   onClick={() => {
-                    setShowNotificationModal(false);
+                    setShowNotificationPanel(false);
                     setSelectedNotification(null);
                   }}
                   className="text-gray-400 hover:text-white transition-colors"
@@ -6167,7 +6167,7 @@ function NotificationSettingsTab({ user }) {
             <div className="p-6 border-t border-gray-700">
               <button
                 onClick={() => {
-                  setShowNotificationModal(false);
+                  setShowNotificationPanel(false);
                   setSelectedNotification(null);
                 }}
                 className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
