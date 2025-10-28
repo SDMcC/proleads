@@ -5824,7 +5824,7 @@ function NotificationSettingsTab({ user }) {
   const [totalPages, setTotalPages] = useState(1);
   const [totalNotifications, setTotalNotifications] = useState(0);
   const [selectedNotification, setSelectedNotification] = useState(null);
-  const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [showNotificationPanel, setShowNotificationPanel] = useState(false);
   const itemsPerPage = 10;
 
   useEffect(() => {
