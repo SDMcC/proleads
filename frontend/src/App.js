@@ -6024,11 +6024,20 @@ function NotificationSettingsTab({ user }) {
             <h3 className="text-xl font-semibold text-white mb-2">Notification History</h3>
             <p className="text-gray-300 text-sm">View all your past notifications</p>
           </div>
-          {totalNotifications > 0 && (
-            <div className="px-4 py-2 bg-blue-600 bg-opacity-30 rounded-lg">
-              <span className="text-white text-sm font-medium">{totalNotifications} Total</span>
-            </div>
-          )}
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => setShowNotificationPanel(true)}
+              className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg transition-all shadow-lg hover:shadow-xl"
+            >
+              <Bell className="h-5 w-5" />
+              <span className="font-medium">Quick View</span>
+            </button>
+            {totalNotifications > 0 && (
+              <div className="px-4 py-2 bg-blue-600 bg-opacity-30 rounded-lg">
+                <span className="text-white text-sm font-medium">{totalNotifications} Total</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {notificationsLoading ? (
