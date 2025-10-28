@@ -4474,7 +4474,7 @@ async def create_ticket_notification(ticket_id: str, sender_address: str, sender
 # File upload helper for ticket attachments
 @app.post("/api/tickets/upload-attachment")
 async def upload_ticket_attachment(file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
-    """Upload file attachment for tickets to S3"""
+    """Upload file attachment for tickets to cPanel FTP"""
     try:
         # Validate file size (10MB max)
         if file.size and file.size > 10 * 1024 * 1024:
@@ -4493,16 +4493,17 @@ async def upload_ticket_attachment(file: UploadFile = File(...), current_user: d
         file_extension = file.filename.split('.')[-1] if '.' in file.filename else ''
         unique_filename = f"{uuid.uuid4()}.{file_extension}"
         
-        # Upload to S3
-        s3_key = f"attachments/{unique_filename}"
-        await upload_file_to_s3(content, s3_key, file.content_type)
+        # Upload to FTP
+        remote_path = f"attachments/{unique_filename}"
+        result = await upload_file_to_ftp(content, remote_path, file.content_type)
         
         # Store file info in database
         attachment_doc = {
             "attachment_id": str(uuid.uuid4()),
             "filename": file.filename,
             "unique_filename": unique_filename,
-            "s3_key": s3_key,
+            "remote_path": remote_path,
+            "public_url": result["public_url"],
             "file_size": len(content),
             "content_type": file.content_type,
             "uploaded_by": current_user["address"],
