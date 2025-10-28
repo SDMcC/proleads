@@ -26,25 +26,40 @@ def get_ftp_connection():
             logger.warning("FTP credentials not configured. File uploads will fail.")
             return None
         
+        logger.info(f"Connecting to FTP server: {FTP_HOST}:{FTP_PORT}")
         ftp = FTP()
-        ftp.connect(FTP_HOST, FTP_PORT)
+        ftp.set_debuglevel(0)  # Set to 2 for verbose debugging
+        
+        # Connect with timeout
+        ftp.connect(FTP_HOST, FTP_PORT, timeout=30)
+        logger.info("FTP connection established")
+        
+        # Login
         ftp.login(FTP_USERNAME, FTP_PASSWORD)
+        logger.info("FTP login successful")
+        
+        # Enable passive mode (required by most hosting providers)
+        ftp.set_pasv(True)
+        logger.info("FTP passive mode enabled")
         
         # Change to upload directory
         try:
             ftp.cwd(FTP_UPLOAD_DIR)
+            logger.info(f"Changed to directory: {FTP_UPLOAD_DIR}")
         except Exception as e:
             logger.warning(f"Could not change to directory {FTP_UPLOAD_DIR}: {str(e)}")
             # Try to create the directory
             try:
                 ftp.mkd(FTP_UPLOAD_DIR)
                 ftp.cwd(FTP_UPLOAD_DIR)
-            except:
-                pass
+                logger.info(f"Created and changed to directory: {FTP_UPLOAD_DIR}")
+            except Exception as e2:
+                logger.error(f"Could not create directory: {str(e2)}")
         
         return ftp
     except Exception as e:
-        logger.error(f"Failed to connect to FTP server: {str(e)}")
+        logger.error(f"Failed to connect to FTP server {FTP_HOST}:{FTP_PORT}: {str(e)}")
+        logger.error(f"FTP credentials - Host: {FTP_HOST}, User: {FTP_USERNAME}, Port: {FTP_PORT}")
         return None
 
 
