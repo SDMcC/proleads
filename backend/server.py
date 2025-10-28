@@ -5412,7 +5412,7 @@ async def send_mass_message(
 # Get attachment file
 @app.get("/api/tickets/attachment/{attachment_id}")
 async def get_ticket_attachment(attachment_id: str, current_user: dict = Depends(get_current_user)):
-    """Download ticket attachment from S3"""
+    """Download ticket attachment from FTP"""
     try:
         # Get attachment info
         attachment = await db.ticket_attachments.find_one({"attachment_id": attachment_id})
@@ -5444,13 +5444,13 @@ async def get_ticket_attachment(attachment_id: str, current_user: dict = Depends
             if not has_access:
                 raise HTTPException(status_code=403, detail="Access denied")
         
-        # Download file from S3
-        s3_key = attachment.get("s3_key")
-        if not s3_key:
-            # Fallback for old attachments that might still use file_path
-            s3_key = f"attachments/{attachment.get('unique_filename')}"
+        # Download file from FTP
+        remote_path = attachment.get("remote_path")
+        if not remote_path:
+            # Fallback for old attachments
+            remote_path = f"attachments/{attachment.get('unique_filename')}"
         
-        content = await download_file_from_s3(s3_key)
+        content = await download_file_from_ftp(remote_path)
         if content is None:
             raise HTTPException(status_code=404, detail="File not found")
         
