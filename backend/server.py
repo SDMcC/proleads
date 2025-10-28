@@ -1299,11 +1299,11 @@ async def get_kyc_document(
     token: Optional[str] = None,
     admin: dict = Depends(get_admin_user)
 ):
-    """Get KYC document from S3 (admin only)"""
+    """Get KYC document from FTP (admin only)"""
     try:
-        # Download from S3
-        s3_key = f"kyc_documents/{filename}"
-        content = await download_file_from_s3(s3_key)
+        # Download from FTP
+        remote_path = f"kyc_documents/{filename}"
+        content = await download_file_from_ftp(remote_path)
         
         if content is None:
             raise HTTPException(status_code=404, detail="Document not found")
