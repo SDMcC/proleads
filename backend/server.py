@@ -4474,10 +4474,10 @@ async def create_ticket_notification(ticket_id: str, sender_address: str, sender
 # File upload helper for ticket attachments
 @app.post("/api/tickets/upload-attachment")
 async def upload_ticket_attachment(file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
-    """Upload file attachment for tickets"""
+    """Upload file attachment for tickets to S3"""
     try:
         # Validate file size (10MB max)
-        if file.size > 10 * 1024 * 1024:
+        if file.size and file.size > 10 * 1024 * 1024:
             raise HTTPException(status_code=413, detail="File too large. Maximum size is 10MB")
         
         # Validate file type
@@ -4486,27 +4486,23 @@ async def upload_ticket_attachment(file: UploadFile = File(...), current_user: d
         if file.content_type not in allowed_types:
             raise HTTPException(status_code=400, detail="File type not allowed")
         
-        # Create attachments directory if it doesn't exist
-        import os
-        upload_dir = "/app/attachments"
-        os.makedirs(upload_dir, exist_ok=True)
+        # Read file content
+        content = await file.read()
         
         # Generate unique filename
         file_extension = file.filename.split('.')[-1] if '.' in file.filename else ''
         unique_filename = f"{uuid.uuid4()}.{file_extension}"
-        file_path = os.path.join(upload_dir, unique_filename)
         
-        # Save file
-        content = await file.read()
-        with open(file_path, "wb") as f:
-            f.write(content)
+        # Upload to S3
+        s3_key = f"attachments/{unique_filename}"
+        await upload_file_to_s3(content, s3_key, file.content_type)
         
         # Store file info in database
         attachment_doc = {
             "attachment_id": str(uuid.uuid4()),
             "filename": file.filename,
             "unique_filename": unique_filename,
-            "file_path": file_path,
+            "s3_key": s3_key,
             "file_size": len(content),
             "content_type": file.content_type,
             "uploaded_by": current_user["address"],
