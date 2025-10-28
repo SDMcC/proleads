@@ -399,6 +399,32 @@ async def get_admin_user(authorization: Optional[str] = Header(None)):
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
+async def get_user_or_admin(authorization: Optional[str] = Header(None)):
+    """Get current user OR admin from JWT token - accepts both"""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization header required")
+    
+    try:
+        token = authorization.replace("Bearer ", "")
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        
+        # Check if admin
+        if payload.get("role") == "admin":
+            return {"username": payload["username"], "role": "admin", "is_admin": True}
+        
+        # Otherwise it's a regular user
+        return {
+            "address": payload.get("address"),
+            "username": payload.get("username"),
+            "email": payload.get("email"),
+            "membership_tier": payload.get("membership_tier"),
+            "referral_code": payload.get("referral_code"),
+            "role": "user",
+            "is_admin": False
+        }
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
 async def calculate_commissions(new_member_address: str, new_member_tier: str, new_member_amount: float):
     """Calculate and distribute commissions through the referral chain
     
