@@ -1299,27 +1299,17 @@ async def get_kyc_document(
     token: Optional[str] = None,
     admin: dict = Depends(get_admin_user)
 ):
-    """Get KYC document (admin only)"""
+    """Get KYC document from S3 (admin only)"""
     try:
-        file_path = f"/app/kyc_documents/{filename}"
+        # Download from S3
+        s3_key = f"kyc_documents/{filename}"
+        content = await download_file_from_s3(s3_key)
         
-        if not os.path.exists(file_path):
+        if content is None:
             raise HTTPException(status_code=404, detail="Document not found")
         
-        # Return file with appropriate content type
-        with open(file_path, 'rb') as f:
-            content = f.read()
-        
         # Determine content type based on file extension
-        ext = filename.split('.')[-1].lower()
-        content_types = {
-            'jpg': 'image/jpeg',
-            'jpeg': 'image/jpeg',
-            'png': 'image/png',
-            'gif': 'image/gif',
-            'pdf': 'application/pdf'
-        }
-        content_type = content_types.get(ext, 'image/jpeg')
+        content_type = get_content_type(filename)
         
         from fastapi.responses import Response
         return Response(content=content, media_type=content_type)
