@@ -10,9 +10,10 @@ from typing import Optional
 logger = logging.getLogger(__name__)
 
 # S3 Configuration from environment variables
-AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
-AWS_S3_BUCKET = os.getenv("AWS_S3_BUCKET")
+# Use SMTP credentials as fallback since they're AWS IAM credentials
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID") or os.getenv("SMTP_USERNAME")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY") or os.getenv("SMTP_PASSWORD")
+AWS_S3_BUCKET = os.getenv("AWS_S3_BUCKET", "proleads-network-files")
 AWS_REGION = os.getenv("AWS_REGION", "eu-north-1")
 
 # Initialize S3 client
