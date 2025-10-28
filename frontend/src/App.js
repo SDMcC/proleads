@@ -6137,12 +6137,10 @@ function NotificationSettingsTab({ user }) {
       {/* Notification View Modal */}
       {showNotificationModal && selectedNotification && ReactDOM.createPortal(
         <div 
-          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4"
-          style={{ zIndex: 2147483647, position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+          className="notification-modal-overlay fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4"
         >
           <div 
-            className="bg-gray-900 rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto relative"
-            style={{ zIndex: 2147483647, position: 'relative' }}
+            className="notification-modal-content bg-gray-900 rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto"
           >
             <div className="p-6 border-b border-gray-700">
               <div className="flex items-start justify-between">
