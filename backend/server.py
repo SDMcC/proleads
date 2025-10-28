@@ -1042,7 +1042,7 @@ async def upload_kyc_document(
     request: Request,
     current_user: dict = Depends(get_current_user)
 ):
-    """Upload KYC document (ID or selfie)"""
+    """Upload KYC document (ID or selfie) to S3"""
     try:
         form = await request.form()
         file = form.get("file")
@@ -1060,13 +1060,14 @@ async def upload_kyc_document(
         # Generate unique filename
         file_ext = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
         filename = f"{current_user['address']}_{doc_type}_{uuid.uuid4().hex[:8]}.{file_ext}"
-        file_path = f"/app/kyc_documents/{filename}"
         
-        # Save file
-        with open(file_path, 'wb') as f:
-            f.write(contents)
+        # Upload to S3 instead of local filesystem
+        s3_key = f"kyc_documents/{filename}"
+        content_type = get_content_type(filename)
         
-        logger.info(f"KYC document uploaded: {filename} for user {current_user['username']}")
+        await upload_file_to_s3(contents, s3_key, content_type)
+        
+        logger.info(f"KYC document uploaded to S3: {filename} for user {current_user['username']}")
         
         return {
             "message": "Document uploaded successfully",
