@@ -1022,3 +1022,19 @@ agent_communication:
         agent: "main"
         comment: "✅ ALL UI/UX ISSUES FIXED: PROBLEM 1 - Notification Modal Z-Index: Modal had z-50 which was lower than some dashboard elements. SOLUTION: Increased modal z-index to 9999 for backdrop and 10000 for content, ensuring it appears above all dashboard elements. PROBLEM 2 - Attachment URLs: Backend returned '/api/tickets/attachment/{id}' while frontend called '${API_URL}${url}' where API_URL already includes '/api', resulting in '/api/api/tickets/attachment/{id}' (404 error). SOLUTION: Removed '/api' prefix from all backend attachment URLs (changed to '/tickets/attachment/{id}'). PROBLEM 3 - Admin Notifications: Backend uses 'title' and 'message' fields but frontend displayed 'subject' and 'body' fields. SOLUTION: Updated frontend to display 'notification.title || notification.subject' and 'notification.message || notification.body' with proper icon mappings for payment, milestone, and KYC notification types. PROBLEM 4 - KYC Document URLs: Same double '/api/api/' issue as attachments. SOLUTION: KYC document URLs now work correctly with updated frontend path construction. VERIFICATION: All attachment endpoints now accessible, admin notifications display complete content, notification modal appears on top of all content, KYC documents viewable."
 
+
+  - task: "S3 Cloud Storage Integration for Persistent File Storage"
+    implemented: true
+    working: pending_deployment
+    file: "server.py, s3_utils.py, requirements.txt"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "CRITICAL ISSUE: Files uploaded after deployment (KYC documents, ticket attachments) are lost when container restarts. Old files uploaded before deployment work fine. Root cause: Ephemeral container storage - files saved to local directories (/app/kyc_documents/, /app/attachments/) disappear on restart."
+      - working: pending_deployment
+        agent: "main"
+        comment: "✅ AWS S3 INTEGRATION IMPLEMENTED: Replaced local file system storage with AWS S3 cloud storage for persistent file storage across deployments. CHANGES: 1) Created s3_utils.py with upload/download/presigned URL functions using boto3, 2) Updated KYC document upload endpoint to save to S3 (kyc_documents/{filename}), 3) Updated KYC document retrieval to fetch from S3, 4) Updated ticket attachment upload to save to S3 (attachments/{filename}), 5) Updated ticket attachment retrieval to fetch from S3 with fallback for old local files, 6) Added boto3==1.35.36 to requirements.txt. CONFIGURATION REQUIRED: User needs to add AWS environment variables to deployment: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_S3_BUCKET=proleads-network-files, AWS_REGION=eu-north-1. S3 bucket already created by user. TESTING: Pending deployment with AWS credentials."
+
