@@ -5411,7 +5411,7 @@ async def send_mass_message(
 # Get attachment file
 @app.get("/api/tickets/attachment/{attachment_id}")
 async def get_ticket_attachment(attachment_id: str, current_user: dict = Depends(get_current_user)):
-    """Download ticket attachment"""
+    """Download ticket attachment from S3"""
     try:
         # Get attachment info
         attachment = await db.ticket_attachments.find_one({"attachment_id": attachment_id})
@@ -5443,18 +5443,19 @@ async def get_ticket_attachment(attachment_id: str, current_user: dict = Depends
             if not has_access:
                 raise HTTPException(status_code=403, detail="Access denied")
         
-        # Return file
-        import os
-        if not os.path.exists(attachment["file_path"]):
+        # Download file from S3
+        s3_key = attachment.get("s3_key")
+        if not s3_key:
+            # Fallback for old attachments that might still use file_path
+            s3_key = f"attachments/{attachment.get('unique_filename')}"
+        
+        content = await download_file_from_s3(s3_key)
+        if content is None:
             raise HTTPException(status_code=404, detail="File not found")
         
-        def file_generator():
-            with open(attachment["file_path"], "rb") as f:
-                while chunk := f.read(8192):
-                    yield chunk
-        
-        return StreamingResponse(
-            file_generator(),
+        from fastapi.responses import Response
+        return Response(
+            content=content,
             media_type=attachment["content_type"],
             headers={
                 "Content-Disposition": f"attachment; filename={attachment['filename']}"
