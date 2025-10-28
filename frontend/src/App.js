@@ -6135,7 +6135,7 @@ function NotificationSettingsTab({ user }) {
       </div>
 
       {/* Notification View Modal */}
-      {showNotificationModal && selectedNotification && ReactDOM.createPortal(
+      {showNotificationPanel && selectedNotification && ReactDOM.createPortal(
         <div 
           className="notification-modal-overlay fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4"
         >
