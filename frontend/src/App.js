@@ -5010,14 +5010,19 @@ function TicketsTab() {
 
   const fetchDownlineContacts = async () => {
     try {
+      console.log('Fetching downline contacts...');
       const token = localStorage.getItem('token');
       const response = await axios.get(
         `${API_URL}/tickets/downline-contacts`,
         { headers: { Authorization: `Bearer ${token}` }}
       );
-      setDownlineContacts(response.data.contacts || []);
+      console.log('Downline contacts response:', response.data);
+      const contacts = response.data.contacts || [];
+      console.log(`Found ${contacts.length} contacts`);
+      setDownlineContacts(contacts);
     } catch (error) {
-      console.error('Failed to fetch contacts:', error);
+      console.error('Failed to fetch downline contacts:', error);
+      console.error('Error details:', error.response?.data);
     }
   };
 
