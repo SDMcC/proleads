@@ -1605,6 +1605,12 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
             if response.status_code == 201:
                 payment_result = response.json()
                 
+                # Generate payment URL - use invoice_url if available, otherwise construct NOWPayments checkout URL
+                invoice_url = payment_result.get("invoice_url")
+                if not invoice_url:
+                    # Construct NOWPayments checkout URL using payment_id
+                    invoice_url = f"https://nowpayments.io/payment/?iid={payment_result['payment_id']}"
+                
                 # Store payment record
                 payment_doc = {
                     "payment_id": payment_result["payment_id"],
@@ -1614,7 +1620,7 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
                     "currency": request.currency,
                     "status": "waiting",
                     "created_at": datetime.utcnow(),
-                    "payment_url": payment_result.get("invoice_url"),
+                    "payment_url": invoice_url,
                     "pay_address": payment_result.get("pay_address"),
                     "pay_amount": payment_result.get("pay_amount"),
                     "pay_currency": payment_result.get("pay_currency")
@@ -1624,7 +1630,7 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
                 
                 return {
                     "payment_id": payment_result["payment_id"],
-                    "payment_url": payment_result.get("invoice_url"),
+                    "payment_url": invoice_url,
                     "amount": payment_result.get("pay_amount"),
                     "currency": payment_result.get("pay_currency"),
                     "address": payment_result.get("pay_address"),
