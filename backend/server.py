@@ -1590,9 +1590,8 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
                 "username": current_user["username"],
                 "tier": request.tier,
                 "order_id": f"{current_user['address']}_{request.tier}_{int(datetime.utcnow().timestamp())}"
-            },
-            "redirect_url": f"{APP_URL}/dashboard",
-            "cancel_url": f"{APP_URL}/payment?tier={request.tier}"
+            }
+            # Note: Removed redirect_url - users can manually return or use payment polling
         }
         
         logger.info(f"Creating Coinbase Commerce charge for {current_user['username']}: ${tier_info['price']} {request.tier}")
