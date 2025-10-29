@@ -4471,17 +4471,33 @@ async def download_user_leads_csv(
 # =============================================================================
 
 # Helper function to create ticket notifications
-async def create_ticket_notification(ticket_id: str, sender_address: str, sender_username: str, contact_type: str, subject: str):
+async def create_ticket_notification(ticket_id: str, sender_address: str, sender_username: str, contact_type: str, subject: str, priority: str, category: str, message: str):
     """Create notifications for ticket creation"""
     try:
         if contact_type == "admin":
-            # Notify admin
+            # Notify admin (database notification)
             await create_admin_notification(
                 notification_type="ticket",
                 title="New Support Ticket",
                 message=f"New ticket from {sender_username}: {subject}",
                 related_user=sender_address
             )
+            
+            # Send email to admin
+            try:
+                await send_admin_ticket_notification(
+                    ticket_id=ticket_id,
+                    username=sender_username,
+                    subject=subject,
+                    priority=priority,
+                    category=category,
+                    message_preview=message
+                )
+                logger.info(f"Admin email notification sent for ticket {ticket_id}")
+            except Exception as email_error:
+                logger.error(f"Failed to send admin email for ticket {ticket_id}: {str(email_error)}")
+                # Continue even if email fails - database notification already created
+                
         elif contact_type == "sponsor":
             # Find sponsor and notify
             sender = await db.users.find_one({"address": sender_address})
