@@ -5319,8 +5319,14 @@ function TicketsTab() {
               <select
                 value={createForm.contact_type}
                 onChange={(e) => {
-                  setCreateForm({...createForm, contact_type: e.target.value, recipient_address: ''});
-                  if (e.target.value === 'downline_individual') {
+                  const newContactType = e.target.value;
+                  setCreateForm({
+                    ...createForm, 
+                    contact_type: newContactType, 
+                    recipient_address: '',
+                    category: 'general' // Always set default category for backend validation
+                  });
+                  if (newContactType === 'downline_individual') {
                     fetchDownlineContacts();
                   }
                 }}
