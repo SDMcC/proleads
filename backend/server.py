@@ -1632,7 +1632,198 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
         logger.error(f"Coinbase Commerce payment creation error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Payment service error: {str(e)}")
 
-@app.post("/api/payments/callback")
+# Coinbase Commerce Webhook Handler
+@app.post("/api/webhooks/coinbase-commerce")
+async def coinbase_commerce_webhook(request: Request):
+    """Handle Coinbase Commerce webhook events"""
+    try:
+        # Get raw request body
+        body = await request.body()
+        
+        # Get signature from header
+        signature = request.headers.get("X-CC-Webhook-Signature")
+        
+        if not signature:
+            logger.warning("Coinbase Commerce webhook: Missing signature header")
+            raise HTTPException(status_code=400, detail="Missing signature header")
+        
+        # Verify webhook signature
+        computed_signature = hmac.new(
+            COINBASE_COMMERCE_WEBHOOK_SECRET.encode(),
+            body,
+            hashlib.sha256
+        ).hexdigest()
+        
+        if not hmac.compare_digest(computed_signature, signature):
+            logger.warning("Coinbase Commerce webhook: Invalid signature")
+            raise HTTPException(status_code=401, detail="Invalid signature")
+        
+        # Parse webhook payload
+        payload = json.loads(body)
+        
+        event_type = payload.get("event", {}).get("type")
+        charge_data = payload.get("event", {}).get("data")
+        
+        logger.info(f"Coinbase Commerce webhook received: {event_type}")
+        
+        if not charge_data:
+            return {"status": "received"}
+        
+        charge_id = charge_data.get("id")
+        charge_code = charge_data.get("code")
+        
+        # Find payment in database
+        payment = await db.payments.find_one({"payment_id": charge_id})
+        
+        if not payment:
+            logger.warning(f"Payment not found for charge ID: {charge_id}")
+            return {"status": "payment not found"}
+        
+        # Handle different event types
+        if event_type == "charge:pending":
+            # Payment detected but not yet confirmed
+            await db.payments.update_one(
+                {"payment_id": charge_id},
+                {"$set": {"status": "PENDING", "updated_at": datetime.utcnow()}}
+            )
+            logger.info(f"Payment {charge_id} is pending")
+            
+        elif event_type == "charge:confirmed":
+            # Payment confirmed - upgrade membership
+            await handle_payment_confirmed(payment, charge_data)
+            
+        elif event_type == "charge:failed":
+            # Payment failed
+            await db.payments.update_one(
+                {"payment_id": charge_id},
+                {"$set": {"status": "FAILED", "updated_at": datetime.utcnow()}}
+            )
+            logger.info(f"Payment {charge_id} failed")
+            
+        elif event_type == "charge:delayed":
+            # Payment is delayed (underpaid)
+            await db.payments.update_one(
+                {"payment_id": charge_id},
+                {"$set": {"status": "DELAYED", "updated_at": datetime.utcnow()}}
+            )
+            logger.info(f"Payment {charge_id} is delayed")
+            
+        elif event_type == "charge:resolved":
+            # Delayed payment was resolved
+            await handle_payment_confirmed(payment, charge_data)
+        
+        return {"status": "received"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Coinbase Commerce webhook error: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+async def handle_payment_confirmed(payment: dict, charge_data: dict):
+    """Handle confirmed payment - upgrade membership and send notifications"""
+    try:
+        charge_id = charge_data.get("id")
+        user_address = payment["user_address"]
+        tier = payment["tier"]
+        amount = payment["amount"]
+        
+        logger.info(f"Processing confirmed payment: {charge_id} for user {user_address}")
+        
+        # Update payment status
+        await db.payments.update_one(
+            {"payment_id": charge_id},
+            {"$set": {
+                "status": "COMPLETED",
+                "confirmed_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow()
+            }}
+        )
+        
+        # Calculate subscription expiry (1 year from now for paid tiers)
+        subscription_expires_at = None
+        if tier not in ["affiliate", "vip_affiliate"]:
+            subscription_expires_at = datetime.utcnow() + timedelta(days=365)
+        
+        # Upgrade membership
+        update_data = {"membership_tier": tier}
+        if subscription_expires_at:
+            update_data["subscription_expires_at"] = subscription_expires_at
+        
+        await db.users.update_one(
+            {"address": user_address},
+            {"$set": update_data}
+        )
+        
+        logger.info(f"Upgraded user {user_address} to {tier}")
+        
+        # Get user info for notifications
+        user = await db.users.find_one({"address": user_address})
+        username = user.get("username", "Unknown User") if user else "Unknown User"
+        user_email = user.get("email", "") if user else ""
+        
+        # Send payment confirmation email to user
+        if user and user_email:
+            user_prefs = user.get("email_notifications", {})
+            if user_prefs.get("payment_confirmation", True):
+                try:
+                    await send_payment_confirmation_email(user_email, username, tier, amount)
+                    logger.info(f"Sent payment confirmation email to {user_email}")
+                except Exception as e:
+                    logger.error(f"Failed to send payment confirmation email: {str(e)}")
+        
+        # Send referral upgrade email to sponsor if exists
+        if user:
+            referrer_address = user.get("referrer_address")
+            if referrer_address:
+                referrer = await db.users.find_one({"address": referrer_address})
+                if referrer:
+                    referrer_prefs = referrer.get("email_notifications", {})
+                    if referrer_prefs.get("referral_upgrade", True):
+                        try:
+                            await send_referral_upgrade_email(
+                                referrer["email"],
+                                referrer["username"],
+                                username,
+                                tier
+                            )
+                            logger.info(f"Sent referral upgrade email to {referrer['email']}")
+                        except Exception as e:
+                            logger.error(f"Failed to send referral upgrade email: {str(e)}")
+        
+        # Create admin notification
+        await create_admin_notification(
+            notification_type="payment",
+            title="Payment Confirmed - Coinbase Commerce",
+            message=f"{username} upgraded to {tier.capitalize()} membership - ${amount} (USDC)",
+            related_user=user_address
+        )
+        
+        # Send admin email notification
+        try:
+            await send_admin_payment_confirmation(username, tier, amount)
+            logger.info(f"Sent admin payment notification for {username}")
+        except Exception as e:
+            logger.error(f"Failed to send admin payment email: {str(e)}")
+        
+        # Calculate and distribute commissions
+        await calculate_commissions(user_address, tier, amount)
+        
+        # Broadcast update via WebSocket
+        await websocket_manager.broadcast(json.dumps({
+            "type": "payment_confirmed",
+            "user_address": user_address,
+            "tier": tier,
+            "amount": amount,
+            "processor": "coinbase_commerce"
+        }))
+        
+        logger.info(f"Successfully processed payment confirmation for {username}")
+        
+    except Exception as e:
+        logger.error(f"Error handling payment confirmation: {str(e)}")
+        raise
+
 async def payment_callback(request: Request):
     """Handle NOWPayments IPN callback"""
     try:
