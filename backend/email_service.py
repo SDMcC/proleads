@@ -285,3 +285,38 @@ Best regards,
 Proleads Network System
 """
     return await send_email(ADMIN_EMAIL, subject, body)
+async def send_admin_ticket_notification(ticket_id: str, username: str, subject: str, priority: str, category: str, message_preview: str):
+    """Send email to admin when a new ticket is created"""
+    email_subject = f"🎫 New Support Ticket - {priority.upper()} Priority"
+    
+    # Priority emoji
+    priority_emoji = {
+        "low": "🟢",
+        "medium": "🟡", 
+        "high": "🟠",
+        "urgent": "🔴"
+    }
+    emoji = priority_emoji.get(priority.lower(), "🎫")
+    
+    body = f"""Admin Notification,
+
+{emoji} A new support ticket has been created!
+
+Ticket Details:
+- Ticket ID: {ticket_id}
+- From User: {username}
+- Subject: {subject}
+- Priority: {priority.upper()}
+- Category: {category}
+
+Message Preview:
+{message_preview[:200]}{'...' if len(message_preview) > 200 else ''}
+
+View and respond to this ticket:
+https://proleads.network/admin/dashboard
+
+Best regards,
+Proleads Network System
+"""
+    
+    return await send_email(ADMIN_EMAIL, email_subject, body, notification_type="ticket")
