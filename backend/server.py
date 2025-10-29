@@ -32,7 +32,8 @@ try:
         send_referral_upgrade_email,
         send_admin_milestone_notification,
         send_admin_payment_confirmation,
-        send_admin_lead_distribution_status
+        send_admin_lead_distribution_status,
+        send_admin_ticket_notification
     )
 except ImportError as e:
     logging.error(f"Failed to import email_service: {str(e)}")
@@ -43,6 +44,7 @@ except ImportError as e:
     async def send_subscription_reminder_email(*args, **kwargs): pass
     async def send_commission_payout_email(*args, **kwargs): pass
     async def send_referral_upgrade_email(*args, **kwargs): pass
+    async def send_admin_ticket_notification(*args, **kwargs): pass
     async def send_admin_milestone_notification(*args, **kwargs): pass
     async def send_admin_payment_confirmation(*args, **kwargs): pass
     async def send_admin_lead_distribution_status(*args, **kwargs): pass
