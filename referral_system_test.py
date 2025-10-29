@@ -532,7 +532,7 @@ class ReferralSystemTester:
 def main():
     """Main test execution"""
     # Use the backend URL from environment
-    base_url = "https://kyc-portal-3.preview.emergentagent.com"
+    base_url = "https://affnet-dashboard.preview.emergentagent.com"
     
     print("🚀 Starting Referral System Fix Verification")
     print(f"🌐 Testing against: {base_url}")

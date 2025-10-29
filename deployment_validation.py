@@ -259,7 +259,7 @@ class DeploymentValidator:
 
 def main():
     # Get backend URL from environment or use default
-    backend_url = os.getenv("REACT_APP_BACKEND_URL", "https://kyc-portal-3.preview.emergentagent.com")
+    backend_url = os.getenv("REACT_APP_BACKEND_URL", "https://affnet-dashboard.preview.emergentagent.com")
     
     # Create validator instance
     validator = DeploymentValidator(backend_url)

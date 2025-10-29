@@ -9,12 +9,12 @@ def test_milestone_integration():
     
     # Get admin token
     admin_data = {'username': 'admin', 'password': 'admin123'}
-    response = requests.post('https://kyc-portal-3.preview.emergentagent.com/api/admin/login', json=admin_data)
+    response = requests.post('https://affnet-dashboard.preview.emergentagent.com/api/admin/login', json=admin_data)
     admin_token = response.json()['token']
 
     # Get firstuser details
     headers = {'Authorization': f'Bearer {admin_token}', 'Content-Type': 'application/json'}
-    response = requests.get('https://kyc-portal-3.preview.emergentagent.com/api/admin/members?limit=50', headers=headers)
+    response = requests.get('https://affnet-dashboard.preview.emergentagent.com/api/admin/members?limit=50', headers=headers)
     members = response.json()['members']
 
     firstuser = None
@@ -35,7 +35,7 @@ def test_milestone_integration():
         'username': firstuser['username']
     }
     
-    login_response = requests.post('https://kyc-portal-3.preview.emergentagent.com/api/auth/simple-login', json=login_data)
+    login_response = requests.post('https://affnet-dashboard.preview.emergentagent.com/api/auth/simple-login', json=login_data)
     if login_response.status_code != 200:
         print(f"❌ Failed to login as firstuser: {login_response.status_code}")
         return False
@@ -45,7 +45,7 @@ def test_milestone_integration():
     
     # Test user milestones endpoint
     user_headers = {'Authorization': f'Bearer {user_token}', 'Content-Type': 'application/json'}
-    milestones_response = requests.get('https://kyc-portal-3.preview.emergentagent.com/api/users/milestones', headers=user_headers)
+    milestones_response = requests.get('https://affnet-dashboard.preview.emergentagent.com/api/users/milestones', headers=user_headers)
     
     if milestones_response.status_code != 200:
         print(f"❌ Failed to get user milestones: {milestones_response.status_code}")
@@ -57,7 +57,7 @@ def test_milestone_integration():
     print(f"   Achieved milestones: {len(milestones_data['achieved_milestones'])}")
     
     # Test admin milestones endpoint
-    admin_milestones_response = requests.get('https://kyc-portal-3.preview.emergentagent.com/api/admin/milestones', headers=headers)
+    admin_milestones_response = requests.get('https://affnet-dashboard.preview.emergentagent.com/api/admin/milestones', headers=headers)
     
     if admin_milestones_response.status_code != 200:
         print(f"❌ Failed to get admin milestones: {admin_milestones_response.status_code}")
