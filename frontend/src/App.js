@@ -5115,7 +5115,10 @@ function TicketsTab() {
       fetchTickets();
     } catch (error) {
       console.error('Failed to create ticket:', error);
-      alert('Failed to create ticket. Please try again.');
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
+      const errorMsg = error.response?.data?.detail || 'Failed to create ticket. Please try again.';
+      alert(errorMsg);
     }
   };
 
