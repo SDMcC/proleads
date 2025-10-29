@@ -4742,7 +4742,7 @@ async def create_ticket(
         # Create notifications
         await create_ticket_notification(
             ticket_id, sender_address, sender_username, 
-            contact_type, subject
+            contact_type, subject, priority, category, message
         )
         
         return {"ticket_id": ticket_id, "status": "created", "message": "Ticket created successfully"}
