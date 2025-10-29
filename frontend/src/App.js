@@ -5341,30 +5341,8 @@ function TicketsTab() {
                 className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white"
               >
                 <option value="admin">Contact Admin</option>
-                <option value="sponsor">Contact Sponsor</option>
-                <option value="downline_individual">Contact Individual Downline</option>
-                <option value="downline_mass">Message All Downlines</option>
               </select>
             </div>
-
-            {/* Recipient Selection for Individual Downline */}
-            {createForm.contact_type === 'downline_individual' && (
-              <div>
-                <label className="block text-white text-sm font-medium mb-2">Select Recipient *</label>
-                <select
-                  value={createForm.recipient_address}
-                  onChange={(e) => setCreateForm({...createForm, recipient_address: e.target.value})}
-                  className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white"
-                >
-                  <option value="">Select a downline member</option>
-                  {downlineContacts.map(contact => (
-                    <option key={contact.address} value={contact.address}>
-                      {contact.username} ({contact.email})
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
 
             {/* Category - Only show for admin tickets */}
             {createForm.contact_type === 'admin' && (
