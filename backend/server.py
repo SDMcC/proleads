@@ -5017,7 +5017,17 @@ async def delete_ticket(ticket_id: str, current_user: dict = Depends(get_current
 async def get_downline_contacts(current_user: dict = Depends(get_current_user)):
     """Get user's direct referrals for individual messaging"""
     try:
-        user = await db.users.find_one({"address": current_user["address"]})
+        # Find user by either address or username depending on auth method
+        user_query = {}
+        if current_user.get("address"):
+            user_query = {"address": current_user["address"]}
+        else:
+            user_query = {"username": current_user["username"]}
+        
+        user = await db.users.find_one(user_query)
+        if not user:
+            return {"contacts": []}
+        
         referrals = user.get("referrals", [])
         
         # Format for frontend
