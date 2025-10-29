@@ -1612,7 +1612,7 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
                 
                 # Store payment record
                 payment_doc = {
-                    "payment_id": payment_result["payment_id"],
+                    "payment_id": invoice_result.get("id"),
                     "user_address": current_user["address"],
                     "tier": request.tier,
                     "amount": tier_info["price"],
@@ -1620,19 +1620,18 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
                     "status": "waiting",
                     "created_at": datetime.utcnow(),
                     "payment_url": invoice_url,
-                    "pay_address": payment_result.get("pay_address"),
-                    "pay_amount": payment_result.get("pay_amount"),
-                    "pay_currency": payment_result.get("pay_currency")
+                    "order_id": invoice_result.get("order_id"),
+                    "nowpayments_id": invoice_result.get("id"),
+                    "invoice_id": invoice_result.get("id")
                 }
                 
                 await db.payments.insert_one(payment_doc)
                 
                 return {
-                    "payment_id": payment_result["payment_id"],
+                    "payment_id": invoice_result.get("id"),
                     "payment_url": invoice_url,
-                    "amount": payment_result.get("pay_amount"),
-                    "currency": payment_result.get("pay_currency"),
-                    "address": payment_result.get("pay_address"),
+                    "amount": tier_info["price"],
+                    "currency": request.currency,
                     "status": "created"
                 }
             else:
