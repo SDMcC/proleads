@@ -1672,16 +1672,25 @@ async def payment_callback(request: Request):
             raise HTTPException(status_code=403, detail="Invalid signature")
         
         data = json.loads(body)
-        payment_id = data["payment_id"]
-        payment_status = data["payment_status"]
+        payment_id = data.get("payment_id") or data.get("invoice_id")
+        payment_status = data.get("payment_status") or data.get("status")
         
-        # Update payment status
-        payment = await db.payments.find_one({"payment_id": payment_id})
+        logger.info(f"Payment callback received: payment_id={payment_id}, status={payment_status}")
+        
+        # Update payment status - try both payment_id and invoice_id
+        payment = await db.payments.find_one({
+            "$or": [
+                {"payment_id": payment_id},
+                {"invoice_id": payment_id},
+                {"nowpayments_id": payment_id}
+            ]
+        })
         if not payment:
+            logger.warning(f"Payment not found for ID: {payment_id}")
             return {"status": "payment not found"}
         
         await db.payments.update_one(
-            {"payment_id": payment_id},
+            {"_id": payment["_id"]},
             {"$set": {"status": payment_status, "updated_at": datetime.utcnow()}}
         )
         
