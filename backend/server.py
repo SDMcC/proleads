@@ -1631,7 +1631,7 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
                     "payment_id": invoice_result.get("id"),
                     "payment_url": invoice_url,
                     "amount": tier_info["price"],
-                    "currency": request.currency,
+                    "currency": "USD",  # User will choose crypto on checkout page
                     "status": "created"
                 }
             else:
