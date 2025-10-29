@@ -48,7 +48,7 @@ async def create_ethereal_account():
                     "port": 587,
                     "username": data['user'],
                     "password": data['pass'],
-                    "web_url": f"https://ethereal.email/messages"
+                    "web_url": "https://ethereal.email/messages"
                 }
     except Exception as e:
         logger.error(f"Failed to create Ethereal account: {str(e)}")
