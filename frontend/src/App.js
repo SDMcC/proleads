@@ -5352,20 +5352,22 @@ function TicketsTab() {
               </div>
             )}
 
-            {/* Category */}
-            <div>
-              <label className="block text-white text-sm font-medium mb-2">Category *</label>
-              <select
-                value={createForm.category}
-                onChange={(e) => setCreateForm({...createForm, category: e.target.value})}
-                className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white"
-              >
-                <option value="general">General</option>
-                <option value="billing">Billing</option>
-                <option value="leads">Leads</option>
-                <option value="technical">Technical</option>
-              </select>
-            </div>
+            {/* Category - Only show for admin tickets */}
+            {createForm.contact_type === 'admin' && (
+              <div>
+                <label className="block text-white text-sm font-medium mb-2">Category *</label>
+                <select
+                  value={createForm.category}
+                  onChange={(e) => setCreateForm({...createForm, category: e.target.value})}
+                  className="w-full px-4 py-3 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white"
+                >
+                  <option value="general">General</option>
+                  <option value="billing">Billing</option>
+                  <option value="leads">Leads</option>
+                  <option value="technical">Technical</option>
+                </select>
+              </div>
+            )}
 
             {/* Priority */}
             <div>
