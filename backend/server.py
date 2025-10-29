@@ -5028,18 +5028,41 @@ async def get_downline_contacts(current_user: dict = Depends(get_current_user)):
         if not user:
             return {"contacts": []}
         
-        referrals = user.get("referrals", [])
+        referral_identifiers = user.get("referrals", [])
         
-        # Format for frontend
+        # Fetch actual user data for each referral
         contacts = []
-        for referral in referrals:
-            contacts.append({
-                "address": referral.get("address"),
-                "username": referral.get("username"),
-                "email": referral.get("email"),
-                "membership_tier": referral.get("membership_tier", "affiliate")
-            })
+        for identifier in referral_identifiers:
+            # Identifier could be just an address string or a formatted string
+            if isinstance(identifier, str):
+                # Try to find user by address first
+                referral_user = await db.users.find_one({"address": identifier})
+                
+                # If not found, try to parse the formatted string (username - email - tier format)
+                if not referral_user and ' - ' in identifier:
+                    parts = identifier.split(' - ')
+                    if len(parts) >= 2:
+                        username = parts[0].strip()
+                        referral_user = await db.users.find_one({"username": username})
+                
+                # Add to contacts if found
+                if referral_user:
+                    contacts.append({
+                        "address": referral_user.get("address", ""),
+                        "username": referral_user.get("username", "Unknown"),
+                        "email": referral_user.get("email", ""),
+                        "membership_tier": referral_user.get("membership_tier", "affiliate")
+                    })
+            elif isinstance(identifier, dict):
+                # Already an object (newer format)
+                contacts.append({
+                    "address": identifier.get("address", ""),
+                    "username": identifier.get("username", "Unknown"),
+                    "email": identifier.get("email", ""),
+                    "membership_tier": identifier.get("membership_tier", "affiliate")
+                })
         
+        logger.info(f"Found {len(contacts)} downline contacts for user {user.get('username')}")
         return {"contacts": contacts}
         
     except Exception as e:
