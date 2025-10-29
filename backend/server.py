@@ -1577,13 +1577,13 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
         
         # Ensure currency is lowercase as expected by NOWPayments
         pay_currency = request.currency.lower()
-        logger.info(f"Using pay_currency: {pay_currency}")
+        logger.info(f"Creating invoice for tier: {request.tier}")
         
         # Create invoice with NOWPayments (provides proper checkout page)
+        # Note: Not specifying pay_currency allows users to choose from all available cryptocurrencies
         invoice_data = {
             "price_amount": tier_info["price"],
             "price_currency": "USD",
-            "pay_currency": pay_currency,
             "ipn_callback_url": f"{APP_URL}/api/payments/callback",
             "order_id": f"{current_user['address']}_{request.tier}_{int(datetime.utcnow().timestamp())}",
             "order_description": f"{request.tier.capitalize()} Membership - {current_user['username']}",
