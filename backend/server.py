@@ -1553,15 +1553,15 @@ async def mark_admin_notifications_read(admin: dict = Depends(get_admin_user)):
 # Payment endpoints
 @app.post("/api/payments/create")
 async def create_payment(request: PaymentRequest, current_user: dict = Depends(get_current_user)):
-    """Create payment for membership upgrade"""
-    logger.info(f"Payment request received: tier={request.tier}, currency={request.currency}")
+    """Create payment for membership upgrade using Coinbase Commerce"""
+    logger.info(f"Payment request received: tier={request.tier}")
     
     tier_info = MEMBERSHIP_TIERS.get(request.tier)
     if not tier_info:
         raise HTTPException(status_code=400, detail="Invalid membership tier")
     
     if tier_info["price"] == 0:
-        # Free affiliate tier
+        # Free affiliate tier - no payment required
         await db.users.update_one(
             {"address": current_user["address"]},
             {"$set": {"membership_tier": request.tier}}
@@ -1569,88 +1569,67 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
         return {"message": "Membership updated to Affiliate", "payment_required": False}
     
     try:
-        headers = {
-            "x-api-key": NOWPAYMENTS_API_KEY,
-            "Content-Type": "application/json"
-        }
+        # Import Coinbase Commerce client
+        from coinbase_commerce.client import Client
+        from coinbase_commerce.error import APIError
         
-        # Ensure currency is lowercase as expected by NOWPayments
-        pay_currency = request.currency.lower()
-        logger.info(f"Creating invoice for tier: {request.tier}")
+        # Initialize client
+        client = Client(api_key=COINBASE_COMMERCE_API_KEY)
         
-        # Create invoice with NOWPayments (provides proper checkout page)
-        # Note: Not specifying pay_currency allows users to choose from all available cryptocurrencies
-        invoice_data = {
-            "price_amount": tier_info["price"],
-            "price_currency": "USD",
-            "ipn_callback_url": f"{APP_URL}/api/payments/callback",
-            "order_id": f"{current_user['address']}_{request.tier}_{int(datetime.utcnow().timestamp())}",
-            "order_description": f"{request.tier.capitalize()} Membership - {current_user['username']}",
-            "success_url": f"{APP_URL}/dashboard",
+        # Create charge with Coinbase Commerce
+        charge_data = {
+            "name": f"{request.tier.capitalize()} Membership",
+            "description": f"{request.tier.capitalize()} Membership - Proleads Network",
+            "local_price": {
+                "amount": str(tier_info["price"]),
+                "currency": "USD"
+            },
+            "pricing_type": "fixed_price",
+            "metadata": {
+                "user_address": current_user["address"],
+                "username": current_user["username"],
+                "tier": request.tier,
+                "order_id": f"{current_user['address']}_{request.tier}_{int(datetime.utcnow().timestamp())}"
+            },
+            "redirect_url": f"{APP_URL}/dashboard",
             "cancel_url": f"{APP_URL}/payment?tier={request.tier}"
         }
         
-        logger.info(f"Creating NOWPayments invoice: {invoice_data}")
+        logger.info(f"Creating Coinbase Commerce charge for {current_user['username']}: ${tier_info['price']} {request.tier}")
         
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                "https://api.nowpayments.io/v1/invoice",
-                headers=headers,
-                json=invoice_data,
-                timeout=30.0
-            )
-            
-            logger.info(f"NOWPayments response status: {response.status_code}")
-            logger.info(f"NOWPayments response: {response.text}")
-            
-            if response.status_code == 200:
-                invoice_result = response.json()
-                
-                # Get invoice URL from response
-                invoice_url = invoice_result.get("invoice_url")
-                
-                # Store payment record
-                payment_doc = {
-                    "payment_id": invoice_result.get("id"),
-                    "user_address": current_user["address"],
-                    "tier": request.tier,
-                    "amount": tier_info["price"],
-                    "currency": request.currency,
-                    "status": "waiting",
-                    "created_at": datetime.utcnow(),
-                    "payment_url": invoice_url,
-                    "order_id": invoice_result.get("order_id"),
-                    "nowpayments_id": invoice_result.get("id"),
-                    "invoice_id": invoice_result.get("id")
-                }
-                
-                await db.payments.insert_one(payment_doc)
-                
-                return {
-                    "payment_id": invoice_result.get("id"),
-                    "payment_url": invoice_url,
-                    "amount": tier_info["price"],
-                    "currency": "USD",  # User will choose crypto on checkout page
-                    "status": "created"
-                }
-            else:
-                error_text = response.text
-                logger.error(f"NOWPayments error: {error_text}")
-                
-                # Try to parse error message
-                try:
-                    error_data = response.json()
-                    error_message = error_data.get("message", "Payment creation failed")
-                except:
-                    error_message = "Payment service error"
-                
-                raise HTTPException(status_code=400, detail=f"Payment creation failed: {error_message}")
-                
-    except httpx.TimeoutException:
-        logger.error("NOWPayments request timeout")
-        raise HTTPException(status_code=500, detail="Payment service timeout")
+        # Create charge via Coinbase Commerce API
+        charge = client.charge.create(**charge_data)
+        
+        logger.info(f"Coinbase Commerce charge created: {charge.id}")
+        
+        # Store payment record in database
+        payment_doc = {
+            "payment_id": charge.id,
+            "user_address": current_user["address"],
+            "username": current_user.get("username", ""),
+            "email": current_user.get("email", ""),
+            "tier": request.tier,
+            "amount": tier_info["price"],
+            "currency": "USD",
+            "status": "NEW",  # Coinbase Commerce initial status
+            "created_at": datetime.utcnow(),
+            "payment_url": charge.hosted_url,
+            "charge_code": charge.code,
+            "expires_at": charge.expires_at if hasattr(charge, 'expires_at') else None
+        }
+        
+        await db.payments.insert_one(payment_doc)
+        
+        return {
+            "payment_id": charge.id,
+            "payment_url": charge.hosted_url,
+            "amount": tier_info["price"],
+            "currency": "USD",
+            "status": "created"
+        }
+        
     except Exception as e:
-        logger.error(f"Payment creation error: {str(e)}")
+        logger.error(f"Coinbase Commerce payment creation error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Payment service error: {str(e)}")
 
 @app.post("/api/payments/callback")
