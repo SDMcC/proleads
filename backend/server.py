@@ -1579,37 +1579,36 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
         pay_currency = request.currency.lower()
         logger.info(f"Using pay_currency: {pay_currency}")
         
-        # Create payment with NOWPayments
-        payment_data = {
+        # Create invoice with NOWPayments (provides proper checkout page)
+        invoice_data = {
             "price_amount": tier_info["price"],
             "price_currency": "USD",
             "pay_currency": pay_currency,
             "ipn_callback_url": f"{APP_URL}/api/payments/callback",
             "order_id": f"{current_user['address']}_{request.tier}_{int(datetime.utcnow().timestamp())}",
-            "order_description": f"{request.tier.capitalize()} Membership - {current_user['username']}"
+            "order_description": f"{request.tier.capitalize()} Membership - {current_user['username']}",
+            "success_url": f"{APP_URL}/dashboard",
+            "cancel_url": f"{APP_URL}/payment?tier={request.tier}"
         }
         
-        logger.info(f"Creating NOWPayments payment: {payment_data}")
+        logger.info(f"Creating NOWPayments invoice: {invoice_data}")
         
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                "https://api.nowpayments.io/v1/payment",
+                "https://api.nowpayments.io/v1/invoice",
                 headers=headers,
-                json=payment_data,
+                json=invoice_data,
                 timeout=30.0
             )
             
             logger.info(f"NOWPayments response status: {response.status_code}")
             logger.info(f"NOWPayments response: {response.text}")
             
-            if response.status_code == 201:
-                payment_result = response.json()
+            if response.status_code == 200:
+                invoice_result = response.json()
                 
-                # Generate payment URL - use invoice_url if available, otherwise construct NOWPayments checkout URL
-                invoice_url = payment_result.get("invoice_url")
-                if not invoice_url:
-                    # Construct NOWPayments checkout URL using payment_id
-                    invoice_url = f"https://nowpayments.io/payment/?iid={payment_result['payment_id']}"
+                # Get invoice URL from response
+                invoice_url = invoice_result.get("invoice_url")
                 
                 # Store payment record
                 payment_doc = {
