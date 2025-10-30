@@ -6976,6 +6976,209 @@ function PaymentPage() {
   );
 }
 
+// Payment Modal Component - Atlos Style
+function PaymentModal({ 
+  isOpen, 
+  onClose, 
+  step, 
+  amount, 
+  tier,
+  currencies,
+  selectedCurrency,
+  selectedNetwork,
+  paymentData,
+  paymentStatus,
+  loading,
+  onSelectCurrency,
+  onSelectNetwork,
+  onCreatePayment
+}) {
+  const [copied, setCopied] = useState(false);
+  
+  if (!isOpen) return null;
+
+  const handleCopy = (text) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const selectedCurrencyData = currencies.find(c => c.code === selectedCurrency);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-75">
+      <div className="bg-gray-900 rounded-2xl max-w-md w-full p-6 relative">
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-white"
+        >
+          <X className="h-6 w-6" />
+        </button>
+
+        {/* Step 1: Amount Display */}
+        {step === 1 && (
+          <div className="text-center py-8">
+            <h2 className="text-2xl font-bold text-white mb-2">Pay with Crypto</h2>
+            <p className="text-gray-400 mb-8">Select your payment method</p>
+            
+            <div className="bg-gray-800 rounded-lg p-6 mb-8">
+              <p className="text-gray-400 text-sm mb-2">Amount to Pay</p>
+              <p className="text-4xl font-bold text-white">${amount}</p>
+              <p className="text-gray-400 text-sm mt-2 capitalize">{tier} Membership</p>
+            </div>
+
+            <p className="text-gray-400 text-sm">Select a cryptocurrency to continue</p>
+          </div>
+        )}
+
+        {/* Step 2: Currency Selection */}
+        {(step === 1 || step === 2) && step !== 3 && step !== 4 && (
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold text-white mb-4">Select Cryptocurrency</h3>
+            <div className="grid grid-cols-2 gap-3">
+              {currencies.map((currency) => (
+                <button
+                  key={currency.code}
+                  onClick={() => onSelectCurrency(currency.code)}
+                  className={`p-4 rounded-lg border-2 transition-all duration-300 ${
+                    selectedCurrency === currency.code
+                      ? 'border-blue-500 bg-blue-900 bg-opacity-30'
+                      : 'border-gray-700 bg-gray-800 hover:border-gray-600'
+                  }`}
+                >
+                  <div className="text-3xl mb-2">{currency.icon}</div>
+                  <p className="text-white font-semibold">{currency.name}</p>
+                  <p className="text-gray-400 text-xs">{currency.code}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: Network Selection */}
+        {step === 2 && selectedCurrencyData && selectedCurrencyData.networks.length > 1 && (
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold text-white mb-4">Select Network</h3>
+            <div className="space-y-3">
+              {selectedCurrencyData.networks.map((network) => (
+                <button
+                  key={network}
+                  onClick={() => onSelectNetwork(network)}
+                  className={`w-full p-4 rounded-lg border-2 transition-all duration-300 text-left ${
+                    selectedNetwork === network
+                      ? 'border-blue-500 bg-blue-900 bg-opacity-30'
+                      : 'border-gray-700 bg-gray-800 hover:border-gray-600'
+                  }`}
+                >
+                  <p className="text-white font-semibold">{network}</p>
+                  <p className="text-gray-400 text-sm">Fast & Low Fees</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: Confirm Payment */}
+        {step === 3 && !paymentData && (
+          <div className="text-center py-8">
+            <div className="bg-gray-800 rounded-lg p-6 mb-6">
+              <div className="flex items-center justify-center mb-4">
+                <span className="text-4xl">{selectedCurrencyData?.icon}</span>
+              </div>
+              <p className="text-gray-400 text-sm mb-2">You will pay</p>
+              <p className="text-2xl font-bold text-white mb-1">${amount} USD</p>
+              <p className="text-gray-400 text-sm mb-4">with {selectedCurrencyData?.name}</p>
+              {selectedNetwork && (
+                <p className="text-blue-400 text-sm">Network: {selectedNetwork}</p>
+              )}
+            </div>
+
+            <button
+              onClick={onCreatePayment}
+              disabled={loading}
+              className="w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white font-semibold rounded-lg transition-all duration-300"
+            >
+              {loading ? 'Creating Payment...' : 'Continue to Payment'}
+            </button>
+          </div>
+        )}
+
+        {/* Step 4: Payment Details with QR Code */}
+        {step === 4 && paymentData && (
+          <div className="py-4">
+            {paymentStatus === 'confirmed' ? (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle className="h-10 w-10 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-2">Payment Confirmed!</h3>
+                <p className="text-gray-300 mb-4">Redirecting to dashboard...</p>
+              </div>
+            ) : (
+              <>
+                <h2 className="text-xl font-bold text-white mb-4 text-center">Complete Payment</h2>
+                
+                {/* QR Code */}
+                <div className="bg-white p-4 rounded-lg mb-4 flex justify-center">
+                  <QRCode value={paymentData.pay_address} size={200} />
+                </div>
+
+                {/* Payment Details */}
+                <div className="bg-gray-800 rounded-lg p-4 mb-4 space-y-3">
+                  <div>
+                    <p className="text-gray-400 text-xs mb-1">Send Exactly</p>
+                    <div className="flex items-center justify-between bg-gray-900 rounded p-2">
+                      <p className="text-white font-mono text-sm">{paymentData.pay_amount}</p>
+                      <button
+                        onClick={() => handleCopy(paymentData.pay_amount.toString())}
+                        className="text-blue-400 hover:text-blue-300"
+                      >
+                        <Copy className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-gray-400 text-xs mb-1">Currency</p>
+                    <p className="text-white font-semibold">{paymentData.pay_currency}</p>
+                  </div>
+
+                  <div>
+                    <p className="text-gray-400 text-xs mb-1">To Address</p>
+                    <div className="flex items-center justify-between bg-gray-900 rounded p-2">
+                      <p className="text-white font-mono text-xs break-all flex-1 mr-2">
+                        {paymentData.pay_address}
+                      </p>
+                      <button
+                        onClick={() => handleCopy(paymentData.pay_address)}
+                        className="text-blue-400 hover:text-blue-300 flex-shrink-0"
+                      >
+                        {copied ? <CheckCircle className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-yellow-900 bg-opacity-30 border border-yellow-700 rounded-lg p-3 mb-4">
+                  <p className="text-yellow-300 text-xs text-center">
+                    ⚠️ Send exact amount to the address above. Payment is automatic once confirmed on blockchain.
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-center space-x-2 text-gray-400">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                  <p className="text-sm">Waiting for payment...</p>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // Payment Success Component
 function PaymentSuccess() {
   return (
