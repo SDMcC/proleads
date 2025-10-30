@@ -6691,10 +6691,14 @@ function StatCard({ icon, title, value, subtitle, action }) {
 function PaymentPage() {
   const { user } = useAuth();
   const [selectedTier, setSelectedTier] = useState('bronze');
-  const [selectedCurrency, setSelectedCurrency] = useState('ETH');
+  const [selectedCurrency, setSelectedCurrency] = useState('');
+  const [selectedNetwork, setSelectedNetwork] = useState('');
   const [loading, setLoading] = useState(false);
   const [paymentData, setPaymentData] = useState(null);
   const [tiers, setTiers] = useState({});
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentStep, setPaymentStep] = useState(1);
+  const [paymentStatus, setPaymentStatus] = useState('waiting');
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -6714,28 +6718,102 @@ function PaymentPage() {
     fetchTiers();
   }, []);
 
-  const supportedCurrencies = ['BTC', 'ETH', 'USDC', 'USDT', 'LTC', 'XMR'];
+  // Poll payment status
+  useEffect(() => {
+    if (!paymentData || paymentStatus !== 'waiting') return;
+    
+    const pollStatus = setInterval(async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`${API_URL}/payments/${paymentData.payment_id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (response.data.status === 'completed' || response.data.status === 'finished') {
+          setPaymentStatus('confirmed');
+          clearInterval(pollStatus);
+          setTimeout(() => {
+            window.location.href = '/dashboard';
+          }, 3000);
+        }
+      } catch (error) {
+        console.error('Failed to check payment status:', error);
+      }
+    }, 5000);
+    
+    return () => clearInterval(pollStatus);
+  }, [paymentData, paymentStatus]);
+
+  const supportedCurrencies = [
+    { code: 'USDCMATIC', name: 'USDC', icon: '💵', networks: ['Polygon'] },
+    { code: 'USDT', name: 'USDT', icon: '₮', networks: ['Ethereum', 'Tron', 'BSC'] },
+    { code: 'BTC', name: 'Bitcoin', icon: '₿', networks: ['Bitcoin'] },
+    { code: 'ETH', name: 'Ethereum', icon: 'Ξ', networks: ['Ethereum'] },
+    { code: 'LTC', name: 'Litecoin', icon: 'Ł', networks: ['Litecoin'] },
+    { code: 'SOL', name: 'Solana', icon: '◎', networks: ['Solana'] }
+  ];
+
+  const handleStartPayment = () => {
+    const currentTier = tiers[selectedTier];
+    if (currentTier?.price === 0) {
+      handleCreatePayment();
+    } else {
+      setShowPaymentModal(true);
+      setPaymentStep(1);
+    }
+  };
+
+  const handleSelectCurrency = (currency) => {
+    setSelectedCurrency(currency);
+    const currencyData = supportedCurrencies.find(c => c.code === currency);
+    if (currencyData && currencyData.networks.length === 1) {
+      setSelectedNetwork(currencyData.networks[0]);
+      setPaymentStep(3);
+    } else {
+      setPaymentStep(2);
+    }
+  };
+
+  const handleSelectNetwork = (network) => {
+    setSelectedNetwork(network);
+    setPaymentStep(3);
+  };
 
   const handleCreatePayment = async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
+      
+      // For free tier
+      if (tiers[selectedTier]?.price === 0) {
+        const response = await axios.post(`${API_URL}/payments/create`, {
+          tier: selectedTier,
+          currency: 'FREE'
+        }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (response.data.payment_required === false) {
+          alert('Membership upgraded to Affiliate!');
+          window.location.href = '/dashboard';
+        }
+        return;
+      }
+
+      // For paid tiers
       const response = await axios.post(`${API_URL}/payments/create`, {
         tier: selectedTier,
-        currency: selectedCurrency // Use the selected currency from the form
+        currency: selectedCurrency
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      if (response.data.payment_required === false) {
-        alert('Membership upgraded to Affiliate!');
-        window.location.href = '/dashboard';
-      } else {
-        setPaymentData(response.data);
-      }
+      setPaymentData(response.data);
+      setPaymentStep(4);
     } catch (error) {
       console.error('Payment creation failed:', error);
       alert('Payment creation failed. Please try again.');
+      setShowPaymentModal(false);
     } finally {
       setLoading(false);
     }
