@@ -1589,6 +1589,8 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
             "order_description": f"{request.tier.capitalize()} Membership - {current_user['username']}"
         }
         
+        logger.info(f"APP_URL: {APP_URL}")
+        logger.info(f"IPN Callback URL: {APP_URL}/api/payments/callback")
         logger.info(f"Creating NOWPayments payment: {payment_data}")
         
         async with httpx.AsyncClient() as client:
