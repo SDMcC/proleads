@@ -1553,8 +1553,8 @@ async def mark_admin_notifications_read(admin: dict = Depends(get_admin_user)):
 # Payment endpoints
 @app.post("/api/payments/create")
 async def create_payment(request: PaymentRequest, current_user: dict = Depends(get_current_user)):
-    """Create payment for membership upgrade using Coinbase Commerce"""
-    logger.info(f"Payment request received: tier={request.tier}")
+    """Create payment for membership upgrade using NOWPayments White-Label"""
+    logger.info(f"Payment request received: tier={request.tier}, currency={request.currency}")
     
     tier_info = MEMBERSHIP_TIERS.get(request.tier)
     if not tier_info:
@@ -1569,66 +1569,86 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
         return {"message": "Membership updated to Affiliate", "payment_required": False}
     
     try:
-        # Import Coinbase Commerce client
-        from coinbase_commerce.client import Client
-        from coinbase_commerce.error import APIError
-        
-        # Initialize client
-        client = Client(api_key=COINBASE_COMMERCE_API_KEY)
-        
-        # Create charge with Coinbase Commerce
-        charge_data = {
-            "name": f"{request.tier.capitalize()} Membership",
-            "description": f"{request.tier.capitalize()} Membership - Proleads Network",
-            "local_price": {
-                "amount": str(tier_info["price"]),
-                "currency": "USD"
-            },
-            "pricing_type": "fixed_price",
-            "metadata": {
-                "user_address": current_user["address"],
-                "username": current_user["username"],
-                "tier": request.tier,
-                "order_id": f"{current_user['address']}_{request.tier}_{int(datetime.utcnow().timestamp())}"
-            }
-            # Note: Removed redirect_url - users can manually return or use payment polling
+        headers = {
+            "x-api-key": NOWPAYMENTS_API_KEY,
+            "Content-Type": "application/json"
         }
         
-        logger.info(f"Creating Coinbase Commerce charge for {current_user['username']}: ${tier_info['price']} {request.tier}")
+        # User selects pay_currency from frontend (e.g., "usdcmatic", "btc", "eth")
+        # We want to receive USDCMATIC in Custody (auto-conversion enabled)
+        pay_currency = request.currency.lower() if request.currency else "usdcmatic"
         
-        # Create charge via Coinbase Commerce API
-        charge = client.charge.create(**charge_data)
-        
-        logger.info(f"Coinbase Commerce charge created: {charge.id}")
-        
-        # Store payment record in database
-        payment_doc = {
-            "payment_id": charge.id,
-            "user_address": current_user["address"],
-            "username": current_user.get("username", ""),
-            "email": current_user.get("email", ""),
-            "tier": request.tier,
-            "amount": tier_info["price"],
-            "currency": "USD",
-            "status": "NEW",  # Coinbase Commerce initial status
-            "created_at": datetime.utcnow(),
-            "payment_url": charge.hosted_url,
-            "charge_code": charge.code,
-            "expires_at": charge.expires_at if hasattr(charge, 'expires_at') else None
+        # Create payment with NOWPayments
+        payment_data = {
+            "price_amount": tier_info["price"],
+            "price_currency": "usd",
+            "pay_currency": pay_currency,
+            "ipn_callback_url": f"{APP_URL}/api/payments/callback",
+            "order_id": f"{current_user['address']}_{request.tier}_{int(datetime.utcnow().timestamp())}",
+            "order_description": f"{request.tier.capitalize()} Membership - {current_user['username']}"
         }
         
-        await db.payments.insert_one(payment_doc)
+        logger.info(f"Creating NOWPayments payment: {payment_data}")
         
-        return {
-            "payment_id": charge.id,
-            "payment_url": charge.hosted_url,
-            "amount": tier_info["price"],
-            "currency": "USD",
-            "status": "created"
-        }
-        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://api.nowpayments.io/v1/payment",
+                headers=headers,
+                json=payment_data,
+                timeout=30.0
+            )
+            
+            logger.info(f"NOWPayments response status: {response.status_code}")
+            logger.info(f"NOWPayments response: {response.text}")
+            
+            if response.status_code == 201:
+                payment_result = response.json()
+                
+                # Store payment record
+                payment_doc = {
+                    "payment_id": payment_result["payment_id"],
+                    "user_address": current_user["address"],
+                    "username": current_user.get("username", ""),
+                    "email": current_user.get("email", ""),
+                    "tier": request.tier,
+                    "amount": tier_info["price"],
+                    "price_currency": "usd",
+                    "pay_currency": payment_result.get("pay_currency"),
+                    "status": "waiting",
+                    "created_at": datetime.utcnow(),
+                    "pay_address": payment_result.get("pay_address"),
+                    "pay_amount": payment_result.get("pay_amount"),
+                    "order_id": payment_result.get("order_id")
+                }
+                
+                await db.payments.insert_one(payment_doc)
+                
+                return {
+                    "payment_id": payment_result["payment_id"],
+                    "pay_address": payment_result.get("pay_address"),
+                    "pay_amount": payment_result.get("pay_amount"),
+                    "pay_currency": payment_result.get("pay_currency"),
+                    "price_amount": tier_info["price"],
+                    "price_currency": "USD",
+                    "status": "created"
+                }
+            else:
+                error_text = response.text
+                logger.error(f"NOWPayments error: {error_text}")
+                
+                try:
+                    error_data = response.json()
+                    error_message = error_data.get("message", "Payment creation failed")
+                except:
+                    error_message = "Payment service error"
+                
+                raise HTTPException(status_code=400, detail=f"Payment creation failed: {error_message}")
+                
+    except httpx.TimeoutException:
+        logger.error("NOWPayments request timeout")
+        raise HTTPException(status_code=500, detail="Payment service timeout")
     except Exception as e:
-        logger.error(f"Coinbase Commerce payment creation error: {str(e)}")
+        logger.error(f"Payment creation error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Payment service error: {str(e)}")
 
 # Coinbase Commerce Webhook Handler
