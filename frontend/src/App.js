@@ -6958,6 +6958,7 @@ function PaymentPage() {
             setPaymentStep(1);
             setSelectedCurrency('');
             setSelectedNetwork('');
+            setPaymentData(null);
           }}
           step={paymentStep}
           amount={currentTier?.price}
@@ -6971,6 +6972,10 @@ function PaymentPage() {
           onSelectCurrency={handleSelectCurrency}
           onSelectNetwork={handleSelectNetwork}
           onCreatePayment={handleCreatePayment}
+          setPaymentStep={setPaymentStep}
+          setSelectedCurrency={setSelectedCurrency}
+          setSelectedNetwork={setSelectedNetwork}
+          setPaymentData={setPaymentData}
         />
       )}
     </div>
