@@ -1651,6 +1651,30 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
         logger.error(f"Payment creation error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Payment service error: {str(e)}")
 
+# Get Payment Status Endpoint
+@app.get("/api/payments/{payment_id}")
+async def get_payment_status(payment_id: str):
+    """Get payment status by payment ID"""
+    try:
+        payment = await db.payments.find_one({"payment_id": str(payment_id)})
+        
+        if not payment:
+            raise HTTPException(status_code=404, detail="Payment not found")
+        
+        return {
+            "payment_id": payment.get("payment_id"),
+            "status": payment.get("status", "waiting"),
+            "tier": payment.get("tier"),
+            "amount": payment.get("amount"),
+            "created_at": payment.get("created_at").isoformat() if payment.get("created_at") else None,
+            "confirmed_at": payment.get("confirmed_at").isoformat() if payment.get("confirmed_at") else None
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching payment status: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch payment status")
+
 # NOWPayments IPN Callback Handler
 @app.post("/api/payments/callback")
 async def nowpayments_callback(request: Request):
