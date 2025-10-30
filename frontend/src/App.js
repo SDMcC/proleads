@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import Tree from 'react-d3-tree';
+import { QRCodeSVG as QRCode } from 'qrcode.react';
 import { 
   Wallet, 
   Users, 
