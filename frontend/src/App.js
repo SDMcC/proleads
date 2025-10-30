@@ -6997,7 +6997,11 @@ function PaymentModal({
   loading,
   onSelectCurrency,
   onSelectNetwork,
-  onCreatePayment
+  onCreatePayment,
+  setPaymentStep,
+  setSelectedCurrency,
+  setSelectedNetwork,
+  setPaymentData
 }) {
   const [copied, setCopied] = useState(false);
   
