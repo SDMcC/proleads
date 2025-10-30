@@ -7130,10 +7130,10 @@ function PaymentModal({
                 {/* Back Button */}
                 <button
                   onClick={() => {
-                    setPaymentStep(1);
-                    setSelectedCurrency('');
-                    setSelectedNetwork('');
-                    setPaymentData(null);
+                    if (setPaymentStep) setPaymentStep(1);
+                    if (setSelectedCurrency) setSelectedCurrency('');
+                    if (setSelectedNetwork) setSelectedNetwork('');
+                    if (setPaymentData) setPaymentData(null);
                   }}
                   className="flex items-center text-gray-400 hover:text-white mb-4"
                 >
