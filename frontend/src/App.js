@@ -7118,19 +7118,47 @@ function PaymentModal({
               </div>
             ) : (
               <>
+                {/* Back Button */}
+                <button
+                  onClick={() => {
+                    setPaymentStep(1);
+                    setSelectedCurrency('');
+                    setSelectedNetwork('');
+                    setPaymentData(null);
+                  }}
+                  className="flex items-center text-gray-400 hover:text-white mb-4"
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  <span className="text-sm">Change Currency</span>
+                </button>
+
                 <h2 className="text-xl font-bold text-white mb-4 text-center">Complete Payment</h2>
                 
-                {/* QR Code */}
-                <div className="bg-white p-4 rounded-lg mb-4 flex justify-center">
-                  <QRCode value={paymentData.pay_address} size={200} />
+                {/* Amount in USD - Prominent Display */}
+                <div className="bg-blue-900 bg-opacity-30 border border-blue-500 rounded-lg p-4 mb-4 text-center">
+                  <p className="text-gray-300 text-sm mb-1">Total Amount</p>
+                  <p className="text-4xl font-bold text-white">${paymentData.price_amount}</p>
+                  <p className="text-gray-400 text-sm mt-1">≈ {paymentData.pay_amount} {paymentData.pay_currency}</p>
                 </div>
+
+                {/* QR Code with Payment URI */}
+                <div className="bg-white p-4 rounded-lg mb-4 flex justify-center">
+                  <QRCode 
+                    value={`${paymentData.pay_address}?amount=${paymentData.pay_amount}`}
+                    size={200} 
+                  />
+                </div>
+
+                <p className="text-center text-gray-400 text-xs mb-4">
+                  Scan with your crypto wallet to auto-fill amount
+                </p>
 
                 {/* Payment Details */}
                 <div className="bg-gray-800 rounded-lg p-4 mb-4 space-y-3">
                   <div>
                     <p className="text-gray-400 text-xs mb-1">Send Exactly</p>
                     <div className="flex items-center justify-between bg-gray-900 rounded p-2">
-                      <p className="text-white font-mono text-sm">{paymentData.pay_amount}</p>
+                      <p className="text-white font-mono text-sm">{paymentData.pay_amount} {paymentData.pay_currency}</p>
                       <button
                         onClick={() => handleCopy(paymentData.pay_amount.toString())}
                         className="text-blue-400 hover:text-blue-300"
@@ -7138,11 +7166,6 @@ function PaymentModal({
                         <Copy className="h-4 w-4" />
                       </button>
                     </div>
-                  </div>
-
-                  <div>
-                    <p className="text-gray-400 text-xs mb-1">Currency</p>
-                    <p className="text-white font-semibold">{paymentData.pay_currency}</p>
                   </div>
 
                   <div>
@@ -7159,17 +7182,22 @@ function PaymentModal({
                       </button>
                     </div>
                   </div>
+
+                  <div>
+                    <p className="text-gray-400 text-xs mb-1">Network</p>
+                    <p className="text-white font-semibold">{selectedNetwork || 'Blockchain'}</p>
+                  </div>
                 </div>
 
                 <div className="bg-yellow-900 bg-opacity-30 border border-yellow-700 rounded-lg p-3 mb-4">
                   <p className="text-yellow-300 text-xs text-center">
-                    ⚠️ Send exact amount to the address above. Payment is automatic once confirmed on blockchain.
+                    ⚠️ Send exact amount shown above. Payment confirms automatically after blockchain confirmation.
                   </p>
                 </div>
 
                 <div className="flex items-center justify-center space-x-2 text-gray-400">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
-                  <p className="text-sm">Waiting for payment...</p>
+                  <p className="text-sm">Waiting for payment confirmation...</p>
                 </div>
               </>
             )}
