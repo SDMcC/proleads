@@ -1604,6 +1604,11 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
             if response.status_code == 201:
                 payment_result = response.json()
                 
+                # Round pay_amount to 6 decimals for USDC (Polygon has 6 decimal places)
+                pay_amount = payment_result.get("pay_amount")
+                if isinstance(pay_amount, (int, float)):
+                    pay_amount = round(float(pay_amount), 6)
+                
                 # Store payment record
                 payment_doc = {
                     "payment_id": payment_result["payment_id"],
@@ -1617,7 +1622,7 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
                     "status": "waiting",
                     "created_at": datetime.utcnow(),
                     "pay_address": payment_result.get("pay_address"),
-                    "pay_amount": payment_result.get("pay_amount"),
+                    "pay_amount": pay_amount,
                     "order_id": payment_result.get("order_id")
                 }
                 
@@ -1626,7 +1631,7 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
                 return {
                     "payment_id": payment_result["payment_id"],
                     "pay_address": payment_result.get("pay_address"),
-                    "pay_amount": payment_result.get("pay_amount"),
+                    "pay_amount": pay_amount,
                     "pay_currency": payment_result.get("pay_currency"),
                     "price_amount": tier_info["price"],
                     "price_currency": "USD",
