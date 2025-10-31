@@ -6881,7 +6881,7 @@ function PaymentPage() {
                       </div>
                       <div className="text-right">
                         <p className="text-2xl font-bold text-white">${tierData.price}</p>
-                        <p className="text-gray-300">{tierData.price === 0 ? 'Free' : '/year'}</p>
+                        <p className="text-gray-300">{tierData.price === 0 ? 'Free' : '/month'}</p>
                       </div>
                     </div>
                     {tierData.commissions && (
