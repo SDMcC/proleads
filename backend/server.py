@@ -1698,11 +1698,11 @@ async def nowpayments_callback(request: Request):
             logger.warning("NOWPayments IPN: Missing signature header")
             raise HTTPException(status_code=400, detail="Missing signature header")
         
-        # Verify IPN signature
+        # Verify IPN signature (NOWPayments uses HMAC-SHA512)
         computed_signature = hmac.new(
             NOWPAYMENTS_IPN_SECRET.encode(),
             body,
-            hashlib.sha256
+            hashlib.sha512
         ).hexdigest()
         
         if not hmac.compare_digest(computed_signature, signature):
