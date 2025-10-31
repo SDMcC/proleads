@@ -6914,7 +6914,7 @@ function PaymentPage() {
               </div>
               <div className="flex justify-between text-gray-300">
                 <span>Duration:</span>
-                <span className="text-white font-semibold">{currentTier?.price === 0 ? 'Forever' : '1 Year'}</span>
+                <span className="text-white font-semibold">{currentTier?.price === 0 ? 'Forever' : '1 Month'}</span>
               </div>
               <div className="border-t border-gray-600 pt-3 mt-3"></div>
               <div className="flex justify-between">
