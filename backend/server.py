@@ -1694,6 +1694,54 @@ async def get_payment_status(payment_id: str):
         raise HTTPException(status_code=500, detail="Failed to fetch payment status")
 
 # PayGate.to Payment Confirmation Handler
+@app.get("/api/payments/paygate-callback")
+async def paygate_callback(
+    payment_id: str,
+    value_coin: Optional[float] = None,
+    coin: Optional[str] = None,
+    txid_in: Optional[str] = None,
+    txid_out: Optional[str] = None,
+    address_in: Optional[str] = None
+):
+    """Handle PayGate.to callback - both card and crypto payments"""
+    try:
+        logger.info(f"PayGate.to callback received: payment_id={payment_id}, value_coin={value_coin}")
+        
+        # Find payment in database
+        payment = await db.payments.find_one({"payment_id": payment_id})
+        
+        if not payment:
+            logger.warning(f"Payment not found for ID: {payment_id}")
+            return {"status": "payment not found"}
+        
+        # Update payment status to received
+        await db.payments.update_one(
+            {"payment_id": payment_id},
+            {"$set": {
+                "status": "received",
+                "received_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "paygate_callback": {
+                    "value_coin": value_coin,
+                    "coin": coin,
+                    "txid_in": txid_in,
+                    "txid_out": txid_out,
+                    "address_in": address_in
+                }
+            }}
+        )
+        
+        # Trigger payment processing
+        await handle_payment_confirmed_paygate(payment)
+        
+        # PayGate.to expects "ok" response
+        return Response(content="ok", media_type="text/plain")
+        
+    except Exception as e:
+        logger.error(f"PayGate.to callback error: {str(e)}")
+        return Response(content="error", media_type="text/plain")
+
+
 async def handle_payment_confirmed_paygate(payment: dict):
     """Handle confirmed PayGate.to payment - upgrade membership, calculate commissions, and process instant payouts"""
     try:
