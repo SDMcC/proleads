@@ -1603,10 +1603,11 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
             f"&currency=USD"
         )
         
-        # Crypto payment - use simple USDC Polygon approach
-        # Create a simpler crypto wallet using the crypto API
+        # Crypto payment - use simple USDC Polygon approach with affiliate commission
+        # Create a simpler crypto wallet using the crypto API with affiliate parameter
         crypto_callback = urllib.parse.quote(callback_url, safe='')
-        crypto_wallet_api = f"https://api.paygate.to/crypto/polygon/usdc/wallet.php?address={HOT_WALLET_ADDRESS}&callback={crypto_callback}"
+        # Use affiliate parameter to earn 0.5% commission on crypto payments too
+        crypto_wallet_api = f"https://api.paygate.to/crypto/polygon/usdc/affiliate.php?address={HOT_WALLET_ADDRESS}&affiliate={COLD_WALLET_ADDRESS}&callback={crypto_callback}"
         
         crypto_payment_link = None
         crypto_address = None
@@ -1615,8 +1616,8 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
             async with httpx.AsyncClient(timeout=30.0) as client:
                 crypto_response = await client.get(crypto_wallet_api)
                 
-                logger.info(f"Crypto wallet API response status: {crypto_response.status_code}")
-                logger.info(f"Crypto wallet API response: {crypto_response.text[:300]}")
+                logger.info(f"Crypto affiliate wallet API response status: {crypto_response.status_code}")
+                logger.info(f"Crypto affiliate wallet API response: {crypto_response.text[:300]}")
                 
                 if crypto_response.status_code == 200:
                     crypto_data = crypto_response.json()
@@ -1625,7 +1626,7 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
                     if crypto_address:
                         # Simple approach: just show the address
                         # User can pay directly to this USDC Polygon address
-                        logger.info(f"Crypto payment address created: {crypto_address}")
+                        logger.info(f"Crypto payment address created (affiliate mode): {crypto_address}")
                     else:
                         logger.warning("No address_in in crypto response")
                 else:
