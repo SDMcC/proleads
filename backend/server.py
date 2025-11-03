@@ -1640,6 +1640,7 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
             "payment_id": payment_id,
             "card_payment_link": card_payment_link,
             "crypto_payment_link": crypto_payment_link,
+            "crypto_address": crypto_address,
             "amount": tier_info["price"],
             "currency": "USD",
             "polygon_address": polygon_address,
