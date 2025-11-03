@@ -1560,8 +1560,8 @@ async def mark_admin_notifications_read(admin: dict = Depends(get_admin_user)):
 # Payment endpoints
 @app.post("/api/payments/create")
 async def create_payment(request: PaymentRequest, current_user: dict = Depends(get_current_user)):
-    """Create payment for membership upgrade using NOWPayments White-Label"""
-    logger.info(f"Payment request received: tier={request.tier}, currency={request.currency}")
+    """Create payment for membership upgrade using PayGate.to"""
+    logger.info(f"Payment request received: tier={request.tier}")
     
     tier_info = MEMBERSHIP_TIERS.get(request.tier)
     if not tier_info:
@@ -1576,91 +1576,49 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
         return {"message": "Membership updated to Affiliate", "payment_required": False}
     
     try:
-        headers = {
-            "x-api-key": NOWPAYMENTS_API_KEY,
-            "Content-Type": "application/json"
+        # Generate unique payment ID
+        payment_id = f"PAY-{uuid.uuid4().hex[:16].upper()}"
+        order_id = f"{current_user['address']}_{request.tier}_{int(datetime.utcnow().timestamp())}"
+        
+        # Store payment record with "pending" status
+        payment_doc = {
+            "payment_id": payment_id,
+            "user_address": current_user["address"],
+            "username": current_user.get("username", ""),
+            "email": current_user.get("email", ""),
+            "tier": request.tier,
+            "amount": tier_info["price"],
+            "currency": "USD",
+            "status": "pending",
+            "created_at": datetime.utcnow(),
+            "order_id": order_id,
+            "payment_method": "paygate"
         }
         
-        # User selects pay_currency from frontend (e.g., "usdcmatic", "btc", "eth")
-        # We want to receive USDCMATIC in Custody (auto-conversion enabled)
-        pay_currency = request.currency.lower() if request.currency else "usdcmatic"
+        await db.payments.insert_one(payment_doc)
         
-        # Create payment with NOWPayments
-        payment_data = {
-            "price_amount": tier_info["price"],
-            "price_currency": "usd",
-            "pay_currency": pay_currency,
-            "ipn_callback_url": f"{APP_URL}/api/payments/callback",
-            "order_id": f"{current_user['address']}_{request.tier}_{int(datetime.utcnow().timestamp())}",
-            "order_description": f"{request.tier.capitalize()} Membership - {current_user['username']}"
+        # Generate PayGate.to payment link
+        # PayGate.to format: https://paygate.to/payment?amount=XX&merchant_wallet=0x...&order_id=XXX
+        payment_link = (
+            f"https://paygate.to/payment"
+            f"?amount={tier_info['price']}"
+            f"&merchant_wallet={HOT_WALLET_ADDRESS}"
+            f"&order_id={payment_id}"
+            f"&description={request.tier.capitalize()}%20Membership%20-%20{current_user['username']}"
+            f"&callback_url={APP_URL}/payment-success"
+        )
+        
+        logger.info(f"PayGate.to payment created: {payment_id} for ${tier_info['price']}")
+        
+        return {
+            "payment_id": payment_id,
+            "payment_link": payment_link,
+            "amount": tier_info["price"],
+            "currency": "USD",
+            "merchant_wallet": HOT_WALLET_ADDRESS,
+            "status": "pending"
         }
-        
-        logger.info(f"APP_URL: {APP_URL}")
-        logger.info(f"IPN Callback URL: {APP_URL}/api/payments/callback")
-        logger.info(f"Creating NOWPayments payment: {payment_data}")
-        
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                "https://api.nowpayments.io/v1/payment",
-                headers=headers,
-                json=payment_data,
-                timeout=30.0
-            )
-            
-            logger.info(f"NOWPayments response status: {response.status_code}")
-            logger.info(f"NOWPayments response: {response.text}")
-            
-            if response.status_code == 201:
-                payment_result = response.json()
                 
-                # Round pay_amount to 6 decimals for USDC (Polygon has 6 decimal places)
-                pay_amount = payment_result.get("pay_amount")
-                if isinstance(pay_amount, (int, float)):
-                    pay_amount = round(float(pay_amount), 6)
-                
-                # Store payment record
-                payment_doc = {
-                    "payment_id": payment_result["payment_id"],
-                    "user_address": current_user["address"],
-                    "username": current_user.get("username", ""),
-                    "email": current_user.get("email", ""),
-                    "tier": request.tier,
-                    "amount": tier_info["price"],
-                    "price_currency": "usd",
-                    "pay_currency": payment_result.get("pay_currency"),
-                    "status": "waiting",
-                    "created_at": datetime.utcnow(),
-                    "pay_address": payment_result.get("pay_address"),
-                    "pay_amount": pay_amount,
-                    "order_id": payment_result.get("order_id")
-                }
-                
-                await db.payments.insert_one(payment_doc)
-                
-                return {
-                    "payment_id": payment_result["payment_id"],
-                    "pay_address": payment_result.get("pay_address"),
-                    "pay_amount": pay_amount,
-                    "pay_currency": payment_result.get("pay_currency"),
-                    "price_amount": tier_info["price"],
-                    "price_currency": "USD",
-                    "status": "created"
-                }
-            else:
-                error_text = response.text
-                logger.error(f"NOWPayments error: {error_text}")
-                
-                try:
-                    error_data = response.json()
-                    error_message = error_data.get("message", "Payment creation failed")
-                except:
-                    error_message = "Payment service error"
-                
-                raise HTTPException(status_code=400, detail=f"Payment creation failed: {error_message}")
-                
-    except httpx.TimeoutException:
-        logger.error("NOWPayments request timeout")
-        raise HTTPException(status_code=500, detail="Payment service timeout")
     except Exception as e:
         logger.error(f"Payment creation error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Payment service error: {str(e)}")
