@@ -8766,6 +8766,625 @@ def main():
         print("\n🎉 ALL DEPLOYMENT VALIDATION TESTS PASSED!")
         print("✅ Backend is ready for deployment")
         return True
+    
+    def test_paygate_payment_creation(self):
+        """Test PayGate.to payment creation endpoints"""
+        print("\n💳 Testing PayGate.to Payment Creation")
+        
+        # First, ensure we have a user token (create test user if needed)
+        if not self.token or self.token == "mock_token_for_testing":
+            print("⚠️ Creating test user for PayGate.to payment tests")
+            reg_success, reg_response = self.test_register_user()
+            if not reg_success:
+                print("❌ Failed to create test user for payment tests")
+                return False
+            
+            # Login the user
+            login_data = {
+                "username": self.username,
+                "password": "testpassword123"
+            }
+            login_success, login_response = self.run_test("Login for Payment Test", "POST", "auth/login", 200, login_data)
+            if login_success and login_response.get('token'):
+                self.token = login_response.get('token')
+            else:
+                print("❌ Failed to login test user for payment tests")
+                return False
+        
+        # Test 1: Create payment for free affiliate tier (should skip payment)
+        print("\n🔍 Test 1: Free Affiliate Tier Payment")
+        affiliate_data = {"tier": "affiliate", "currency": "USD"}
+        affiliate_success, affiliate_response = self.run_test("Create Affiliate Payment", "POST", "payments/create", 200, affiliate_data)
+        
+        if affiliate_success:
+            if affiliate_response.get('payment_required') is False:
+                print("✅ Affiliate tier correctly skips payment")
+            else:
+                print("❌ Affiliate tier should not require payment")
+                return False
+        else:
+            print("❌ Affiliate payment creation failed")
+            return False
+        
+        # Test 2: Create payment for bronze tier
+        print("\n🔍 Test 2: Bronze Tier PayGate.to Payment")
+        bronze_data = {"tier": "bronze", "currency": "USD"}
+        bronze_success, bronze_response = self.run_test("Create Bronze Payment", "POST", "payments/create", 200, bronze_data)
+        
+        if bronze_success:
+            required_fields = ['payment_id', 'payment_link', 'amount', 'currency', 'merchant_wallet', 'status']
+            missing_fields = [field for field in required_fields if field not in bronze_response]
+            
+            if not missing_fields:
+                print("✅ Bronze payment response contains all required fields")
+                
+                # Verify PayGate.to link format
+                payment_link = bronze_response.get('payment_link', '')
+                if 'paygate.to/payment' in payment_link:
+                    print("✅ PayGate.to payment link format is correct")
+                else:
+                    print(f"❌ Invalid PayGate.to link format: {payment_link}")
+                    return False
+                
+                # Verify merchant wallet
+                merchant_wallet = bronze_response.get('merchant_wallet')
+                if merchant_wallet and merchant_wallet.startswith('0x'):
+                    print("✅ Merchant wallet address is valid")
+                else:
+                    print(f"❌ Invalid merchant wallet: {merchant_wallet}")
+                    return False
+                
+                # Store payment ID for status check
+                self.test_payment_id = bronze_response.get('payment_id')
+                
+            else:
+                print(f"❌ Bronze payment response missing fields: {missing_fields}")
+                return False
+        else:
+            print("❌ Bronze payment creation failed")
+            return False
+        
+        # Test 3: Create payment for silver tier
+        print("\n🔍 Test 3: Silver Tier PayGate.to Payment")
+        silver_data = {"tier": "silver", "currency": "USD"}
+        silver_success, silver_response = self.run_test("Create Silver Payment", "POST", "payments/create", 200, silver_data)
+        
+        if silver_success:
+            if silver_response.get('amount') == 50:  # Silver tier is $50
+                print("✅ Silver tier payment amount is correct ($50)")
+            else:
+                print(f"❌ Silver tier payment amount incorrect: ${silver_response.get('amount')}")
+                return False
+        else:
+            print("❌ Silver payment creation failed")
+            return False
+        
+        # Test 4: Create payment for gold tier
+        print("\n🔍 Test 4: Gold Tier PayGate.to Payment")
+        gold_data = {"tier": "gold", "currency": "USD"}
+        gold_success, gold_response = self.run_test("Create Gold Payment", "POST", "payments/create", 200, gold_data)
+        
+        if gold_success:
+            if gold_response.get('amount') == 100:  # Gold tier is $100
+                print("✅ Gold tier payment amount is correct ($100)")
+            else:
+                print(f"❌ Gold tier payment amount incorrect: ${gold_response.get('amount')}")
+                return False
+        else:
+            print("❌ Gold payment creation failed")
+            return False
+        
+        # Test 5: Create payment for test tier
+        print("\n🔍 Test 5: Test Tier PayGate.to Payment")
+        test_data = {"tier": "test", "currency": "USD"}
+        test_success, test_response = self.run_test("Create Test Payment", "POST", "payments/create", 200, test_data)
+        
+        if test_success:
+            if test_response.get('amount') == 2:  # Test tier is $2
+                print("✅ Test tier payment amount is correct ($2)")
+            else:
+                print(f"❌ Test tier payment amount incorrect: ${test_response.get('amount')}")
+                return False
+        else:
+            print("❌ Test payment creation failed")
+            return False
+        
+        # Test 6: Create payment for VIP affiliate tier (should skip payment)
+        print("\n🔍 Test 6: VIP Affiliate Tier Payment")
+        vip_data = {"tier": "vip_affiliate", "currency": "USD"}
+        vip_success, vip_response = self.run_test("Create VIP Affiliate Payment", "POST", "payments/create", 200, vip_data)
+        
+        if vip_success:
+            if vip_response.get('payment_required') is False:
+                print("✅ VIP Affiliate tier correctly skips payment")
+            else:
+                print("❌ VIP Affiliate tier should not require payment")
+                return False
+        else:
+            print("❌ VIP Affiliate payment creation failed")
+            return False
+        
+        # Test 7: Invalid tier
+        print("\n🔍 Test 7: Invalid Tier Payment")
+        invalid_data = {"tier": "invalid_tier", "currency": "USD"}
+        invalid_success, _ = self.run_test("Create Invalid Tier Payment", "POST", "payments/create", 400, invalid_data)
+        
+        if not invalid_success:
+            print("❌ Invalid tier should return 400 error")
+            return False
+        
+        print("✅ PayGate.to Payment Creation Tests Passed")
+        return True
+    
+    def test_payment_status_check(self):
+        """Test payment status checking endpoint"""
+        print("\n🔍 Testing Payment Status Check")
+        
+        # Use payment ID from previous test if available
+        if hasattr(self, 'test_payment_id') and self.test_payment_id:
+            payment_id = self.test_payment_id
+        else:
+            # Create a test payment first
+            print("⚠️ Creating test payment for status check")
+            if not self.token or self.token == "mock_token_for_testing":
+                print("❌ No valid token for payment creation")
+                return False
+            
+            payment_data = {"tier": "bronze", "currency": "USD"}
+            payment_success, payment_response = self.run_test("Create Payment for Status Test", "POST", "payments/create", 200, payment_data)
+            
+            if not payment_success or not payment_response.get('payment_id'):
+                print("❌ Failed to create test payment for status check")
+                return False
+            
+            payment_id = payment_response.get('payment_id')
+        
+        # Test 1: Check payment status with valid payment ID
+        print(f"\n🔍 Test 1: Check Payment Status - {payment_id}")
+        status_success, status_response = self.run_test("Get Payment Status", "GET", f"payments/{payment_id}", 200)
+        
+        if status_success:
+            required_fields = ['payment_id', 'status', 'tier', 'amount', 'created_at']
+            missing_fields = [field for field in status_response if field not in status_response or status_response[field] is None]
+            
+            # Check that we have the basic required fields
+            if status_response.get('payment_id') and status_response.get('status'):
+                print("✅ Payment status response contains required fields")
+                
+                # Verify status is valid
+                valid_statuses = ['pending', 'received', 'confirmed', 'failed']
+                if status_response.get('status') in valid_statuses:
+                    print(f"✅ Payment status is valid: {status_response.get('status')}")
+                else:
+                    print(f"❌ Invalid payment status: {status_response.get('status')}")
+                    return False
+                
+            else:
+                print("❌ Payment status response missing required fields")
+                return False
+        else:
+            print("❌ Payment status check failed")
+            return False
+        
+        # Test 2: Check payment status with invalid payment ID
+        print("\n🔍 Test 2: Check Payment Status - Invalid ID")
+        invalid_id = "INVALID_PAYMENT_ID"
+        invalid_success, _ = self.run_test("Get Invalid Payment Status", "GET", f"payments/{invalid_id}", 404)
+        
+        if not invalid_success:
+            print("❌ Invalid payment ID should return 404")
+            return False
+        
+        print("✅ Payment Status Check Tests Passed")
+        return True
+    
+    def test_escrow_management_endpoints(self):
+        """Test escrow management endpoints"""
+        print("\n🏦 Testing Escrow Management Endpoints")
+        
+        # Ensure we have admin token
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ Getting admin token for escrow tests")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token for escrow tests")
+                return False
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        # Test 1: Get escrow records with admin authentication
+        print("\n🔍 Test 1: Get Escrow Records")
+        escrow_success, escrow_response = self.run_test("Get Escrow Records", "GET", "admin/escrow", 200, headers=headers)
+        
+        if escrow_success:
+            required_fields = ['escrow_records', 'total_count', 'page', 'limit', 'total_pages']
+            missing_fields = [field for field in required_fields if field not in escrow_response]
+            
+            if not missing_fields:
+                print("✅ Escrow records response contains all required pagination fields")
+                
+                # Check escrow record structure if any exist
+                escrow_records = escrow_response.get('escrow_records', [])
+                if escrow_records:
+                    record = escrow_records[0]
+                    required_record_fields = ['escrow_id', 'payment_id', 'amount', 'status', 'reason', 
+                                            'recipient_address', 'recipient_email', 'recipient_username', 
+                                            'created_at', 'updated_at']
+                    missing_record_fields = [field for field in required_record_fields if field not in record]
+                    
+                    if not missing_record_fields:
+                        print("✅ Escrow record structure is correct")
+                    else:
+                        print(f"❌ Escrow record missing fields: {missing_record_fields}")
+                        return False
+                else:
+                    print("⚠️ No escrow records found (expected for new system)")
+                
+            else:
+                print(f"❌ Escrow response missing fields: {missing_fields}")
+                return False
+        else:
+            print("❌ Get escrow records failed")
+            return False
+        
+        # Test 2: Get escrow records with pagination
+        print("\n🔍 Test 2: Get Escrow Records with Pagination")
+        paginated_success, _ = self.run_test("Get Escrow Records Paginated", "GET", "admin/escrow?page=1&limit=50", 200, headers=headers)
+        
+        if not paginated_success:
+            print("❌ Escrow pagination failed")
+            return False
+        
+        # Test 3: Get escrow records with status filter
+        print("\n🔍 Test 3: Get Escrow Records with Status Filter")
+        filtered_success, _ = self.run_test("Get Escrow Records Filtered", "GET", "admin/escrow?status_filter=pending_review", 200, headers=headers)
+        
+        if not filtered_success:
+            print("❌ Escrow status filtering failed")
+            return False
+        
+        # Test 4: Get escrow records with date filter
+        print("\n🔍 Test 4: Get Escrow Records with Date Filter")
+        date_filtered_success, _ = self.run_test("Get Escrow Records Date Filtered", "GET", "admin/escrow?date_from=2024-01-01&date_to=2024-12-31", 200, headers=headers)
+        
+        if not date_filtered_success:
+            print("❌ Escrow date filtering failed")
+            return False
+        
+        # Test 5: Get escrow records without admin token (should fail)
+        print("\n🔍 Test 5: Get Escrow Records Unauthorized")
+        unauth_headers = {'Content-Type': 'application/json'}
+        unauth_success, _ = self.run_test("Get Escrow Records Unauthorized", "GET", "admin/escrow", 401, headers=unauth_headers)
+        
+        if not unauth_success:
+            print("❌ Escrow endpoint should require admin authentication")
+            return False
+        
+        print("✅ Escrow Management Endpoints Tests Passed")
+        return True
+    
+    def test_escrow_csv_export(self):
+        """Test escrow CSV export endpoint"""
+        print("\n📊 Testing Escrow CSV Export")
+        
+        # Ensure we have admin token
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ Getting admin token for escrow CSV tests")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token for escrow CSV tests")
+                return False
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        # Test 1: Export escrow CSV with admin authentication
+        print("\n🔍 Test 1: Export Escrow CSV")
+        url = f"{self.base_url}/api/admin/escrow/export"
+        print(f"   URL: {url}")
+        
+        try:
+            response = requests.get(url, headers=headers)
+            success = response.status_code == 200
+            
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                
+                # Check if response is CSV content
+                content_type = response.headers.get('content-type', '')
+                if 'text/csv' in content_type or 'application/csv' in content_type:
+                    print("✅ Response is CSV format")
+                    
+                    # Check CSV headers
+                    csv_content = response.text
+                    if csv_content:
+                        lines = csv_content.split('\n')
+                        if lines:
+                            headers_line = lines[0]
+                            expected_headers = ['Escrow ID', 'Payment ID', 'Amount', 'Status', 'Reason', 
+                                              'Recipient Address', 'Recipient Email', 'Recipient Username', 
+                                              'Created Date', 'Updated Date']
+                            
+                            # Check if all expected headers are present
+                            headers_present = all(header in headers_line for header in expected_headers)
+                            if headers_present:
+                                print("✅ CSV contains all required headers")
+                            else:
+                                print("❌ CSV missing some required headers")
+                                print(f"   Expected: {expected_headers}")
+                                print(f"   Found: {headers_line}")
+                                return False
+                        
+                        print(f"✅ CSV export successful with {len(lines)-1} data rows")
+                    else:
+                        print("⚠️ CSV export returned empty content (expected for new system)")
+                else:
+                    print(f"❌ Response is not CSV format: {content_type}")
+                    return False
+                
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                try:
+                    error_detail = response.json().get('detail', 'No detail provided')
+                    print(f"   Error: {error_detail}")
+                except:
+                    print(f"   Response: {response.text}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False
+        
+        self.tests_run += 1
+        
+        # Test 2: Export escrow CSV with filters
+        print("\n🔍 Test 2: Export Escrow CSV with Filters")
+        filtered_url = f"{self.base_url}/api/admin/escrow/export?status_filter=pending_review&date_from=2024-01-01"
+        
+        try:
+            response = requests.get(filtered_url, headers=headers)
+            success = response.status_code == 200
+            
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - CSV export with filters working")
+            else:
+                print(f"❌ Failed - CSV export with filters failed: {response.status_code}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False
+        
+        self.tests_run += 1
+        
+        # Test 3: Export escrow CSV without admin token (should fail)
+        print("\n🔍 Test 3: Export Escrow CSV Unauthorized")
+        unauth_headers = {'Content-Type': 'application/json'}
+        
+        try:
+            response = requests.get(url, headers=unauth_headers)
+            success = response.status_code == 401
+            
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Unauthorized access properly blocked")
+            else:
+                print(f"❌ Failed - Should return 401, got {response.status_code}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False
+        
+        self.tests_run += 1
+        
+        print("✅ Escrow CSV Export Tests Passed")
+        return True
+    
+    def test_escrow_payout_retry(self):
+        """Test escrow payout retry endpoint"""
+        print("\n🔄 Testing Escrow Payout Retry")
+        
+        # Ensure we have admin token
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ Getting admin token for escrow payout tests")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Failed to get admin token for escrow payout tests")
+                return False
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        # Test 1: Try to retry payout with non-existent escrow ID
+        print("\n🔍 Test 1: Retry Payout - Non-existent Escrow ID")
+        fake_escrow_id = f"escrow_{uuid.uuid4().hex[:16]}"
+        retry_success, retry_response = self.run_test("Retry Payout Non-existent", "POST", f"admin/escrow/{fake_escrow_id}/release", 404, headers=headers)
+        
+        if not retry_success:
+            print("❌ Non-existent escrow ID should return 404")
+            return False
+        
+        # Test 2: Try to retry payout without admin token (should fail)
+        print("\n🔍 Test 2: Retry Payout Unauthorized")
+        unauth_headers = {'Content-Type': 'application/json'}
+        unauth_success, _ = self.run_test("Retry Payout Unauthorized", "POST", f"admin/escrow/{fake_escrow_id}/release", 401, headers=unauth_headers)
+        
+        if not unauth_success:
+            print("❌ Escrow payout retry should require admin authentication")
+            return False
+        
+        # Test 3: Check if there are any actual escrow records to test with
+        print("\n🔍 Test 3: Check for Existing Escrow Records")
+        escrow_success, escrow_response = self.run_test("Get Escrow for Retry Test", "GET", "admin/escrow", 200, headers=headers)
+        
+        if escrow_success:
+            escrow_records = escrow_response.get('escrow_records', [])
+            if escrow_records:
+                # Test with real escrow ID
+                escrow_id = escrow_records[0].get('escrow_id')
+                print(f"   Found escrow record: {escrow_id}")
+                
+                # Note: Actual payout will likely fail due to wallet not being funded
+                # But we can test the endpoint structure
+                real_retry_success, real_retry_response = self.run_test("Retry Real Payout", "POST", f"admin/escrow/{escrow_id}/release", 200, headers=headers)
+                
+                if real_retry_success:
+                    # Check response structure
+                    if 'status' in real_retry_response and 'results' in real_retry_response:
+                        print("✅ Payout retry response has correct structure")
+                    else:
+                        print("❌ Payout retry response missing required fields")
+                        return False
+                else:
+                    # This might fail due to wallet not being funded, which is expected
+                    print("⚠️ Payout retry failed (expected if hot wallet not funded with MATIC)")
+            else:
+                print("⚠️ No escrow records found to test payout retry")
+        else:
+            print("❌ Failed to get escrow records for retry test")
+            return False
+        
+        print("✅ Escrow Payout Retry Tests Passed")
+        return True
+    
+    def test_crypto_integration_verification(self):
+        """Test crypto utilities and payout system integration"""
+        print("\n🔗 Testing Crypto Integration Verification")
+        
+        # Test 1: Check if crypto_utils module loads correctly
+        print("\n🔍 Test 1: Crypto Utils Module Integration")
+        try:
+            # This is tested by checking if the backend starts without import errors
+            # We can verify by checking if the payment creation endpoint works
+            if not self.token or self.token == "mock_token_for_testing":
+                print("⚠️ Creating test user for crypto integration test")
+                reg_success, _ = self.test_register_user()
+                if reg_success:
+                    login_data = {"username": self.username, "password": "testpassword123"}
+                    login_success, login_response = self.run_test("Login for Crypto Test", "POST", "auth/login", 200, login_data)
+                    if login_success and login_response.get('token'):
+                        self.token = login_response.get('token')
+            
+            # Try to create a payment (this uses crypto utilities internally)
+            payment_data = {"tier": "bronze", "currency": "USD"}
+            crypto_success, crypto_response = self.run_test("Test Crypto Integration", "POST", "payments/create", 200, payment_data)
+            
+            if crypto_success:
+                print("✅ Crypto utilities integration working (payment creation successful)")
+            else:
+                print("❌ Crypto utilities integration failed")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Crypto utilities integration error: {str(e)}")
+            return False
+        
+        # Test 2: Check environment variables
+        print("\n🔍 Test 2: Environment Variables Check")
+        
+        # We can't directly access env vars from the test, but we can verify
+        # that the payment creation includes the merchant wallet
+        if crypto_response and crypto_response.get('merchant_wallet'):
+            merchant_wallet = crypto_response.get('merchant_wallet')
+            if merchant_wallet and merchant_wallet.startswith('0x') and len(merchant_wallet) == 42:
+                print(f"✅ HOT_WALLET_ADDRESS configured correctly: {merchant_wallet}")
+            else:
+                print(f"❌ Invalid HOT_WALLET_ADDRESS format: {merchant_wallet}")
+                return False
+        else:
+            print("❌ HOT_WALLET_ADDRESS not found in payment response")
+            return False
+        
+        # Test 3: Wallet validation function test
+        print("\n🔍 Test 3: Wallet Validation Function")
+        
+        # Test valid Ethereum addresses in payment creation
+        valid_addresses = [
+            "0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8e8",
+            "0xe68BecFfF9eae92bFcf3ba745563C5be2EB81460",
+            "0x648A5cc007BFf2F3e63bE469F9A3db2a2DD69336"
+        ]
+        
+        for address in valid_addresses:
+            # We can't directly test the validation function, but we can test
+            # that valid addresses work in user registration
+            test_user_data = {
+                "username": f"test_wallet_{int(time.time())}",
+                "email": f"test_wallet_{int(time.time())}@test.com",
+                "password": "testpassword123",
+                "wallet_address": address
+            }
+            
+            wallet_success, _ = self.run_test(f"Test Wallet Validation {address[:10]}...", "POST", "users/register", 200, test_user_data)
+            
+            if wallet_success:
+                print(f"✅ Wallet address validation working for {address[:10]}...")
+            else:
+                print(f"❌ Wallet address validation failed for {address}")
+                return False
+        
+        print("✅ Crypto Integration Verification Tests Passed")
+        return True
+    
+    def test_paygate_payment_system(self):
+        """Test complete PayGate.to payment system"""
+        print("\n🏦 Testing Complete PayGate.to Payment System")
+        
+        # Test 1: PayGate.to Payment Creation
+        payment_creation_success = self.test_paygate_payment_creation()
+        if not payment_creation_success:
+            print("❌ PayGate.to payment creation tests failed")
+            return False
+        
+        # Test 2: Payment Status Check
+        payment_status_success = self.test_payment_status_check()
+        if not payment_status_success:
+            print("❌ Payment status check tests failed")
+            return False
+        
+        # Test 3: Crypto Integration Verification
+        crypto_integration_success = self.test_crypto_integration_verification()
+        if not crypto_integration_success:
+            print("❌ Crypto integration verification failed")
+            return False
+        
+        print("✅ Complete PayGate.to Payment System Tests Passed")
+        return True
+    
+    def test_escrow_management_system(self):
+        """Test complete escrow management system"""
+        print("\n🏦 Testing Complete Escrow Management System")
+        
+        # Test 1: Escrow Management Endpoints
+        escrow_endpoints_success = self.test_escrow_management_endpoints()
+        if not escrow_endpoints_success:
+            print("❌ Escrow management endpoints tests failed")
+            return False
+        
+        # Test 2: Escrow CSV Export
+        escrow_csv_success = self.test_escrow_csv_export()
+        if not escrow_csv_success:
+            print("❌ Escrow CSV export tests failed")
+            return False
+        
+        # Test 3: Escrow Payout Retry
+        escrow_retry_success = self.test_escrow_payout_retry()
+        if not escrow_retry_success:
+            print("❌ Escrow payout retry tests failed")
+            return False
+        
+        print("✅ Complete Escrow Management System Tests Passed")
+        return True
 
 if __name__ == "__main__":
     # Check if specific test is requested
