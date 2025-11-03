@@ -289,14 +289,30 @@ class PayoutSystem:
     ):
         """Create an escrow record for failed payouts"""
         try:
+            # Get user emails for each commission
+            commission_details = []
+            for comm in commissions:
+                recipient_address = comm.get("recipient_address")
+                user = await self.db.users.find_one({"address": recipient_address})
+                
+                commission_details.append({
+                    "commission_id": comm.get("commission_id"),
+                    "recipient_address": recipient_address,
+                    "recipient_email": user.get("email", "N/A") if user else "N/A",
+                    "recipient_username": user.get("username", "Unknown") if user else "Unknown",
+                    "amount": comm.get("amount"),
+                    "level": comm.get("level", 0)
+                })
+            
             escrow_doc = {
                 "escrow_id": str(uuid.uuid4()),
                 "payment_id": payment_id,
                 "amount": float(amount),
                 "reason": reason,
                 "status": "pending_review",
-                "commissions": commissions,
-                "created_at": datetime.utcnow()
+                "commissions": commission_details,
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow()
             }
             
             await self.db.escrow.insert_one(escrow_doc)
