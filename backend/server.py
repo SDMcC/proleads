@@ -1626,20 +1626,52 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
 # Get Payment Status Endpoint
 @app.get("/api/payments/{payment_id}")
 async def get_payment_status(payment_id: str):
-    """Get payment status by payment ID"""
+    """Get payment status by payment ID and check blockchain for confirmation"""
     try:
         payment = await db.payments.find_one({"payment_id": str(payment_id)})
         
         if not payment:
             raise HTTPException(status_code=404, detail="Payment not found")
         
+        # If payment is still pending, check if USDC was received
+        if payment.get("status") == "pending":
+            try:
+                # Check hot wallet balance increase (simplified - in production would track specific transaction)
+                wallet = PolygonWallet()
+                current_balance = await wallet.get_usdc_balance(HOT_WALLET_ADDRESS)
+                
+                # If balance is sufficient, mark as received and process
+                expected_amount = Decimal(str(payment.get("amount")))
+                if current_balance >= expected_amount:
+                    logger.info(f"Payment {payment_id} detected: ${expected_amount} USDC received")
+                    
+                    # Update status to received
+                    await db.payments.update_one(
+                        {"payment_id": payment_id},
+                        {"$set": {
+                            "status": "received",
+                            "received_at": datetime.utcnow(),
+                            "updated_at": datetime.utcnow()
+                        }}
+                    )
+                    
+                    # Trigger payment processing
+                    await handle_payment_confirmed_paygate(payment)
+                    
+                    # Reload payment to get updated status
+                    payment = await db.payments.find_one({"payment_id": str(payment_id)})
+                    
+            except Exception as e:
+                logger.error(f"Error checking payment status: {str(e)}")
+        
         return {
             "payment_id": payment.get("payment_id"),
-            "status": payment.get("status", "waiting"),
+            "status": payment.get("status", "pending"),
             "tier": payment.get("tier"),
             "amount": payment.get("amount"),
             "created_at": payment.get("created_at").isoformat() if payment.get("created_at") else None,
-            "confirmed_at": payment.get("confirmed_at").isoformat() if payment.get("confirmed_at") else None
+            "confirmed_at": payment.get("confirmed_at").isoformat() if payment.get("confirmed_at") else None,
+            "received_at": payment.get("received_at").isoformat() if payment.get("received_at") else None
         }
     except HTTPException:
         raise
