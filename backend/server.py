@@ -3106,6 +3106,318 @@ async def export_commissions_csv(
         logger.error(f"Failed to export commissions: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to export commissions")
 
+# Admin Escrow Management
+@app.get("/api/admin/escrow")
+async def get_admin_escrow(
+    page: int = 1,
+    limit: int = 50,
+    status_filter: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    admin_user: dict = Depends(get_admin_user)
+):
+    """Get all escrow records with pagination and filtering"""
+    try:
+        skip = (page - 1) * limit
+        
+        # Build query
+        query = {}
+        
+        if status_filter:
+            query["status"] = status_filter
+        
+        if date_from or date_to:
+            query["created_at"] = {}
+            if date_from:
+                query["created_at"]["$gte"] = datetime.fromisoformat(date_from.replace('Z', '+00:00'))
+            if date_to:
+                query["created_at"]["$lte"] = datetime.fromisoformat(date_to.replace('Z', '+00:00'))
+        
+        # Get total count
+        total_count = await db.escrow.count_documents(query)
+        
+        # Get escrow records
+        escrow_records = await db.escrow.find(query).sort("created_at", -1).skip(skip).limit(limit).to_list(length=limit)
+        
+        # Format records
+        formatted_records = []
+        for record in escrow_records:
+            record.pop("_id", None)
+            formatted_records.append(record)
+        
+        total_pages = (total_count + limit - 1) // limit
+        
+        return {
+            "escrow_records": formatted_records,
+            "total_count": total_count,
+            "page": page,
+            "limit": limit,
+            "total_pages": total_pages
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to get escrow records: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to get escrow records")
+
+@app.get("/api/admin/escrow/export")
+async def export_escrow_csv(
+    status_filter: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    admin_user: dict = Depends(get_admin_user)
+):
+    """Export escrow records to CSV"""
+    try:
+        # Build query
+        query = {}
+        
+        if status_filter:
+            query["status"] = status_filter
+        
+        if date_from or date_to:
+            query["created_at"] = {}
+            if date_from:
+                query["created_at"]["$gte"] = datetime.fromisoformat(date_from.replace('Z', '+00:00'))
+            if date_to:
+                query["created_at"]["$lte"] = datetime.fromisoformat(date_to.replace('Z', '+00:00'))
+        
+        # Get all escrow records
+        escrow_records = await db.escrow.find(query).sort("created_at", -1).to_list(length=None)
+        
+        # Create CSV
+        output = io.StringIO()
+        writer = csv.writer(output)
+        
+        # Write header
+        writer.writerow([
+            "Escrow ID",
+            "Payment ID",
+            "Amount (USD)",
+            "Status",
+            "Reason",
+            "Recipient Address",
+            "Recipient Email",
+            "Recipient Username",
+            "Created At",
+            "Updated At"
+        ])
+        
+        # Write data - flatten commissions for CSV
+        for record in escrow_records:
+            escrow_id = record.get("escrow_id", "")
+            payment_id = record.get("payment_id", "")
+            total_amount = record.get("amount", 0)
+            status = record.get("status", "")
+            reason = record.get("reason", "")
+            created_at = record.get("created_at", "")
+            updated_at = record.get("updated_at", "")
+            
+            # Each commission gets its own row
+            commissions = record.get("commissions", [])
+            if commissions:
+                for comm in commissions:
+                    writer.writerow([
+                        escrow_id,
+                        payment_id,
+                        f"${comm.get('amount', 0):.2f}",
+                        status,
+                        reason,
+                        comm.get("recipient_address", ""),
+                        comm.get("recipient_email", ""),
+                        comm.get("recipient_username", ""),
+                        created_at.isoformat() if isinstance(created_at, datetime) else created_at,
+                        updated_at.isoformat() if isinstance(updated_at, datetime) else updated_at
+                    ])
+            else:
+                # No commissions, write single row
+                writer.writerow([
+                    escrow_id,
+                    payment_id,
+                    f"${total_amount:.2f}",
+                    status,
+                    reason,
+                    "",
+                    "",
+                    "",
+                    created_at.isoformat() if isinstance(created_at, datetime) else created_at,
+                    updated_at.isoformat() if isinstance(updated_at, datetime) else updated_at
+                ])
+        
+        # Generate filename
+        timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        filename = f"escrow_export_{timestamp}.csv"
+        
+        return StreamingResponse(
+            io.BytesIO(output.getvalue().encode('utf-8')),
+            media_type="text/csv",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+        
+    except Exception as e:
+        logger.error(f"Failed to export escrow: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to export escrow")
+
+@app.post("/api/admin/escrow/{escrow_id}/release")
+async def release_escrow(
+    escrow_id: str,
+    admin_user: dict = Depends(get_admin_user)
+):
+    """Release escrow funds - retry payout to recipients"""
+    try:
+        # Find escrow record
+        escrow = await db.escrow.find_one({"escrow_id": escrow_id})
+        
+        if not escrow:
+            raise HTTPException(status_code=404, detail="Escrow record not found")
+        
+        if escrow.get("status") != "pending_review":
+            raise HTTPException(status_code=400, detail=f"Cannot release escrow with status: {escrow.get('status')}")
+        
+        logger.info(f"Releasing escrow {escrow_id} - Amount: ${escrow.get('amount')}")
+        
+        # Mark as processing
+        await db.escrow.update_one(
+            {"escrow_id": escrow_id},
+            {"$set": {"status": "processing", "updated_at": datetime.utcnow()}}
+        )
+        
+        # Get commissions from escrow
+        commissions = escrow.get("commissions", [])
+        payment_id = escrow.get("payment_id")
+        
+        # Retry payouts
+        payout_system = PayoutSystem(db)
+        results = []
+        
+        for commission in commissions:
+            recipient_address = commission.get("recipient_address")
+            amount = Decimal(str(commission.get("amount")))
+            
+            logger.info(f"Retrying payout: ${amount} to {recipient_address}")
+            
+            # Validate address again
+            if not payout_system.wallet.is_valid_address(recipient_address):
+                results.append({
+                    "recipient": recipient_address,
+                    "status": "failed",
+                    "reason": "Invalid wallet address"
+                })
+                continue
+            
+            # Attempt payout
+            try:
+                tx_result = await payout_system.wallet.send_usdc(
+                    to_address=recipient_address,
+                    amount=amount,
+                    gas_price_multiplier=1.2
+                )
+                
+                if tx_result["success"]:
+                    # Update commission status
+                    commission_id = commission.get("commission_id")
+                    if commission_id:
+                        await db.commissions.update_one(
+                            {"commission_id": commission_id},
+                            {"$set": {
+                                "status": "completed",
+                                "payout_tx_hash": tx_result["tx_hash"],
+                                "payout_timestamp": datetime.utcnow(),
+                                "updated_at": datetime.utcnow(),
+                                "released_from_escrow": True
+                            }}
+                        )
+                    
+                    results.append({
+                        "recipient": recipient_address,
+                        "recipient_email": commission.get("recipient_email"),
+                        "amount": float(amount),
+                        "status": "success",
+                        "tx_hash": tx_result["tx_hash"]
+                    })
+                else:
+                    results.append({
+                        "recipient": recipient_address,
+                        "recipient_email": commission.get("recipient_email"),
+                        "amount": float(amount),
+                        "status": "failed",
+                        "reason": tx_result.get("error", "Transaction failed")
+                    })
+                    
+            except Exception as e:
+                logger.error(f"Payout retry failed: {str(e)}")
+                results.append({
+                    "recipient": recipient_address,
+                    "recipient_email": commission.get("recipient_email"),
+                    "amount": float(amount),
+                    "status": "error",
+                    "reason": str(e)
+                })
+        
+        # Check if all payouts succeeded
+        successful_payouts = [r for r in results if r["status"] == "success"]
+        
+        if len(successful_payouts) == len(commissions):
+            # All succeeded - mark escrow as completed
+            await db.escrow.update_one(
+                {"escrow_id": escrow_id},
+                {"$set": {
+                    "status": "released",
+                    "released_at": datetime.utcnow(),
+                    "released_by": admin_user["username"],
+                    "updated_at": datetime.utcnow(),
+                    "release_results": results
+                }}
+            )
+            status = "completed"
+        elif len(successful_payouts) > 0:
+            # Partial success
+            await db.escrow.update_one(
+                {"escrow_id": escrow_id},
+                {"$set": {
+                    "status": "partial_release",
+                    "updated_at": datetime.utcnow(),
+                    "release_results": results
+                }}
+            )
+            status = "partial"
+        else:
+            # All failed - back to pending
+            await db.escrow.update_one(
+                {"escrow_id": escrow_id},
+                {"$set": {
+                    "status": "pending_review",
+                    "updated_at": datetime.utcnow(),
+                    "release_results": results
+                }}
+            )
+            status = "failed"
+        
+        logger.info(f"Escrow release complete: {status} - {len(successful_payouts)}/{len(commissions)} successful")
+        
+        return {
+            "escrow_id": escrow_id,
+            "status": status,
+            "total_commissions": len(commissions),
+            "successful_payouts": len(successful_payouts),
+            "results": results
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to release escrow: {str(e)}")
+        
+        # Reset status on error
+        try:
+            await db.escrow.update_one(
+                {"escrow_id": escrow_id},
+                {"$set": {"status": "pending_review", "updated_at": datetime.utcnow()}}
+            )
+        except:
+            pass
+        
+        raise HTTPException(status_code=500, detail=f"Failed to release escrow: {str(e)}")
+
 # Admin Milestone Management
 @app.get("/api/admin/milestones")
 async def get_admin_milestones(
