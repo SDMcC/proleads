@@ -7496,12 +7496,14 @@ function AdminDashboard() {
       fetchPayments();
     } else if (activeTab === 'commissions') {
       fetchCommissions();
+    } else if (activeTab === 'escrow') {
+      fetchEscrowRecords();
     } else if (activeTab === 'milestones') {
       fetchMilestones();
     } else if (activeTab === 'kyc') {
       fetchKYCSubmissions();
     }
-  }, [activeTab, memberFilter, memberPage, sortField, sortDirection, paymentUserFilter, paymentTierFilter, paymentStatusFilter, paymentDateFrom, paymentDateTo, paymentPage, commissionUserFilter, commissionTierFilter, commissionStatusFilter, commissionDateFrom, commissionDateTo, commissionPage, milestoneFilters, milestonePage, kycStatusFilter, kycPage]);
+  }, [activeTab, memberFilter, memberPage, sortField, sortDirection, paymentUserFilter, paymentTierFilter, paymentStatusFilter, paymentDateFrom, paymentDateTo, paymentPage, commissionUserFilter, commissionTierFilter, commissionStatusFilter, commissionDateFrom, commissionDateTo, commissionPage, escrowFilters, escrowPage, milestoneFilters, milestonePage, kycStatusFilter, kycPage]);
 
   const fetchAdminData = async () => {
     try {
