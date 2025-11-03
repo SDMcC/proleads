@@ -4,6 +4,7 @@ Handles automatic USDC distribution on Polygon network
 """
 import os
 import logging
+import uuid
 from typing import List, Dict, Optional
 from decimal import Decimal
 from datetime import datetime
