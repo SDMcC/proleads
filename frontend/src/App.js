@@ -7059,10 +7059,10 @@ function PaymentModal({
                   <div className="bg-gray-800 rounded-lg p-6">
                     <p className="text-white font-semibold mb-4 text-center text-lg">Pay with Crypto</p>
                     
-                    {/* QR Code - Using Ethereum payment request format with amount */}
+                    {/* QR Code - Address only (standard for ERC-20 tokens) */}
                     <div className="bg-white p-4 rounded-lg mb-4 flex justify-center">
                       <QRCode 
-                        value={`ethereum:${paymentData.crypto_address}?value=${paymentData.amount}`}
+                        value={paymentData.crypto_address}
                         size={200}
                         bgColor="#ffffff"
                         fgColor="#000000"
@@ -7071,25 +7071,25 @@ function PaymentModal({
                     </div>
                     
                     <p className="text-center text-gray-400 text-xs mb-4">
-                      Scan with your crypto wallet (amount auto-fills)
+                      Scan to get address • Enter amount manually
                     </p>
 
-                    {/* Amount */}
-                    <div className="bg-gray-900 rounded-lg p-3 mb-3">
-                      <p className="text-xs text-gray-400 mb-1">Send Amount:</p>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-white font-bold text-lg">${paymentData.amount} USD</p>
-                          <p className="text-gray-400 text-xs">in USDC or USDT</p>
+                    {/* Amount - Prominent Display */}
+                    <div className="bg-gradient-to-r from-green-900 to-blue-900 rounded-lg p-4 mb-3 border-2 border-green-500">
+                      <p className="text-center text-green-300 text-xs font-semibold mb-1">💰 AMOUNT TO SEND</p>
+                      <div className="flex items-center justify-center">
+                        <div className="text-center">
+                          <p className="text-white font-bold text-3xl">${paymentData.amount}</p>
+                          <p className="text-green-300 text-sm mt-1">USD in USDC or USDT</p>
                         </div>
                         <button
                           onClick={() => {
                             navigator.clipboard.writeText(paymentData.amount.toString());
                             alert('Amount copied!');
                           }}
-                          className="text-blue-400 hover:text-blue-300"
+                          className="ml-4 text-green-300 hover:text-green-200"
                         >
-                          <Copy className="h-4 w-4" />
+                          <Copy className="h-5 w-5" />
                         </button>
                       </div>
                     </div>
