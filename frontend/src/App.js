@@ -7045,7 +7045,7 @@ function PaymentModal({
               </p>
 
               {/* Crypto Option */}
-              {paymentData.crypto_payment_link && (
+              {(paymentData.crypto_payment_link || paymentData.crypto_address) && (
                 <>
                   <div className="relative my-6">
                     <div className="absolute inset-0 flex items-center">
@@ -7056,15 +7056,30 @@ function PaymentModal({
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => window.open(paymentData.crypto_payment_link, '_blank')}
-                    className="w-full py-4 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center justify-center space-x-3"
-                  >
-                    <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>Pay with Cryptocurrency</span>
-                  </button>
+                  {paymentData.crypto_payment_link ? (
+                    <button
+                      onClick={() => window.open(paymentData.crypto_payment_link, '_blank')}
+                      className="w-full py-4 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center justify-center space-x-3"
+                    >
+                      <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span>Pay with Cryptocurrency</span>
+                    </button>
+                  ) : paymentData.crypto_address && (
+                    <div className="bg-gray-800 rounded-lg p-4">
+                      <p className="text-white font-semibold mb-2 text-center">Pay with USDC (Polygon)</p>
+                      <div className="bg-gray-900 rounded p-3 mb-2">
+                        <p className="text-xs text-gray-400 mb-1">Send Exactly:</p>
+                        <p className="text-white font-bold">${paymentData.amount} USDC</p>
+                      </div>
+                      <div className="bg-gray-900 rounded p-3">
+                        <p className="text-xs text-gray-400 mb-1">To Address:</p>
+                        <p className="text-white font-mono text-xs break-all">{paymentData.crypto_address}</p>
+                      </div>
+                      <p className="text-yellow-400 text-xs mt-2 text-center">⚠️ Polygon network only</p>
+                    </div>
+                  )}
                   
                   <p className="text-gray-400 text-xs">
                     Bitcoin, Ethereum, USDC, USDT, and more
