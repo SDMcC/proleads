@@ -8050,6 +8050,7 @@ function AdminDashboard() {
                 { id: 'members', label: 'Members', icon: Users },
                 { id: 'payments', label: 'Payments', icon: DollarSign },
                 { id: 'commissions', label: 'Commissions', icon: Activity },
+                { id: 'escrow', label: 'Escrow', icon: AlertCircle },
                 { id: 'milestones', label: 'Milestones', icon: Award },
                 { id: 'kyc', label: 'KYC Verification', icon: Shield },
                 { id: 'leads', label: 'Leads Distribution', icon: FileText },
