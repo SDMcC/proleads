@@ -7067,22 +7067,77 @@ function PaymentModal({
                       <span>Pay with Cryptocurrency</span>
                     </button>
                   ) : paymentData.crypto_address && (
-                    <div className="bg-gray-800 rounded-lg p-4">
-                      <p className="text-white font-semibold mb-2 text-center">Pay with USDC (Polygon)</p>
-                      <div className="bg-gray-900 rounded p-3 mb-2">
+                    <div className="bg-gray-800 rounded-lg p-6">
+                      <p className="text-white font-semibold mb-4 text-center text-lg">Pay with Crypto</p>
+                      
+                      {/* QR Code */}
+                      <div className="bg-white p-4 rounded-lg mb-4 flex justify-center">
+                        <QRCode 
+                          value={`polygon:${paymentData.crypto_address}?amount=${paymentData.amount}`}
+                          size={200}
+                          bgColor="#ffffff"
+                          fgColor="#000000"
+                          level="M"
+                        />
+                      </div>
+                      
+                      <p className="text-center text-gray-400 text-xs mb-4">
+                        Scan with your crypto wallet
+                      </p>
+
+                      {/* Amount */}
+                      <div className="bg-gray-900 rounded-lg p-3 mb-3">
                         <p className="text-xs text-gray-400 mb-1">Send Exactly:</p>
-                        <p className="text-white font-bold">${paymentData.amount} USDC</p>
+                        <div className="flex items-center justify-between">
+                          <p className="text-white font-bold text-lg">${paymentData.amount} USDC</p>
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(paymentData.amount.toString());
+                              alert('Amount copied!');
+                            }}
+                            className="text-blue-400 hover:text-blue-300"
+                          >
+                            <Copy className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
-                      <div className="bg-gray-900 rounded p-3">
-                        <p className="text-xs text-gray-400 mb-1">To Address:</p>
-                        <p className="text-white font-mono text-xs break-all">{paymentData.crypto_address}</p>
+                      
+                      {/* Address */}
+                      <div className="bg-gray-900 rounded-lg p-3 mb-3">
+                        <p className="text-xs text-gray-400 mb-1">To Address (Polygon Network):</p>
+                        <div className="flex items-center justify-between">
+                          <p className="text-white font-mono text-xs break-all flex-1 mr-2">{paymentData.crypto_address}</p>
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(paymentData.crypto_address);
+                              alert('Address copied!');
+                            }}
+                            className="text-blue-400 hover:text-blue-300 flex-shrink-0"
+                          >
+                            <Copy className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
-                      <p className="text-yellow-400 text-xs mt-2 text-center">⚠️ Polygon network only</p>
+
+                      {/* Warning */}
+                      <div className="bg-yellow-900 bg-opacity-30 border border-yellow-700 rounded-lg p-3">
+                        <div className="flex items-start space-x-2">
+                          <AlertTriangle className="h-5 w-5 text-yellow-400 flex-shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-yellow-300 text-xs font-semibold">Important:</p>
+                            <p className="text-yellow-200 text-xs mt-1">
+                              • Only send USDC on Polygon network<br />
+                              • Send exact amount shown<br />
+                              • Payment confirms automatically
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   )}
                   
-                  <p className="text-gray-400 text-xs">
-                    Bitcoin, Ethereum, USDC, USDT, and more
+                  <p className="text-gray-400 text-xs mt-3 text-center">
+                    Bitcoin, Ethereum, USDC, USDT supported
                   </p>
                 </>
               )}
