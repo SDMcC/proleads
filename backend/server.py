@@ -504,9 +504,6 @@ async def calculate_commissions(new_member_address: str, new_member_tier: str, n
                 )
                 
                 logger.info(f"Commission Level {level + 1}: {referrer_tier} earns {commission_rate*100}% of ${new_member_amount} = ${commission_amount}")
-                
-                # Initiate instant payout
-                await initiate_payout(current_referrer_address, commission_amount)
             else:
                 logger.info(f"No commission for level {level + 1} - rate is 0%")
         else:
