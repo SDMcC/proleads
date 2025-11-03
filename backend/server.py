@@ -1616,13 +1616,23 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
         
         async with httpx.AsyncClient(timeout=30.0) as client:
             crypto_response = await client.get(crypto_wallet_url)
+            
+            logger.info(f"Crypto wallet response status: {crypto_response.status_code}")
+            logger.info(f"Crypto wallet response: {crypto_response.text[:200]}")
+            
             if crypto_response.status_code == 200:
                 crypto_data = crypto_response.json()
                 payment_token = crypto_data.get("payment_token")
                 
-                # Crypto payment link
-                crypto_payment_link = f"https://checkout.paygate.to/crypto/hosted.php?payment_token={payment_token}&add_fees=0"
+                if payment_token:
+                    # Crypto payment link
+                    crypto_payment_link = f"https://checkout.paygate.to/crypto/hosted.php?payment_token={payment_token}&add_fees=0"
+                    logger.info(f"Crypto payment link created successfully")
+                else:
+                    logger.warning("No payment_token in crypto response")
+                    crypto_payment_link = None
             else:
+                logger.error(f"Crypto wallet creation failed: {crypto_response.text}")
                 # Fallback to simple USDC Polygon
                 crypto_payment_link = None
         
