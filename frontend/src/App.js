@@ -6996,7 +6996,7 @@ function PaymentModal({
           <X className="h-6 w-6" />
         </button>
 
-        {/* Step 1: Payment Method Selection */}
+        {/* Step 1: Select Payment Method */}
         {step === 1 && (
           <div className="text-center py-8">
             <h2 className="text-2xl font-bold text-white mb-2">Choose Payment Method</h2>
@@ -7008,69 +7008,79 @@ function PaymentModal({
               <p className="text-gray-400 text-sm mt-2 capitalize">{tier} Membership</p>
             </div>
 
-            <div className="space-y-4">
-              <button
-                onClick={onCreatePayment}
-                disabled={loading}
-                className="w-full py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-600 text-white font-semibold rounded-lg transition-all duration-300 flex items-center justify-center space-x-3"
-              >
-                <DollarSign className="h-6 w-6" />
-                <span>{loading ? 'Processing...' : 'Pay with Credit Card / Crypto'}</span>
-              </button>
-              
-              <p className="text-gray-400 text-xs text-center">
-                Secure payment via PayGate.to<br />
-                Accepts: Visa, Mastercard, Apple Pay, Google Pay<br />
-                Crypto: Bitcoin, Ethereum, USDC, USDT
-              </p>
-            </div>
+            <button
+              onClick={onCreatePayment}
+              disabled={loading}
+              className="w-full py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-600 text-white font-semibold rounded-lg transition-all duration-300"
+            >
+              {loading ? 'Creating Payment...' : 'Continue'}
+            </button>
           </div>
         )}
 
-        {/* Step 2: Payment Pending */}
+        {/* Step 2: Payment Options */}
         {step === 2 && paymentData && (
           <div className="text-center py-8">
-            <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
-              <Clock className="h-10 w-10 text-white" />
-            </div>
-            <h3 className="text-2xl font-bold text-white mb-2">Payment Window Opened</h3>
-            <p className="text-gray-300 mb-6">Complete your payment in the new window</p>
+            <h3 className="text-2xl font-bold text-white mb-2">Select Payment Type</h3>
+            <p className="text-gray-300 mb-6">Choose how you'd like to pay</p>
             
-            <div className="bg-gray-800 rounded-lg p-4 mb-6 text-left">
-              <div className="flex justify-between mb-2">
-                <span className="text-gray-400">Payment ID:</span>
-                <span className="text-white font-mono text-sm">{paymentData.payment_id}</span>
-              </div>
-              <div className="flex justify-between mb-2">
-                <span className="text-gray-400">Amount:</span>
-                <span className="text-white font-semibold">${paymentData.amount} USD</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-400">Status:</span>
-                <span className="text-yellow-400">Pending</span>
-              </div>
+            <div className="bg-gray-800 rounded-lg p-4 mb-6">
+              <p className="text-2xl font-bold text-white">${paymentData.amount} USD</p>
             </div>
 
             <div className="space-y-3">
+              {/* Credit Card / Fiat Option */}
               <button
-                onClick={() => window.open(paymentData.payment_link, '_blank')}
-                className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center justify-center space-x-2"
+                onClick={() => window.open(paymentData.card_payment_link, '_blank')}
+                className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center justify-center space-x-3"
               >
-                <ExternalLink className="h-5 w-5" />
-                <span>Reopen Payment Window</span>
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+                <span>Pay with Credit/Debit Card</span>
               </button>
               
-              <button
-                onClick={onClose}
-                className="w-full py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-all duration-300"
-              >
-                Close - I'll Complete Later
-              </button>
-            </div>
+              <p className="text-gray-400 text-xs">
+                Visa, Mastercard, Apple Pay, Google Pay, Bank Transfer
+              </p>
 
-            <p className="text-gray-400 text-xs mt-6">
-              Your membership will be activated automatically once payment is confirmed.
-            </p>
+              {/* Crypto Option */}
+              {paymentData.crypto_payment_link && (
+                <>
+                  <div className="relative my-6">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-gray-700"></div>
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                      <span className="px-2 bg-gray-900 text-gray-400">OR</span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => window.open(paymentData.crypto_payment_link, '_blank')}
+                    className="w-full py-4 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center justify-center space-x-3"
+                  >
+                    <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Pay with Cryptocurrency</span>
+                  </button>
+                  
+                  <p className="text-gray-400 text-xs">
+                    Bitcoin, Ethereum, USDC, USDT, and more
+                  </p>
+                </>
+              )}
+
+              <div className="mt-6 pt-6 border-t border-gray-700">
+                <p className="text-gray-400 text-xs">
+                  Payment ID: <span className="font-mono">{paymentData.payment_id}</span>
+                </p>
+                <p className="text-gray-400 text-xs mt-2">
+                  Your membership will be activated automatically once payment is confirmed.
+                </p>
+              </div>
+            </div>
           </div>
         )}
       </div>
