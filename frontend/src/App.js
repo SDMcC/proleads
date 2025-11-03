@@ -6952,33 +6952,21 @@ function PaymentPage() {
         </div>
       </div>
 
-      {/* Payment Modal - Atlos Style */}
+      {/* Payment Modal - PayGate.to */}
       {showPaymentModal && (
         <PaymentModal
           isOpen={showPaymentModal}
           onClose={() => {
             setShowPaymentModal(false);
             setPaymentStep(1);
-            setSelectedCurrency('');
-            setSelectedNetwork('');
             setPaymentData(null);
           }}
           step={paymentStep}
           amount={currentTier?.price}
           tier={selectedTier}
-          currencies={supportedCurrencies}
-          selectedCurrency={selectedCurrency}
-          selectedNetwork={selectedNetwork}
           paymentData={paymentData}
-          paymentStatus={paymentStatus}
           loading={loading}
-          onSelectCurrency={handleSelectCurrency}
-          onSelectNetwork={handleSelectNetwork}
           onCreatePayment={handleCreatePayment}
-          setPaymentStep={setPaymentStep}
-          setSelectedCurrency={setSelectedCurrency}
-          setSelectedNetwork={setSelectedNetwork}
-          setPaymentData={setPaymentData}
         />
       )}
     </div>
