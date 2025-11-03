@@ -1679,93 +1679,30 @@ async def get_payment_status(payment_id: str):
         logger.error(f"Error fetching payment status: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to fetch payment status")
 
-# NOWPayments IPN Callback Handler
-@app.post("/api/payments/callback")
-async def nowpayments_callback(request: Request):
-    """Handle NOWPayments IPN (Instant Payment Notification) callbacks"""
+# PayGate.to Payment Confirmation Handler
+async def handle_payment_confirmed_paygate(payment: dict):
+    """Handle confirmed PayGate.to payment - upgrade membership, calculate commissions, and process instant payouts"""
     try:
-        # Get raw request body
-        body = await request.body()
-        
-        # Get signature from header
-        signature = request.headers.get("x-nowpayments-sig")
-        
-        if not signature:
-            logger.warning("NOWPayments IPN: Missing signature header")
-            raise HTTPException(status_code=400, detail="Missing signature header")
-        
-        # Verify IPN signature (NOWPayments uses HMAC-SHA512)
-        computed_signature = hmac.new(
-            NOWPAYMENTS_IPN_SECRET.encode(),
-            body,
-            hashlib.sha512
-        ).hexdigest()
-        
-        if not hmac.compare_digest(computed_signature, signature):
-            logger.warning("NOWPayments IPN: Invalid signature")
-            raise HTTPException(status_code=401, detail="Invalid signature")
-        
-        # Parse IPN payload
-        data = json.loads(body)
-        payment_id = data.get("payment_id")
-        payment_status = data.get("payment_status")
-        
-        logger.info(f"NOWPayments IPN received: payment_id={payment_id}, status={payment_status}")
-        
-        # Find payment in database
-        payment = await db.payments.find_one({"payment_id": str(payment_id)})
-        
-        if not payment:
-            logger.warning(f"Payment not found for ID: {payment_id}")
-            return {"status": "payment not found"}
-        
-        # Update payment status
-        await db.payments.update_one(
-            {"payment_id": str(payment_id)},
-            {"$set": {"status": payment_status, "updated_at": datetime.utcnow()}}
-        )
-        
-        # Handle payment confirmation
-        if payment_status in ["finished", "confirmed"]:
-            await handle_payment_confirmed_nowpayments(payment, data)
-        
-        return {"status": "received"}
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"NOWPayments IPN error: {str(e)}")
-        return {"status": "error", "message": str(e)}
-
-async def handle_payment_confirmed_nowpayments(payment: dict, ipn_data: dict):
-    """Handle confirmed NOWPayments payment - upgrade membership and send notifications"""
-    try:
-        payment_id = ipn_data.get("payment_id")
+        payment_id = payment.get("payment_id")
         user_address = payment["user_address"]
         tier = payment["tier"]
-        amount = payment["amount"]
+        amount = Decimal(str(payment["amount"]))
         
-        logger.info(f"Processing confirmed NOWPayments payment: {payment_id} for user {user_address}")
+        logger.info(f"Processing confirmed PayGate.to payment: {payment_id} for user {user_address}")
         
-        # Update payment status to completed
+        # Update payment status to processing
         await db.payments.update_one(
             {"payment_id": str(payment_id)},
             {"$set": {
-                "status": "completed",
-                "confirmed_at": datetime.utcnow(),
-                "updated_at": datetime.utcnow(),
-                "actually_paid": ipn_data.get("actually_paid"),
-                "price_amount": ipn_data.get("price_amount"),
-                "price_currency": ipn_data.get("price_currency"),
-                "pay_amount": ipn_data.get("pay_amount"),
-                "pay_currency": ipn_data.get("pay_currency")
+                "status": "processing",
+                "updated_at": datetime.utcnow()
             }}
         )
         
-        # Calculate subscription expiry (1 year from now for paid tiers)
+        # Calculate subscription expiry (30 days/month for all paid tiers)
         subscription_expires_at = None
         if tier not in ["affiliate", "vip_affiliate"]:
-            subscription_expires_at = datetime.utcnow() + timedelta(days=365)
+            subscription_expires_at = datetime.utcnow() + timedelta(days=30)
         
         # Upgrade membership
         update_data = {"membership_tier": tier}
@@ -1784,12 +1721,38 @@ async def handle_payment_confirmed_nowpayments(payment: dict, ipn_data: dict):
         username = user.get("username", "Unknown User") if user else "Unknown User"
         user_email = user.get("email", "") if user else ""
         
+        # Calculate commissions
+        logger.info(f"Calculating commissions for ${amount}")
+        commissions = await calculate_commissions(user_address, tier, float(amount))
+        
+        # Process instant payouts
+        logger.info(f"Initiating instant payouts for {len(commissions)} commissions")
+        payout_system = PayoutSystem(db)
+        payout_results = await payout_system.process_instant_payouts(
+            payment_amount=amount,
+            commissions=commissions,
+            payment_id=payment_id
+        )
+        
+        logger.info(f"Payout results: {payout_results['status']}")
+        
+        # Update payment status to completed
+        await db.payments.update_one(
+            {"payment_id": str(payment_id)},
+            {"$set": {
+                "status": "completed",
+                "confirmed_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "payout_results": payout_results
+            }}
+        )
+        
         # Send payment confirmation email to user
         if user and user_email:
             user_prefs = user.get("email_notifications", {})
             if user_prefs.get("payment_confirmation", True):
                 try:
-                    await send_payment_confirmation_email(user_email, username, tier, amount)
+                    await send_payment_confirmation_email(user_email, username, tier, float(amount))
                     logger.info(f"Sent payment confirmation email to {user_email}")
                 except Exception as e:
                     logger.error(f"Failed to send payment confirmation email: {str(e)}")
@@ -1816,34 +1779,45 @@ async def handle_payment_confirmed_nowpayments(payment: dict, ipn_data: dict):
         # Create admin notification
         await create_admin_notification(
             notification_type="payment",
-            title="Payment Confirmed - NOWPayments",
-            message=f"{username} upgraded to {tier.capitalize()} membership - ${amount} USD",
+            title="Payment Confirmed - PayGate.to",
+            message=f"{username} upgraded to {tier.capitalize()} membership - ${amount} USD. Instant payouts: {payout_results['status']}",
             related_user=user_address
         )
         
         # Send admin email notification
         try:
-            await send_admin_payment_confirmation(username, tier, amount)
+            await send_admin_payment_confirmation(username, tier, float(amount))
             logger.info(f"Sent admin payment notification for {username}")
         except Exception as e:
             logger.error(f"Failed to send admin payment email: {str(e)}")
-        
-        # Calculate and distribute commissions
-        await calculate_commissions(user_address, tier, amount)
         
         # Broadcast update via WebSocket
         await websocket_manager.broadcast(json.dumps({
             "type": "payment_confirmed",
             "user_address": user_address,
             "tier": tier,
-            "amount": amount,
-            "processor": "nowpayments"
+            "amount": float(amount),
+            "processor": "paygate",
+            "payout_status": payout_results['status']
         }))
         
-        logger.info(f"Successfully processed NOWPayments payment confirmation for {username}")
+        logger.info(f"✅ Successfully processed PayGate.to payment confirmation for {username}")
         
     except Exception as e:
-        logger.error(f"Error handling NOWPayments payment confirmation: {str(e)}")
+        logger.error(f"Error handling PayGate.to payment confirmation: {str(e)}")
+        
+        # Update payment status to error
+        try:
+            await db.payments.update_one(
+                {"payment_id": payment.get("payment_id")},
+                {"$set": {
+                    "status": "error",
+                    "error_message": str(e),
+                    "updated_at": datetime.utcnow()
+                }}
+            )
+        except:
+            pass
         raise
 
 async def coinbase_commerce_webhook(request: Request):
