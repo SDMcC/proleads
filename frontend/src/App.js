@@ -6781,7 +6781,7 @@ function PaymentPage() {
     setPaymentStep(3);
   };
 
-  const handleCreatePayment = async (paymentMethod) => {
+  const handleCreatePayment = async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
@@ -6808,11 +6808,10 @@ function PaymentPage() {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      // PayGate.to returns payment_link - redirect user
-      if (response.data.payment_link) {
-        window.open(response.data.payment_link, '_blank');
+      // PayGate.to returns both card and crypto links
+      if (response.data.card_payment_link) {
         setPaymentData(response.data);
-        setPaymentStep(2); // Show "payment pending" screen
+        setPaymentStep(2); // Show payment options screen
       }
     } catch (error) {
       console.error('Payment creation failed:', error);
