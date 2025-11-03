@@ -1548,16 +1548,21 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
         async with httpx.AsyncClient(timeout=30.0) as client:
             wallet_response = await client.get(wallet_api_url)
             
+            logger.info(f"PayGate.to wallet response status: {wallet_response.status_code}")
+            logger.info(f"PayGate.to wallet response: {wallet_response.text}")
+            
             if wallet_response.status_code != 200:
                 logger.error(f"PayGate.to wallet creation failed: {wallet_response.text}")
-                raise HTTPException(status_code=500, detail="Payment service error")
+                raise HTTPException(status_code=500, detail=f"Payment service error: {wallet_response.text}")
             
             wallet_data = wallet_response.json()
             encrypted_address = wallet_data.get("address_in")
             polygon_address = wallet_data.get("polygon_address_in")
             ipn_token = wallet_data.get("ipn_token")
             
-            logger.info(f"PayGate.to wallet created: {polygon_address}")
+            logger.info(f"PayGate.to wallet created successfully")
+            logger.info(f"Polygon address: {polygon_address}")
+            logger.info(f"Encrypted address: {encrypted_address[:50]}...")
         
         # Store payment record with "pending" status
         payment_doc = {
