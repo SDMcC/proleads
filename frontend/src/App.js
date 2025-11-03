@@ -7045,7 +7045,7 @@ function PaymentModal({
               </p>
 
               {/* Crypto Option */}
-              {paymentData.crypto_payment_link && (
+              {paymentData.crypto_address && (
                 <>
                   <div className="relative my-6">
                     <div className="absolute inset-0 flex items-center">
@@ -7056,23 +7056,84 @@ function PaymentModal({
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => window.open(paymentData.crypto_payment_link, '_blank')}
-                    className="w-full py-4 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-all duration-300 flex items-center justify-center space-x-3"
-                  >
-                    <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>Pay with Cryptocurrency</span>
-                  </button>
-                  
-                  <div className="mt-3 text-center">
-                    <p className="text-gray-400 text-xs font-semibold mb-1">Accepted Cryptocurrencies:</p>
-                    <p className="text-gray-300 text-xs">
-                      Bitcoin (BTC) • Ethereum (ETH)<br />
-                      USDC • USDT • BNB<br />
-                      Polygon • Arbitrum • Optimism
+                  <div className="bg-gray-800 rounded-lg p-6">
+                    <p className="text-white font-semibold mb-4 text-center text-lg">Pay with Crypto</p>
+                    
+                    {/* QR Code */}
+                    <div className="bg-white p-4 rounded-lg mb-4 flex justify-center">
+                      <QRCode 
+                        value={paymentData.crypto_address}
+                        size={200}
+                        bgColor="#ffffff"
+                        fgColor="#000000"
+                        level="M"
+                      />
+                    </div>
+                    
+                    <p className="text-center text-gray-400 text-xs mb-4">
+                      Scan with your crypto wallet
                     </p>
+
+                    {/* Amount */}
+                    <div className="bg-gray-900 rounded-lg p-3 mb-3">
+                      <p className="text-xs text-gray-400 mb-1">Send Amount:</p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-white font-bold text-lg">${paymentData.amount} USD worth of USDC</p>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(paymentData.amount.toString());
+                            alert('Amount copied!');
+                          }}
+                          className="text-blue-400 hover:text-blue-300"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                    
+                    {/* Address */}
+                    <div className="bg-gray-900 rounded-lg p-3 mb-3">
+                      <p className="text-xs text-gray-400 mb-1">To Address:</p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-white font-mono text-xs break-all flex-1 mr-2">{paymentData.crypto_address}</p>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(paymentData.crypto_address);
+                            alert('Address copied!');
+                          }}
+                          className="text-blue-400 hover:text-blue-300 flex-shrink-0"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Supported Networks */}
+                    <div className="bg-blue-900 bg-opacity-30 border border-blue-700 rounded-lg p-3 mb-3">
+                      <p className="text-blue-300 text-xs font-semibold mb-1">✓ Supported Networks:</p>
+                      <p className="text-blue-200 text-xs">
+                        Polygon • Ethereum • BSC • Arbitrum<br />
+                        Optimism • Base • Avalanche
+                      </p>
+                      <p className="text-blue-300 text-xs mt-2">
+                        Send USDC or USDT on any network above
+                      </p>
+                    </div>
+
+                    {/* Warning */}
+                    <div className="bg-yellow-900 bg-opacity-30 border border-yellow-700 rounded-lg p-3">
+                      <div className="flex items-start space-x-2">
+                        <AlertTriangle className="h-5 w-5 text-yellow-400 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-yellow-300 text-xs font-semibold">Important:</p>
+                          <p className="text-yellow-200 text-xs mt-1">
+                            • Use any supported EVM network<br />
+                            • Send USD equivalent in USDC/USDT<br />
+                            • Payment confirms automatically
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </>
               )}
