@@ -7637,6 +7637,27 @@ function AdminDashboard() {
     }
   };
 
+  const fetchEscrowRecords = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const headers = { Authorization: `Bearer ${token}` };
+      
+      const params = new URLSearchParams();
+      if (escrowFilters.status) params.append('status_filter', escrowFilters.status);
+      if (escrowFilters.dateFrom) params.append('date_from', escrowFilters.dateFrom);
+      if (escrowFilters.dateTo) params.append('date_to', escrowFilters.dateTo);
+      params.append('page', escrowPage.toString());
+      params.append('limit', '50');
+      
+      const response = await axios.get(`${API_URL}/admin/escrow?${params}`, { headers });
+      setEscrowRecords(response.data.escrow_records || []);
+      setEscrowTotalPages(response.data.total_pages || 1);
+      
+    } catch (error) {
+      console.error('Failed to fetch escrow records:', error);
+    }
+  };
+
   const fetchMilestones = async () => {
     try {
       const token = localStorage.getItem('adminToken');
