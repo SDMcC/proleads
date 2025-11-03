@@ -1533,17 +1533,21 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
         # Generate unique payment ID
         payment_id = f"PAY-{uuid.uuid4().hex[:16].upper()}"
         
-        # Step 1: Create wallet with PayGate.to
+        # Step 1: Create wallet with PayGate.to using AFFILIATE endpoint
+        # This auto-whitelists the wallet and allows earning 0.5% commission
         callback_url = f"{APP_URL}/api/payments/paygate-callback?payment_id={payment_id}"
         
         # URL encode callback
         import urllib.parse
         encoded_callback = urllib.parse.quote(callback_url, safe='')
         
-        # Call PayGate.to wallet creation API
-        wallet_api_url = f"https://api.paygate.to/control/wallet.php?address={HOT_WALLET_ADDRESS}&callback={encoded_callback}"
+        # Use affiliate.php endpoint with cold wallet as affiliate to earn 0.5% commission
+        # Format: affiliate.php?address=MERCHANT_WALLET&affiliate=AFFILIATE_WALLET&callback=CALLBACK
+        wallet_api_url = f"https://api.paygate.to/control/affiliate.php?address={HOT_WALLET_ADDRESS}&affiliate={COLD_WALLET_ADDRESS}&callback={encoded_callback}"
         
-        logger.info(f"Creating PayGate.to wallet: {wallet_api_url}")
+        logger.info(f"Creating PayGate.to affiliate wallet (auto-whitelist + 0.5% commission)")
+        logger.info(f"Merchant wallet: {HOT_WALLET_ADDRESS}")
+        logger.info(f"Affiliate wallet: {COLD_WALLET_ADDRESS}")
         
         async with httpx.AsyncClient(timeout=30.0) as client:
             wallet_response = await client.get(wallet_api_url)
@@ -1560,9 +1564,9 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
             polygon_address = wallet_data.get("polygon_address_in")
             ipn_token = wallet_data.get("ipn_token")
             
-            logger.info(f"PayGate.to wallet created successfully")
+            logger.info(f"PayGate.to affiliate wallet created successfully (wallet auto-whitelisted!)")
             logger.info(f"Polygon address: {polygon_address}")
-            logger.info(f"Encrypted address: {encrypted_address[:50]}...")
+            logger.info(f"Encrypted address: {encrypted_address[:50] if encrypted_address else 'None'}...")
         
         # Store payment record with "pending" status
         payment_doc = {
