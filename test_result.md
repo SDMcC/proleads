@@ -651,15 +651,18 @@ backend:
 
   - task: "PayGate.to Payment Integration"
     implemented: true
-    working: "NA"
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Replaced NOWPayments with PayGate.to payment gateway. Payment creation endpoint generates PayGate.to payment link. Payments go to hot wallet (0xe68BecFfF9eae92bFcf3ba745563C5be2EB81460). Payment status endpoint checks blockchain for USDC receipt. Need to test: POST /api/payments/create, GET /api/payments/{payment_id}"
+      - working: true
+        agent: "testing"
+        comment: "✅ PAYGATE.TO PAYMENT INTEGRATION TESTING COMPLETED SUCCESSFULLY: Comprehensive testing of PayGate.to payment system confirms all functionality is working correctly. CRITICAL TEST RESULTS: 1) Payment Creation Endpoints - ✅ POST /api/payments/create working for all membership tiers (affiliate, test, bronze, silver, gold, vip_affiliate), ✅ Free tiers (affiliate, vip_affiliate) correctly skip payment with payment_required: false, ✅ Paid tiers generate proper PayGate.to payment links with correct format: https://paygate.to/payment?amount=XX&merchant_wallet=0xe68BecFfF9eae92bFcf3ba745563C5be2EB81460&order_id=XXX, ✅ Payment amounts verified correct: test=$2, bronze=$20, silver=$50, gold=$100, ✅ Merchant wallet address properly configured: 0xe68BecFfF9eae92bFcf3ba745563C5be2EB81460, ✅ Payment IDs generated correctly with PAY- prefix format. 2) Payment Status Checking - ✅ GET /api/payments/{payment_id} working with valid payment IDs, ✅ Response contains all required fields: payment_id, status, tier, amount, created_at, ✅ Payment status values are valid: pending (for new payments), ✅ Invalid payment IDs correctly return 404 status. 3) Authentication & Security - ✅ Payment creation requires user authentication (returns 401 without token), ✅ Invalid membership tiers return 400 error, ✅ User registration and login working for payment testing. 4) PayGate.to Integration Verification - ✅ Payment links properly formatted for PayGate.to gateway, ✅ Callback URL included in payment links, ✅ Order descriptions properly URL-encoded, ✅ All payment parameters correctly structured. TESTING RESULTS: 12/12 tests passed (100% success rate). PayGate.to payment integration is fully operational and ready for production use."
 
   - task: "Instant USDC Payout System"
     implemented: true
