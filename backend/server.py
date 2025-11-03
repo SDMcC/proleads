@@ -78,12 +78,14 @@ client = AsyncIOMotorClient(os.getenv("MONGO_URL"))
 db = client[os.getenv("DB_NAME")]
 
 # Configuration
-NOWPAYMENTS_API_KEY = os.getenv("NOWPAYMENTS_API_KEY")
-NOWPAYMENTS_PUBLIC_KEY = os.getenv("NOWPAYMENTS_PUBLIC_KEY")
-NOWPAYMENTS_IPN_SECRET = os.getenv("NOWPAYMENTS_IPN_SECRET")
 JWT_SECRET = os.getenv("JWT_SECRET")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 APP_URL = os.getenv("APP_URL")
+
+# PayGate.to & Crypto Configuration
+HOT_WALLET_ADDRESS = os.getenv("HOT_WALLET_ADDRESS")
+COLD_WALLET_ADDRESS = os.getenv("COLD_WALLET_ADDRESS")
+POLYGON_RPC_URL = os.getenv("POLYGON_RPC_URL", "https://polygon-rpc.com")
 
 # Admin Configuration
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
