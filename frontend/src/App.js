@@ -7059,10 +7059,10 @@ function PaymentModal({
                   <div className="bg-gray-800 rounded-lg p-6">
                     <p className="text-white font-semibold mb-4 text-center text-lg">Pay with Crypto</p>
                     
-                    {/* QR Code */}
+                    {/* QR Code - Using Ethereum payment request format with amount */}
                     <div className="bg-white p-4 rounded-lg mb-4 flex justify-center">
                       <QRCode 
-                        value={paymentData.crypto_address}
+                        value={`ethereum:${paymentData.crypto_address}?value=${paymentData.amount}`}
                         size={200}
                         bgColor="#ffffff"
                         fgColor="#000000"
@@ -7071,14 +7071,17 @@ function PaymentModal({
                     </div>
                     
                     <p className="text-center text-gray-400 text-xs mb-4">
-                      Scan with your crypto wallet
+                      Scan with your crypto wallet (amount auto-fills)
                     </p>
 
                     {/* Amount */}
                     <div className="bg-gray-900 rounded-lg p-3 mb-3">
                       <p className="text-xs text-gray-400 mb-1">Send Amount:</p>
                       <div className="flex items-center justify-between">
-                        <p className="text-white font-bold text-lg">${paymentData.amount} USD worth of USDC</p>
+                        <div>
+                          <p className="text-white font-bold text-lg">${paymentData.amount} USD</p>
+                          <p className="text-gray-400 text-xs">in USDC or USDT</p>
+                        </div>
                         <button
                           onClick={() => {
                             navigator.clipboard.writeText(paymentData.amount.toString());
@@ -7116,7 +7119,7 @@ function PaymentModal({
                         Optimism • Base • Avalanche
                       </p>
                       <p className="text-blue-300 text-xs mt-2">
-                        Send USDC or USDT on any network above
+                        Send <strong>${paymentData.amount}</strong> worth of USDC or USDT on any network above
                       </p>
                     </div>
 
@@ -7127,8 +7130,8 @@ function PaymentModal({
                         <div>
                           <p className="text-yellow-300 text-xs font-semibold">Important:</p>
                           <p className="text-yellow-200 text-xs mt-1">
+                            • Send exactly ${paymentData.amount} USD worth<br />
                             • Use any supported EVM network<br />
-                            • Send USD equivalent in USDC/USDT<br />
                             • Payment confirms automatically
                           </p>
                         </div>
