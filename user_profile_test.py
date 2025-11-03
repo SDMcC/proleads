@@ -243,7 +243,7 @@ class UserProfileTester:
         return all_passed
 
 def main():
-    backend_url = "https://affnet-dashboard.preview.emergentagent.com"
+    backend_url = "https://affnet-dashboard-1.preview.emergentagent.com"
     
     print("🚀 User Profile and Registration System Test")
     print("=" * 50)

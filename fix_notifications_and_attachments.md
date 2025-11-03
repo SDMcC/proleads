@@ -14,7 +14,7 @@ b. New referrals
 c. Lead distribution
 
 ## 4. Wrong URL in email notifications
-- Issue: Using `https://affnet-dashboard.preview.emergentagent.com`
+- Issue: Using `https://affnet-dashboard-1.preview.emergentagent.com`
 - Should be: `https://proleads.network`
 - Solution: Replace hardcoded URL with environment variable or production URL
 

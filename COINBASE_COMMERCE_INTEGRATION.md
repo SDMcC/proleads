@@ -18,7 +18,7 @@
 
 3. **New Webhook Handler**
    - Endpoint: `POST /api/webhooks/coinbase-commerce`
-   - Webhook URL configured: `https://affnet-dashboard.preview.emergentagent.com/api/webhooks/coinbase-commerce`
+   - Webhook URL configured: `https://affnet-dashboard-1.preview.emergentagent.com/api/webhooks/coinbase-commerce`
    - HMAC-SHA256 signature verification for security
    - Handles events:
      - `charge:pending` - Payment initiated
@@ -80,14 +80,14 @@
 
 ### Environment Variables (Backend .env)
 ```
-COINBASE_COMMERCE_API_KEY=c3de034e-933c-457f-abcf-dfccb598cb7a
-COINBASE_COMMERCE_WEBHOOK_SECRET=51a55e1b-f898-4f35-b622-0f39055db775
+COINBASE_COMMERCE_API_KEY=affnet-dashboard-1
+COINBASE_COMMERCE_WEBHOOK_SECRET=affnet-dashboard-1
 ```
 
 ### Webhook Configuration
 **Preview Environment:**
 ```
-URL: https://affnet-dashboard.preview.emergentagent.com/api/webhooks/coinbase-commerce
+URL: https://affnet-dashboard-1.preview.emergentagent.com/api/webhooks/coinbase-commerce
 Secret: 51a55e1b-f898-4f35-b622-0f39055db775
 ```
 

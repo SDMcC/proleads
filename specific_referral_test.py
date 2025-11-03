@@ -360,7 +360,7 @@ class SpecificReferralInvestigator:
 def main():
     if len(sys.argv) != 2:
         print("Usage: python specific_referral_test.py <base_url>")
-        print("Example: python specific_referral_test.py https://affnet-dashboard.preview.emergentagent.com")
+        print("Example: python specific_referral_test.py https://affnet-dashboard-1.preview.emergentagent.com")
         sys.exit(1)
     
     base_url = sys.argv[1].rstrip('/')

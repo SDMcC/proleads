@@ -1,71 +1,66 @@
 <analysis>
-The AI engineer's work primarily focused on stabilizing, deploying, and enhancing the Proleads Network application. Initial efforts resolved critical backend deployment issues, specifically a  caused by incorrect  and Dockerfile paths. Subsequently, frontend login failures due to duplicate  prefixes in API calls were fixed. The trajectory then tackled several UI/UX bugs, including user notification modal z-index issues (resolved by replacing modals with a slide-out panel), and attachment/KYC document viewing errors. A major pivot occurred when the user required migration from AWS SES/S3 to cPanel hosting for emails and file storage due to AWS TOS conflicts. This involved implementing FTP for file management and updating SMTP configurations. Finally, admin email notifications for new tickets were added, and issues with the 'Ticket to Downline' feature were investigated and ultimately removed from the UI at the user's request, while preserving backend logic.
+The AI engineer's work began by stabilizing the Proleads Network, fixing backend deployment, frontend login, and UI/UX issues. A significant migration from AWS to cPanel for email and file storage was executed, including FTP implementation. Initial payment processing attempts with NOWPayments encountered multiple hurdles, such as minimum payment limits and incorrect invoice URLs, necessitating a switch to their Invoice API and then a fix for currency selection.
+
+Extensive research into various payment processors (Coinbase Commerce, BitPay, Circle, B2BinPay, CoinPayments, Atlos.io) followed, driven by the user's need for reliable auto-conversion to USDC Polygon and instant payouts. Coinbase Commerce was successfully integrated but lacked mass payout, leading to a discussion of a reserve-based system. The user's preference for NOWPayments' auto-conversion and white-label API led to its re-integration, which unfortunately suffered from critical issues like persistent webhook URL problems, 25+ minute payment confirmation times, and slow crypto-to-crypto conversions. This led to its abandonment.
+
+The trajectory concludes with the user identifying PayGate.to as a promising solution for its direct USDC Polygon conversion, despite its higher fee and absence of a payout function, which is the current focus of the engineer's analysis.
 </analysis>
+
 <product_requirements>
-The Proleads Network is a 4-tier membership affiliate system built on an existing ticketing system. Key requirements include:
-1.  **UI Redesign:** Modernize homepage (video backgrounds, dark mode), affiliates, login/registration, privacy, and terms pages with Proleads Network branding.
-2.  **Admin Dashboard:** Implement Recent Activity and Analytics pages with filterable graphs.
-3.  **Interactive Genealogy Tree:** Replace existing network tree with  visualization.
-4.  **Email Notifications:** Implement various email types (referral, lead distribution, payment, commission) with user preferences and admin notifications using a new email service. (Admin email for new tickets implemented).
-5.  **KYC Functionality:** Mandatory KYC for users, with admin review interface. (Viewing fixed by S3/FTP migration).
-6.  **Core Bug Fixes:** Resolve commission calculation bug.
-7.  **Post-Deployment Enhancements:** Shorten affiliate URLs, set up production SMTP (migrated to cPanel), add paginated notification history (implemented as slide-out panel), and resolve attachment/notification display bugs (fixed by S3/FTP migration and frontend URL/auth fixes).
-8.  **Deployment Readiness:** Address build and runtime issues for successful deployment. (Initial deployment and login issues resolved).
+The Proleads Network is a 4-tier membership affiliate system built on an existing ticketing platform. Key product requirements include: a modern UI redesign (homepage, affiliates, login/registration, privacy, terms) with Proleads Network branding; an Admin Dashboard featuring Recent Activity and Analytics with filterable graphs; and an interactive genealogy tree using . Email notifications are crucial for various events (referral, lead distribution, payment, commission) with user preferences and admin alerts (admin email for new tickets is implemented). Mandatory KYC functionality with admin review is required. Core bug fixes, especially for commission calculations, are essential. Post-deployment enhancements include shortened affiliate URLs, production SMTP setup (migrated to cPanel), paginated notification history, and resolution of attachment/notification display bugs (fixed by S3/FTP migration and frontend URL/auth fixes). The application must be deployment-ready, addressing build and runtime issues, with initial deployment and login issues already resolved.
 </product_requirements>
+
 <key_technical_concepts>
--   **Backend**: FastAPI, MongoDB (Motor), Pydantic, JWT Auth, , Python Module Resolution, FTP/FTPS (cPanel), Asynchronous Database Connections.
--   **Frontend**: React (Hooks, Context, Portals), Tailwind CSS, Axios, React Router, .
+-   **Backend**: FastAPI, MongoDB (Motor), Pydantic, JWT Auth, , FTP/FTPS,  (installed/removed),  API,  API,  (SHA-256, SHA-512).
+-   **Frontend**: React (Hooks, Context, Portals), Tailwind CSS, Axios, React Router, , .
 -   **Data**: UUIDs, ISO date strings, Pagination.
 -   **Deployment**: Kubernetes, Dockerfile, Nginx, Supervisor, Environment Variables.
--   **Cloud/Hosting**: AWS S3 (initially planned, then migrated), cPanel SMTP, cPanel FTP.
 </key_technical_concepts>
+
 <code_architecture>
 
 
 -   ****:
-    -   **Importance**: Core FastAPI application, handling API, DB, business logic.
-    -   **Changes**: Fixed Python module import path for . Modified KYC and ticket attachment upload/retrieval endpoints to use FTP storage. Implemented flexible authentication () for endpoints to accept both user and admin tokens. Updated  to send admin email for new tickets. Modified  endpoint to resolve referral identifiers to user objects.
+    -   **Importance**: Core FastAPI application for API, DB, and business logic.
+    -   **Changes**: Extensive modifications for payment processing. Initially integrated NOWPayments (v1 and Invoice API), then replaced with Coinbase Commerce. Most recently, NOWPayments white-label () API and IPN handler were re-integrated. Critical fixes include rounding  to 6 decimals, updating webhook  to , adding debug logging for  and IPN, and implementing a GET endpoint for payment status.
+-   ****:
+    -   **Importance**: Stores backend environment variables.
+    -   **Changes**: Updated SMTP/FTP details. , , , and  () are currently configured.
 -   ****:
     -   **Importance**: Centralized email sending logic.
-    -   **Changes**: Added  for new ticket notifications, using cPanel SMTP details.
+    -   **Changes**: Added  and other payment-related notification functions.
 -   ****:
-    -   **Importance**: Marks  as a Python package.
-    -   **Changes**: Empty file, created and then deleted as part of deployment debugging.
+    -   **Importance**: Main React component for UI, routing, and state.
+    -   **Changes**: Fixed  prefixes, replaced modals with slide-out panels, and removed 'Ticket to Downline' UI.
+        -   Refactored the payment flow to an Atlos-style, 4-step modal for NOWPayments white-label.
+        -   Integrated  for QR code generation.
+        -   Corrected membership duration display from /year to /month.
+        -   Updated  component to correctly receive and use state setters (, , , ) for UI navigation.
 -   ****:
-    -   **Importance**: Python script loaded automatically at startup for path manipulation.
-    -   **Changes**: New file, created and then deleted as part of deployment debugging.
--   ****:
-    -   **Importance**: Python path configuration file.
-    -   **Changes**: New file, created and then deleted as part of deployment debugging.
--   ****:
-    -   **Importance**: Handles FTP operations for file storage.
-    -   **Changes**: New file, created to encapsulate FTP upload/download logic, replacing AWS S3 functions. Includes retry mechanisms and passive mode.
--   ****:
-    -   **Importance**: Main React component, UI, routing, state.
-    -   **Changes**: Fixed duplicate  prefix in all  calls ( to ). Replaced both user dashboard notification modal and header notification bell modal with slide-out panels. Made attachment viewing functions defensively handle URLs. Removed category option and sponsor/downline contact types from the ticket creation form.
--   ****:
-    -   **Importance**: Global CSS styles.
-    -   **Changes**: Added  to address persistent z-index issues.
--   ****:
-    -   **Importance**: Backend environment variables.
-    -   **Changes**: Updated SMTP credentials to cPanel details. Added , , , , ,  for cPanel FTP.
--   ****:
-    -   **Importance**: Frontend environment variables.
-    -   **Changes**: Added  for image retrieval. (AWS S3 variables were also added and then removed during migration).
--   ****:
-    -   **Importance**: Python package dependencies.
-    -   **Changes**: Added  (then removed) and  (implicitly used by , but not explicitly mentioned as added to requirements.txt, though  is a standard library).
+    -   **Importance**: Frontend dependency management.
+    -   **Changes**: Added .
+-   **New Documentation Files**: , , , , ,  were created throughout the trajectory to document findings and plans.
 </code_architecture>
+
 <pending_tasks>
--   **Email Notifications:** Full implementation of remaining email types (referral, lead distribution, payment confirmation, commission payouts).
--   **Analytics Page:** Full implementation of the comprehensive analytics page with filterable graphs.
--   **Genealogy Tree:** Re-implement the interactive genealogy tree () and fix styling.
--   **Message All Downline Feature:** Backend logic for this feature exists but it's currently hidden from the frontend UI.
-- **Nowpayments Testing:** Fully check and test the Nowpayments integration for payments and commission payouts.
+-   Full implementation and integration of remaining email types with the final payment processor.
+-   Full implementation of the comprehensive analytics page with filterable graphs.
+-   Re-implementation of the interactive genealogy tree () with styling fixes.
+-   Full integration of the 'Message All Downline' feature (backend logic exists, UI is hidden).
+-   Development and implementation of a mass payout function for affiliate commissions using PayGate.to.
+-   Testing and validation of PayGate.to for incoming payments and the new payout system.
 </pending_tasks>
+
 <current_work>
-Immediately before this summary, the AI engineer was working on the 'Ticket to Sponsor and Downline' feature. The user reported that the Individual downline recipient dropdown was not populating, and Message All Downline was failing. The AI engineer identified that the backend's  endpoint was failing because referrals were stored as strings (addresses or formatted strings) rather than user objects with fields like , , and . The backend logic was updated to correctly fetch user data from these referral identifiers. However, the user then decided to temporarily abandon this feature, requesting to remove the options for contacting Sponsor, Individual Downline, and All Downline from the frontend form, while preserving the backend logic for potential future re-implementation. The last action was to remove these options from  and restart the frontend.
+The immediate work involved resolving the application's core payment processing challenges. After a series of unsuccessful attempts to use NOWPayments due to severe delays (25+ minute confirmations), unreliable auto-conversion, and persistent issues with webhook callback URLs despite multiple fixes (including switching  to  and debugging  caching), NOWPayments was deemed unsuitable for production.
+
+A brief investigation into CoinPayments also yielded negative results, as it did not meet the requirements for auto-conversion to specific stablecoins like USDC Polygon, and its fee structure was not ideal.
+
+The user then identified  as a promising alternative. This new payment processor directly addresses the crucial need for **automatic conversion of incoming crypto to USDC MATIC (Polygon)** and **direct settlement to the user's wallet**, which was a significant pain point with previous solutions. While PayGate.to has a slightly higher fee (1.5% compared to Coinbase Commerce's 1%), this is considered acceptable for its core functionality.
+
+The current work focuses on integrating . However, a key challenge is that  does not offer a built-in mass payout function, which is essential for affiliate commissions. Therefore, the AI engineer is now analyzing PayGate.to's API documentation to understand its incoming payment capabilities and, more importantly, to design and propose a robust, separate solution for managing and executing mass payouts of affiliate commissions using the funds settled in the user's USDC Polygon wallet.
 </current_work>
+
 <optional_next_step>
-The next step is to create a summary of the removed frontend features.
+Analyze PayGate.to's API and propose 3 options for implementing the mass payout functionality.
 </optional_next_step>
