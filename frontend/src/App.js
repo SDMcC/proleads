@@ -8758,6 +8758,246 @@ function AdminDashboard() {
           </div>
         )}
 
+        {/* Escrow Tab */}
+        {activeTab === 'escrow' && (
+          <div className="space-y-6">
+            {/* Escrow Header & Filters */}
+            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+              <div className="flex flex-col lg:flex-row gap-4 items-end">
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-white mb-4">Escrow Management</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-gray-300 text-sm font-medium mb-2">Status</label>
+                      <select
+                        value={escrowFilters.status}
+                        onChange={(e) => setEscrowFilters({...escrowFilters, status: e.target.value})}
+                        className="w-full px-3 py-2 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-red-400"
+                      >
+                        <option value="">All Status</option>
+                        <option value="pending_review">Pending Review</option>
+                        <option value="processing">Processing</option>
+                        <option value="released">Released</option>
+                        <option value="partial_release">Partial Release</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-gray-300 text-sm font-medium mb-2">Date From</label>
+                      <input
+                        type="date"
+                        value={escrowFilters.dateFrom}
+                        onChange={(e) => setEscrowFilters({...escrowFilters, dateFrom: e.target.value})}
+                        className="w-full px-3 py-2 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-red-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-300 text-sm font-medium mb-2">Date To</label>
+                      <input
+                        type="date"
+                        value={escrowFilters.dateTo}
+                        onChange={(e) => setEscrowFilters({...escrowFilters, dateTo: e.target.value})}
+                        className="w-full px-3 py-2 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-red-400"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      setEscrowFilters({ status: 'pending_review', dateFrom: '', dateTo: '' });
+                      setEscrowPage(1);
+                    }}
+                    className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-all duration-300"
+                  >
+                    Clear Filters
+                  </button>
+                  <button
+                    onClick={async () => {
+                      try {
+                        const params = new URLSearchParams();
+                        if (escrowFilters.status) params.append('status_filter', escrowFilters.status);
+                        if (escrowFilters.dateFrom) params.append('date_from', escrowFilters.dateFrom);
+                        if (escrowFilters.dateTo) params.append('date_to', escrowFilters.dateTo);
+                        
+                        const response = await axios.get(
+                          `${process.env.REACT_APP_BACKEND_URL}/api/admin/escrow/export?${params.toString()}`,
+                          { 
+                            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+                            responseType: 'blob'
+                          }
+                        );
+                        
+                        const url = window.URL.createObjectURL(new Blob([response.data]));
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.setAttribute('download', `escrow_${new Date().toISOString().split('T')[0]}.csv`);
+                        document.body.appendChild(link);
+                        link.click();
+                        link.remove();
+                      } catch (error) {
+                        console.error('Export failed:', error);
+                        alert('Failed to export escrow data');
+                      }
+                    }}
+                    className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-300 flex items-center space-x-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    <span>Export CSV</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Escrow Table */}
+            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="border-b border-gray-600">
+                      <th className="pb-3 text-gray-300 font-medium">Escrow ID</th>
+                      <th className="pb-3 text-gray-300 font-medium">Payment ID</th>
+                      <th className="pb-3 text-gray-300 font-medium">Amount</th>
+                      <th className="pb-3 text-gray-300 font-medium">Recipients</th>
+                      <th className="pb-3 text-gray-300 font-medium">Reason</th>
+                      <th className="pb-3 text-gray-300 font-medium">Status</th>
+                      <th className="pb-3 text-gray-300 font-medium">Created</th>
+                      <th className="pb-3 text-gray-300 font-medium">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {escrowRecords.length === 0 ? (
+                      <tr>
+                        <td colSpan="8" className="py-8 text-center text-gray-400">
+                          No escrow records found
+                        </td>
+                      </tr>
+                    ) : (
+                      escrowRecords.map((record) => (
+                        <tr key={record.escrow_id} className="border-b border-gray-700 hover:bg-white hover:bg-opacity-5">
+                          <td className="py-4 text-white">
+                            <span className="text-xs font-mono">{record.escrow_id.substring(0, 8)}...</span>
+                          </td>
+                          <td className="py-4 text-gray-300">
+                            <span className="text-xs font-mono">{record.payment_id}</span>
+                          </td>
+                          <td className="py-4 text-white font-semibold">
+                            ${record.amount.toFixed(2)}
+                          </td>
+                          <td className="py-4 text-gray-300">
+                            {record.commissions && record.commissions.length > 0 ? (
+                              <div className="space-y-1">
+                                {record.commissions.map((comm, idx) => (
+                                  <div key={idx} className="text-xs">
+                                    <div className="font-semibold">{comm.recipient_username}</div>
+                                    <div className="text-gray-400">{comm.recipient_email}</div>
+                                    <div className="text-gray-500">${comm.amount.toFixed(2)}</div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="text-gray-500">N/A</span>
+                            )}
+                          </td>
+                          <td className="py-4 text-gray-400 text-sm max-w-xs truncate">
+                            {record.reason}
+                          </td>
+                          <td className="py-4">
+                            <span className={`px-2 py-1 rounded text-xs ${
+                              record.status === 'pending_review' ? 'bg-yellow-900 bg-opacity-50 text-yellow-300' :
+                              record.status === 'processing' ? 'bg-blue-900 bg-opacity-50 text-blue-300' :
+                              record.status === 'released' ? 'bg-green-900 bg-opacity-50 text-green-300' :
+                              record.status === 'partial_release' ? 'bg-orange-900 bg-opacity-50 text-orange-300' :
+                              'bg-gray-900 bg-opacity-50 text-gray-300'
+                            }`}>
+                              {record.status.replace('_', ' ')}
+                            </span>
+                          </td>
+                          <td className="py-4 text-gray-400 text-sm">
+                            {new Date(record.created_at).toLocaleDateString()}
+                          </td>
+                          <td className="py-4">
+                            {record.status === 'pending_review' && (
+                              <button
+                                onClick={async () => {
+                                  if (!window.confirm('Release this escrow amount to the recipient(s)?')) return;
+                                  
+                                  setReleasingEscrow(record.escrow_id);
+                                  try {
+                                    const response = await axios.post(
+                                      `${process.env.REACT_APP_BACKEND_URL}/api/admin/escrow/${record.escrow_id}/release`,
+                                      {},
+                                      { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+                                    );
+                                    
+                                    alert(`Escrow release ${response.data.status}: ${response.data.successful_payouts}/${response.data.total_commissions} payouts successful`);
+                                    
+                                    // Refresh escrow list
+                                    const escrowResponse = await axios.get(
+                                      `${process.env.REACT_APP_BACKEND_URL}/api/admin/escrow?page=${escrowPage}&limit=50&status_filter=${escrowFilters.status || ''}`,
+                                      { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+                                    );
+                                    setEscrowRecords(escrowResponse.data.escrow_records);
+                                    setEscrowTotalPages(escrowResponse.data.total_pages);
+                                  } catch (error) {
+                                    console.error('Release failed:', error);
+                                    alert('Failed to release escrow: ' + (error.response?.data?.detail || error.message));
+                                  } finally {
+                                    setReleasingEscrow(null);
+                                  }
+                                }}
+                                disabled={releasingEscrow === record.escrow_id}
+                                className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-all duration-300 disabled:opacity-50"
+                              >
+                                {releasingEscrow === record.escrow_id ? 'Releasing...' : 'Release'}
+                              </button>
+                            )}
+                            {record.status === 'released' && (
+                              <span className="text-green-400 text-sm">✓ Complete</span>
+                            )}
+                            {record.status === 'partial_release' && (
+                              <button
+                                onClick={() => setSelectedEscrow(record)}
+                                className="px-3 py-1 bg-yellow-600 hover:bg-yellow-700 text-white rounded text-sm transition-all duration-300"
+                              >
+                                View Details
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination */}
+              {escrowTotalPages > 1 && (
+                <div className="flex justify-center items-center space-x-4 mt-6">
+                  <button
+                    onClick={() => setEscrowPage(Math.max(1, escrowPage - 1))}
+                    disabled={escrowPage === 1}
+                    className="p-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  
+                  <span className="text-gray-400 text-sm">
+                    Page {escrowPage} of {escrowTotalPages}
+                  </span>
+                  
+                  <button
+                    onClick={() => setEscrowPage(Math.min(escrowTotalPages, escrowPage + 1))}
+                    disabled={escrowPage === escrowTotalPages}
+                    className="p-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Milestones Tab */}
         {activeTab === 'milestones' && (
           <AdminMilestonesTab 
