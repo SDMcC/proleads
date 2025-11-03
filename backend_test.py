@@ -9576,5 +9576,27 @@ if __name__ == "__main__":
         print("=" * 80)
         
         sys.exit(0 if success else 1)
+    elif len(sys.argv) > 1 and sys.argv[1] == "paygate_escrow":
+        print("🎯 RUNNING SPECIFIC TEST: PayGate.to Payment System and Escrow Management")
+        print("=" * 80)
+        
+        backend_url = "https://affnet-dashboard-1.preview.emergentagent.com"
+        tester = Web3MembershipTester(backend_url)
+        
+        # Run PayGate.to and Escrow tests
+        paygate_success = tester.test_paygate_payment_system()
+        escrow_success = tester.test_escrow_management_system()
+        
+        overall_success = paygate_success and escrow_success
+        
+        print("\n" + "=" * 80)
+        print("📊 PayGate.to & Escrow Test Results:")
+        print(f"   PayGate.to Payment System: {'✅ PASSED' if paygate_success else '❌ FAILED'}")
+        print(f"   Escrow Management System: {'✅ PASSED' if escrow_success else '❌ FAILED'}")
+        print(f"🎯 FINAL RESULT: {'✅ PASSED' if overall_success else '❌ FAILED'}")
+        print(f"📊 Tests passed: {tester.tests_passed}/{tester.tests_run}")
+        print("=" * 80)
+        
+        sys.exit(0 if overall_success else 1)
     else:
         sys.exit(main())
