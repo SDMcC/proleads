@@ -1603,49 +1603,36 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
             f"&currency=USD"
         )
         
-        # Crypto payment - use multi-crypto hosted wallet with affiliate
-        # This allows users to pay with BTC, ETH, USDC, USDT, etc.
+        # Crypto payment - EVM multi-chain (Ethereum, BSC, Polygon, Arbitrum, etc.)
+        # Use USDC Polygon as primary, but EVM address works across all EVM chains
         crypto_payment_link = None
         crypto_address = None
         
         try:
-            # Create multi-crypto hosted wallet payload
-            crypto_payload = {
-                "evm": HOT_WALLET_ADDRESS,  # For ETH, USDC, USDT on ERC20, BEP20, Polygon, Arbitrum, etc.
-                "fiat_amount": tier_info['price'],
-                "fiat_currency": "USD",
-                "callback": callback_url,
-                "affiliate": COLD_WALLET_ADDRESS  # Earn 0.5% commission
-            }
+            # Create USDC Polygon wallet with affiliate commission
+            crypto_callback = urllib.parse.quote(callback_url, safe='')
+            crypto_wallet_api = f"https://api.paygate.to/crypto/polygon/usdc/affiliate.php?address={HOT_WALLET_ADDRESS}&affiliate={COLD_WALLET_ADDRESS}&callback={crypto_callback}"
             
-            # Note: For full multi-chain support, would need BTC, TRC20, Solana addresses
-            # Currently focusing on EVM chains (Ethereum, BSC, Polygon, Arbitrum, etc.)
-            
-            encoded_payload = urllib.parse.quote(json.dumps(crypto_payload), safe='')
-            multi_wallet_url = f"https://api.paygate.to/crypto/multi-hosted-wallet.php?payload={encoded_payload}"
-            
-            logger.info(f"Creating multi-crypto hosted wallet")
+            logger.info(f"Creating EVM multi-chain crypto wallet (Polygon USDC)")
             
             async with httpx.AsyncClient(timeout=30.0) as client:
-                crypto_response = await client.get(multi_wallet_url)
+                crypto_response = await client.get(crypto_wallet_api)
                 
-                logger.info(f"Multi-crypto wallet response status: {crypto_response.status_code}")
-                logger.info(f"Multi-crypto wallet response: {crypto_response.text[:500]}")
+                logger.info(f"Crypto wallet response status: {crypto_response.status_code}")
+                logger.info(f"Crypto wallet response: {crypto_response.text[:300]}")
                 
                 if crypto_response.status_code == 200:
                     crypto_data = crypto_response.json()
-                    payment_token = crypto_data.get("payment_token")
+                    crypto_address = crypto_data.get("address_in")
                     
-                    if payment_token:
-                        # Create hosted payment link
-                        crypto_payment_link = f"https://checkout.paygate.to/crypto/hosted.php?payment_token={payment_token}&add_fees=0"
-                        logger.info(f"Multi-crypto payment link created successfully")
+                    if crypto_address:
+                        logger.info(f"EVM crypto address created: {crypto_address}")
                     else:
-                        logger.warning("No payment_token in response")
+                        logger.warning("No address_in in crypto response")
                 else:
-                    logger.error(f"Multi-crypto wallet creation failed: {crypto_response.text}")
+                    logger.error(f"Crypto wallet creation failed: {crypto_response.text}")
         except Exception as e:
-            logger.error(f"Multi-crypto wallet creation exception: {str(e)}")
+            logger.error(f"Crypto wallet creation exception: {str(e)}")
         
         logger.info(f"PayGate.to payment created: {payment_id} for ${tier_info['price']}")
         
