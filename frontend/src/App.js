@@ -6781,7 +6781,7 @@ function PaymentPage() {
     setPaymentStep(3);
   };
 
-  const handleCreatePayment = async () => {
+  const handleCreatePayment = async (paymentMethod) => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
@@ -6789,8 +6789,7 @@ function PaymentPage() {
       // For free tier
       if (tiers[selectedTier]?.price === 0) {
         const response = await axios.post(`${API_URL}/payments/create`, {
-          tier: selectedTier,
-          currency: 'FREE'
+          tier: selectedTier
         }, {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -6802,16 +6801,19 @@ function PaymentPage() {
         return;
       }
 
-      // For paid tiers
+      // For paid tiers - Create PayGate.to payment
       const response = await axios.post(`${API_URL}/payments/create`, {
-        tier: selectedTier,
-        currency: selectedCurrency
+        tier: selectedTier
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      setPaymentData(response.data);
-      setPaymentStep(4);
+      // PayGate.to returns payment_link - redirect user
+      if (response.data.payment_link) {
+        window.open(response.data.payment_link, '_blank');
+        setPaymentData(response.data);
+        setPaymentStep(2); // Show "payment pending" screen
+      }
     } catch (error) {
       console.error('Payment creation failed:', error);
       alert('Payment creation failed. Please try again.');
