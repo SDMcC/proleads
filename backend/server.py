@@ -1599,42 +1599,35 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
             f"&currency=USD"
         )
         
-        # Crypto payment - use hosted multi-coin mode
-        # First create the hosted wallet
-        crypto_payload = {
-            "evm": HOT_WALLET_ADDRESS,
-            "btc": "bc1qx9t2l3pyny2spqpqlye8svce70nppwtaxwdrp4",  # Would need actual BTC address
-            "trc20": "TXkAFu57udvWQpHvPmSAWS2tGvgYqbTYaz",  # Would need actual TRC20
-            "fiat_amount": tier_info['price'],
-            "fiat_currency": "USD",
-            "callback": callback_url
-        }
+        # Crypto payment - use simple USDC Polygon approach
+        # Create a simpler crypto wallet using the crypto API
+        crypto_callback = urllib.parse.quote(callback_url, safe='')
+        crypto_wallet_api = f"https://api.paygate.to/crypto/polygon/usdc/wallet.php?address={HOT_WALLET_ADDRESS}&callback={crypto_callback}"
         
-        encoded_crypto_payload = urllib.parse.quote(json.dumps(crypto_payload), safe='')
+        crypto_payment_link = None
+        crypto_address = None
         
-        crypto_wallet_url = f"https://api.paygate.to/crypto/multi-hosted-wallet.php?payload={encoded_crypto_payload}"
-        
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            crypto_response = await client.get(crypto_wallet_url)
-            
-            logger.info(f"Crypto wallet response status: {crypto_response.status_code}")
-            logger.info(f"Crypto wallet response: {crypto_response.text[:200]}")
-            
-            if crypto_response.status_code == 200:
-                crypto_data = crypto_response.json()
-                payment_token = crypto_data.get("payment_token")
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                crypto_response = await client.get(crypto_wallet_api)
                 
-                if payment_token:
-                    # Crypto payment link
-                    crypto_payment_link = f"https://checkout.paygate.to/crypto/hosted.php?payment_token={payment_token}&add_fees=0"
-                    logger.info(f"Crypto payment link created successfully")
+                logger.info(f"Crypto wallet API response status: {crypto_response.status_code}")
+                logger.info(f"Crypto wallet API response: {crypto_response.text[:300]}")
+                
+                if crypto_response.status_code == 200:
+                    crypto_data = crypto_response.json()
+                    crypto_address = crypto_data.get("address_in")
+                    
+                    if crypto_address:
+                        # Simple approach: just show the address
+                        # User can pay directly to this USDC Polygon address
+                        logger.info(f"Crypto payment address created: {crypto_address}")
+                    else:
+                        logger.warning("No address_in in crypto response")
                 else:
-                    logger.warning("No payment_token in crypto response")
-                    crypto_payment_link = None
-            else:
-                logger.error(f"Crypto wallet creation failed: {crypto_response.text}")
-                # Fallback to simple USDC Polygon
-                crypto_payment_link = None
+                    logger.error(f"Crypto wallet creation failed: {crypto_response.text}")
+        except Exception as e:
+            logger.error(f"Crypto wallet creation exception: {str(e)}")
         
         logger.info(f"PayGate.to payment created: {payment_id} for ${tier_info['price']}")
         
