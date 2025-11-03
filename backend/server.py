@@ -3,6 +3,7 @@ import sys
 from fastapi import FastAPI, HTTPException, Depends, Request, WebSocket, WebSocketDisconnect, Header, UploadFile, File, Form
 from fastapi.responses import StreamingResponse, Response
 from ftp_storage import upload_file_to_ftp, download_file_from_ftp, get_public_url, get_content_type
+from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
