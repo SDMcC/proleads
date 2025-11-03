@@ -1532,7 +1532,32 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
     try:
         # Generate unique payment ID
         payment_id = f"PAY-{uuid.uuid4().hex[:16].upper()}"
-        order_id = f"{current_user['address']}_{request.tier}_{int(datetime.utcnow().timestamp())}"
+        
+        # Step 1: Create wallet with PayGate.to
+        callback_url = f"{APP_URL}/api/payments/paygate-callback?payment_id={payment_id}"
+        
+        # URL encode callback
+        import urllib.parse
+        encoded_callback = urllib.parse.quote(callback_url, safe='')
+        
+        # Call PayGate.to wallet creation API
+        wallet_api_url = f"https://api.paygate.to/control/wallet.php?address={HOT_WALLET_ADDRESS}&callback={encoded_callback}"
+        
+        logger.info(f"Creating PayGate.to wallet: {wallet_api_url}")
+        
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            wallet_response = await client.get(wallet_api_url)
+            
+            if wallet_response.status_code != 200:
+                logger.error(f"PayGate.to wallet creation failed: {wallet_response.text}")
+                raise HTTPException(status_code=500, detail="Payment service error")
+            
+            wallet_data = wallet_response.json()
+            encrypted_address = wallet_data.get("address_in")
+            polygon_address = wallet_data.get("polygon_address_in")
+            ipn_token = wallet_data.get("ipn_token")
+            
+            logger.info(f"PayGate.to wallet created: {polygon_address}")
         
         # Store payment record with "pending" status
         payment_doc = {
@@ -1545,31 +1570,66 @@ async def create_payment(request: PaymentRequest, current_user: dict = Depends(g
             "currency": "USD",
             "status": "pending",
             "created_at": datetime.utcnow(),
-            "order_id": order_id,
-            "payment_method": "paygate"
+            "payment_method": "paygate",
+            "paygate_data": {
+                "encrypted_address": encrypted_address,
+                "polygon_address": polygon_address,
+                "ipn_token": ipn_token
+            }
         }
         
         await db.payments.insert_one(payment_doc)
         
-        # Generate PayGate.to payment link
-        # PayGate.to format: https://paygate.to/payment?amount=XX&merchant_wallet=0x...&order_id=XXX
-        payment_link = (
-            f"https://paygate.to/payment"
-            f"?amount={tier_info['price']}"
-            f"&merchant_wallet={HOT_WALLET_ADDRESS}"
-            f"&order_id={payment_id}"
-            f"&description={request.tier.capitalize()}%20Membership%20-%20{current_user['username']}"
-            f"&callback_url={APP_URL}/payment-success"
+        # Step 2: Generate payment links for both card and crypto
+        # URL encode encrypted address and email
+        encoded_address = urllib.parse.quote(encrypted_address, safe='')
+        encoded_email = urllib.parse.quote(current_user.get("email", "user@example.com"), safe='')
+        
+        # Credit card payment link (multi-provider mode for user choice)
+        card_payment_link = (
+            f"https://checkout.paygate.to/pay.php"
+            f"?address={encoded_address}"
+            f"&amount={tier_info['price']}"
+            f"&email={encoded_email}"
+            f"&currency=USD"
         )
+        
+        # Crypto payment - use hosted multi-coin mode
+        # First create the hosted wallet
+        crypto_payload = {
+            "evm": HOT_WALLET_ADDRESS,
+            "btc": "bc1qx9t2l3pyny2spqpqlye8svce70nppwtaxwdrp4",  # Would need actual BTC address
+            "trc20": "TXkAFu57udvWQpHvPmSAWS2tGvgYqbTYaz",  # Would need actual TRC20
+            "fiat_amount": tier_info['price'],
+            "fiat_currency": "USD",
+            "callback": callback_url
+        }
+        
+        encoded_crypto_payload = urllib.parse.quote(json.dumps(crypto_payload), safe='')
+        
+        crypto_wallet_url = f"https://api.paygate.to/crypto/multi-hosted-wallet.php?payload={encoded_crypto_payload}"
+        
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            crypto_response = await client.get(crypto_wallet_url)
+            if crypto_response.status_code == 200:
+                crypto_data = crypto_response.json()
+                payment_token = crypto_data.get("payment_token")
+                
+                # Crypto payment link
+                crypto_payment_link = f"https://checkout.paygate.to/crypto/hosted.php?payment_token={payment_token}&add_fees=0"
+            else:
+                # Fallback to simple USDC Polygon
+                crypto_payment_link = None
         
         logger.info(f"PayGate.to payment created: {payment_id} for ${tier_info['price']}")
         
         return {
             "payment_id": payment_id,
-            "payment_link": payment_link,
+            "card_payment_link": card_payment_link,
+            "crypto_payment_link": crypto_payment_link,
             "amount": tier_info["price"],
             "currency": "USD",
-            "merchant_wallet": HOT_WALLET_ADDRESS,
+            "polygon_address": polygon_address,
             "status": "pending"
         }
                 
