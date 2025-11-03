@@ -103,20 +103,36 @@
 #====================================================================================================
 
 user_problem_statement: |
-  Implementing new membership tiers for testing environment before integrating Atlos.io payment processor. Adding 2 new membership levels:
-  1. **Test Membership**: $2/month subscription, commissions 25%, 5%, 3%, 2%, no weekly leads, publicly available
-  2. **VIP Affiliate**: Free lifetime access, commissions 30%, 15%, 10%, 5%, no weekly leads, admin-only assignment
+  PHASE 1 COMPLETED: Replaced NOWPayments with PayGate.to payment processor and implemented instant USDC payout system on Polygon.
   
-  Complete updated tier structure:
-  - Affiliate tier: $0/month (lifetime), commissions 25%, 5%, no weekly leads
-  - Test tier: $2/month, commissions 25%, 5%, 3%, 2%, no weekly leads  
-  - Bronze tier: $20/month, commissions 25%, 5%, 3%, 2%, 100 weekly leads
-  - Silver tier: $50/month, commissions 27%, 10%, 5%, 3%, 250 weekly leads
-  - Gold tier: $100/month, commissions 30%, 15%, 10%, 5%, 500 weekly leads
-  - VIP Affiliate tier: $0/month (lifetime), commissions 30%, 15%, 10%, 5%, no weekly leads
+  **PayGate.to Integration:**
+  - Payment gateway that accepts credit cards and crypto
+  - Auto-converts to USDC on Polygon network
+  - Direct settlement to hot wallet (0xe68BecFfF9eae92bFcf3ba745563C5be2EB81460)
+  - Fee: 1.5%
   
-  VIP Affiliate tier will be assignable only via Admin Members Management Edit modal, with purple badge indicator.
-  Previously completed: Comprehensive Internal Ticketing System, Admin Members Management, and notification systems.
+  **Instant Payout System:**
+  - Hot wallet receives USDC from PayGate.to
+  - Backend automatically calculates 4-tier commissions
+  - Sends USDC to each affiliate sequentially (~30-60 seconds)
+  - Sends remaining profit to cold wallet (0x648A5cc007BFf2F3e63bE469F9A3db2a2DD69336)
+  - Escrow system for failed payouts
+  
+  **Escrow Management (NEW):**
+  - Admin interface to view/manage failed payouts
+  - CSV export with user emails
+  - Release function to retry payouts after wallet fixes
+  
+  **Commission Structure:**
+  - Affiliate: Free, [25%, 5%] (2 levels)
+  - Test: $2/month, [25%, 5%, 3%, 2%] (4 levels)
+  - Bronze: $20/month, [25%, 5%, 3%, 2%] (4 levels)
+  - Silver: $50/month, [27%, 10%, 5%, 3%] (4 levels)
+  - Gold: $100/month, [30%, 15%, 10%, 5%] (4 levels)
+  - VIP Affiliate: Free, [30%, 15%, 10%, 5%] (4 levels)
+  
+  **Current Testing Phase:**
+  Need to test all new endpoints and payment flow
 
 backend:
   - task: "Admin Authentication System"
