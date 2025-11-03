@@ -516,49 +516,6 @@ async def calculate_commissions(new_member_address: str, new_member_tier: str, n
     logger.info(f"Total commissions calculated: {len(commissions_paid)}")
     return commissions_paid
 
-async def initiate_payout(address: str, amount: float):
-    """Initiate instant USDC payout"""
-    try:
-        headers = {
-            "x-api-key": NOWPAYMENTS_API_KEY,
-            "Content-Type": "application/json"
-        }
-        
-        payout_data = {
-            "withdrawals": [{
-                "address": address,
-                "currency": "USDC",
-                "amount": amount,
-                "ipn_callback_url": f"{APP_URL}/api/payout-callback"
-            }]
-        }
-        
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                "https://api.nowpayments.io/v1/payout",
-                headers=headers,
-                json=payout_data
-            )
-            
-            if response.status_code == 201:
-                payout_result = response.json()
-                
-                # Update commission status
-                await db.commissions.update_many(
-                    {"recipient_address": address, "status": "pending"},
-                    {"$set": {"status": "processing", "payout_id": payout_result.get("id")}}
-                )
-                
-                logger.info(f"Payout initiated for {address}: ${amount} USDC")
-                return payout_result
-            else:
-                logger.error(f"Payout failed: {response.text}")
-                return None
-                
-    except Exception as e:
-        logger.error(f"Payout error: {str(e)}")
-        return None
-
 @app.post("/api/auth/simple-login")
 async def simple_login(request: SimpleLoginRequest):
     """Simple login with wallet address and username (no signature required)"""
