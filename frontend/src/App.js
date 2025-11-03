@@ -7455,6 +7455,18 @@ function AdminDashboard() {
   const [selectedMilestone, setSelectedMilestone] = useState(null);
   const [showMilestoneModal, setShowMilestoneModal] = useState(false);
 
+  // Escrow management state
+  const [escrowRecords, setEscrowRecords] = useState([]);
+  const [escrowPage, setEscrowPage] = useState(1);
+  const [escrowTotalPages, setEscrowTotalPages] = useState(1);
+  const [escrowFilters, setEscrowFilters] = useState({
+    status: 'pending_review',
+    dateFrom: '',
+    dateTo: ''
+  });
+  const [selectedEscrow, setSelectedEscrow] = useState(null);
+  const [releasingEscrow, setReleasingEscrow] = useState(null);
+
   // KYC management state
   const [kycSubmissions, setKycSubmissions] = useState([]);
   const [kycPage, setKycPage] = useState(1);
