@@ -7078,27 +7078,6 @@ function PaymentModal({
     </div>
   );
 }
-                  </div>
-                </div>
-
-                <div className="bg-yellow-900 bg-opacity-30 border border-yellow-700 rounded-lg p-3 mb-4">
-                  <p className="text-yellow-300 text-xs text-center">
-                    ⚠️ Send exact amount shown above. Payment confirms automatically after blockchain confirmation.
-                  </p>
-                </div>
-
-                <div className="flex items-center justify-center space-x-2 text-gray-400">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
-                  <p className="text-sm">Waiting for payment confirmation...</p>
-                </div>
-              </>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
 
 // Payment Success Component
 function PaymentSuccess() {
