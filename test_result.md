@@ -949,7 +949,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Email Notification System Testing"
+    - "PayGate.to Payment Integration"
+    - "Escrow Management System"
+    - "Instant USDC Payout System"
+    - "Crypto Wallet Infrastructure"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
