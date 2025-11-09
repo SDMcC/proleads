@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 # DePay Configuration
 DEPAY_PUBLIC_KEY = os.getenv("DEPAY_PUBLIC_KEY")
 DEPAY_INTEGRATION_ID = os.getenv("DEPAY_INTEGRATION_ID")
+OUR_PRIVATE_KEY = os.getenv("OUR_PRIVATE_KEY")
 
 # USDC on Polygon
 USDC_POLYGON_ADDRESS = "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359"
