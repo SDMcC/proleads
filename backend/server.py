@@ -89,10 +89,12 @@ JWT_SECRET = os.getenv("JWT_SECRET")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 APP_URL = os.getenv("APP_URL")
 
-# PayGate.to & Crypto Configuration
+# DePay & Crypto Configuration
 HOT_WALLET_ADDRESS = os.getenv("HOT_WALLET_ADDRESS")
 COLD_WALLET_ADDRESS = os.getenv("COLD_WALLET_ADDRESS")
 POLYGON_RPC_URL = os.getenv("POLYGON_RPC_URL", "https://polygon-rpc.com")
+DEPAY_INTEGRATION_ID = os.getenv("DEPAY_INTEGRATION_ID")
+DEPAY_PUBLIC_KEY = os.getenv("DEPAY_PUBLIC_KEY")
 
 # Admin Configuration
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
