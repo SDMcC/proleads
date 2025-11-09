@@ -2418,8 +2418,19 @@ async def depay_configuration(request: Request):
             user_address=user_address
         )
         
+        # Sign the response
+        from depay_utils import sign_response
+        config_json = json.dumps(config, separators=(',', ':'))  # No whitespace
+        signature = sign_response(config_json)
+        
         logger.info(f"DePay configuration created for payment {payment_id}: {amount} USDC")
-        return config
+        
+        # Return response with signature header
+        return Response(
+            content=config_json,
+            media_type="application/json",
+            headers={"x-signature": signature}
+        )
         
     except HTTPException:
         raise
