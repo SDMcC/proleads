@@ -25,6 +25,9 @@ import io
 from crypto_utils import PolygonWallet, validate_wallet_address, get_hot_wallet_balance
 from payout_system import PayoutSystem
 
+# Import DePay utilities
+from depay_utils import verify_depay_signature, create_payment_configuration, parse_depay_callback
+
 # Import email service from the same directory
 try:
     from email_service import (
