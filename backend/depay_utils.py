@@ -26,6 +26,51 @@ OUR_PRIVATE_KEY = os.getenv("OUR_PRIVATE_KEY")
 USDC_POLYGON_ADDRESS = "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359"
 
 
+def sign_response(data: str) -> str:
+    """
+    Sign a response body with our private key for DePay
+    
+    Args:
+        data: JSON string to sign (without line breaks or unnecessary whitespace)
+        
+    Returns:
+        Base64 URL-safe encoded signature
+    """
+    try:
+        if not OUR_PRIVATE_KEY:
+            logger.error("OUR_PRIVATE_KEY not configured")
+            return ""
+        
+        # Load private key
+        private_key = serialization.load_pem_private_key(
+            OUR_PRIVATE_KEY.encode('utf-8'),
+            password=None,
+            backend=default_backend()
+        )
+        
+        # Sign the data using RSA-PSS with SHA256 and salt length 64
+        signature = private_key.sign(
+            data.encode('utf-8'),
+            padding.PSS(
+                mgf=padding.MGF1(hashes.SHA256()),
+                salt_length=64
+            ),
+            hashes.SHA256()
+        )
+        
+        # Encode to base64 URL-safe format
+        signature_b64 = base64.urlsafe_b64encode(signature).decode('utf-8')
+        # Remove padding
+        signature_b64 = signature_b64.rstrip('=')
+        
+        logger.info("Response signed successfully")
+        return signature_b64
+        
+    except Exception as e:
+        logger.error(f"Failed to sign response: {str(e)}")
+        return ""
+
+
 def verify_depay_signature(signature: str, payload: bytes) -> bool:
     """
     Verify DePay webhook signature using RSA-PSS with SHA256
