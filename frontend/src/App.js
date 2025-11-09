@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'rea
 import axios from 'axios';
 import Tree from 'react-d3-tree';
 import { QRCodeSVG as QRCode } from 'qrcode.react';
+import DePayWidgets from '@depay/widgets';
 import { 
   Wallet, 
   Users, 
