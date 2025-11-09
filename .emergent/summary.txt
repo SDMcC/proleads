@@ -1,66 +1,76 @@
 <analysis>
-The AI engineer's work began by stabilizing the Proleads Network, fixing backend deployment, frontend login, and UI/UX issues. A significant migration from AWS to cPanel for email and file storage was executed, including FTP implementation. Initial payment processing attempts with NOWPayments encountered multiple hurdles, such as minimum payment limits and incorrect invoice URLs, necessitating a switch to their Invoice API and then a fix for currency selection.
+The AI engineer's initial work focused on stabilizing the Proleads Network and migrating infrastructure from AWS to cPanel. The core challenge in this trajectory revolved around establishing a reliable crypto payment processing system with instant affiliate payouts. Multiple payment processors were attempted and abandoned: NOWPayments due to severe delays, unreliability, and webhook issues, and Coinbase Commerce which lacked mass payout.
 
-Extensive research into various payment processors (Coinbase Commerce, BitPay, Circle, B2BinPay, CoinPayments, Atlos.io) followed, driven by the user's need for reliable auto-conversion to USDC Polygon and instant payouts. Coinbase Commerce was successfully integrated but lacked mass payout, leading to a discussion of a reserve-based system. The user's preference for NOWPayments' auto-conversion and white-label API led to its re-integration, which unfortunately suffered from critical issues like persistent webhook URL problems, 25+ minute payment confirmation times, and slow crypto-to-crypto conversions. This led to its abandonment.
-
-The trajectory concludes with the user identifying PayGate.to as a promising solution for its direct USDC Polygon conversion, despite its higher fee and absence of a payout function, which is the current focus of the engineer's analysis.
+The trajectory then shifted to PayGate.to, identified by the user for its direct USDC Polygon conversion. The engineer proceeded to integrate PayGate.to, which involved extensive backend and frontend modifications for payment creation, webhook handling, and a new escrow system for commission management. Key issues encountered with PayGate.to included a confusing API (initially thought to be redirect-only, then revealed to have separate APIs for credit card and crypto), wallet address not allowed errors requiring affiliate registration, incorrect QR code amounts, and a critical failure where a payment of 2 USDC resulted in only 0.01 USDC received, along with failures in email notifications, and dashboard updates. Consequently, PayGate.to was deemed unreliable, and the user requested a switch to DePay.com. The current state is an analysis of DePay.com for integration.
 </analysis>
 
 <product_requirements>
-The Proleads Network is a 4-tier membership affiliate system built on an existing ticketing platform. Key product requirements include: a modern UI redesign (homepage, affiliates, login/registration, privacy, terms) with Proleads Network branding; an Admin Dashboard featuring Recent Activity and Analytics with filterable graphs; and an interactive genealogy tree using . Email notifications are crucial for various events (referral, lead distribution, payment, commission) with user preferences and admin alerts (admin email for new tickets is implemented). Mandatory KYC functionality with admin review is required. Core bug fixes, especially for commission calculations, are essential. Post-deployment enhancements include shortened affiliate URLs, production SMTP setup (migrated to cPanel), paginated notification history, and resolution of attachment/notification display bugs (fixed by S3/FTP migration and frontend URL/auth fixes). The application must be deployment-ready, addressing build and runtime issues, with initial deployment and login issues already resolved.
+The Proleads Network is a 4-tier affiliate system, requiring a modern UI for various pages, an Admin Dashboard with analytics and recent activity, and an interactive genealogy tree. Essential features include email notifications for referrals, leads, payments, and commissions, along with admin alerts. KYC functionality with admin review is mandatory. Crucial bug fixes for commission calculations, shortened affiliate URLs, and notification display are also required. The application must be deployment-ready. A key feature is instant affiliate payouts (max 4 per payment) upon payment completion, with gas fees absorbed by the platform. Payouts should be sequential, and in case of errors, funds should be held in escrow with a management interface including CSV export and fund release functionality. The primary requirement for payment processing is automatic conversion of incoming crypto to USDC Polygon and direct settlement.
 </product_requirements>
 
 <key_technical_concepts>
--   **Backend**: FastAPI, MongoDB (Motor), Pydantic, JWT Auth, , FTP/FTPS,  (installed/removed),  API,  API,  (SHA-256, SHA-512).
--   **Frontend**: React (Hooks, Context, Portals), Tailwind CSS, Axios, React Router, , .
+-   **Backend**: FastAPI, MongoDB (Motor), Pydantic, JWT Auth, , FTP/FTPS, ,  API (credit card & crypto), .
+-   **Frontend**: React (Hooks, Context), Tailwind CSS, Axios, React Router, , .
 -   **Data**: UUIDs, ISO date strings, Pagination.
--   **Deployment**: Kubernetes, Dockerfile, Nginx, Supervisor, Environment Variables.
+-   **Deployment**: Kubernetes, Dockerfile, Supervisor, Environment Variables.
 </key_technical_concepts>
 
 <code_architecture>
 
 
 -   ****:
-    -   **Importance**: Core FastAPI application for API, DB, and business logic.
-    -   **Changes**: Extensive modifications for payment processing. Initially integrated NOWPayments (v1 and Invoice API), then replaced with Coinbase Commerce. Most recently, NOWPayments white-label () API and IPN handler were re-integrated. Critical fixes include rounding  to 6 decimals, updating webhook  to , adding debug logging for  and IPN, and implementing a GET endpoint for payment status.
+    -   **Importance**: Core FastAPI application for API endpoints, database interaction, and business logic.
+    -   **Changes**: Initially integrated and then removed NOWPayments and Coinbase Commerce. Currently houses PayGate.to integration. The payment creation endpoint () was rewritten to use PayGate.to's credit card and crypto APIs. A new endpoint for checking payment status by monitoring the hot wallet was added. The NOWPayments callback was replaced with a PayGate.to confirmation handler. The  function was modified to remove auto-payout calls, and the  (NOWPayments related) function was removed. Escrow management endpoints () for fetching, releasing, and exporting records were added. Implemented PayGate.to's  endpoint logic using the cold wallet as the affiliate wallet for whitelisting. Added enhanced logging for payment processing.
 -   ****:
     -   **Importance**: Stores backend environment variables.
-    -   **Changes**: Updated SMTP/FTP details. , , , and  () are currently configured.
+    -   **Changes**: Updated SMTP/FTP details. , , , and  were configured, likely placeholders now.  and  () are added and used.
 -   ****:
     -   **Importance**: Centralized email sending logic.
-    -   **Changes**: Added  and other payment-related notification functions.
+    -   **Changes**: Added  and other payment-related notification functions. Specific integration with the new payment flow may be pending.
+-   ** (New File)**:
+    -   **Importance**: Handles hot wallet generation, secure private key storage, and general USDC (or other crypto) transaction logic.
+    -   **Changes**: Contains functions for interacting with Web3, generating new hot wallets, and managing crypto transactions.
+-   ** (New File)**:
+    -   **Importance**: Designed to manage the instant mass payout logic for affiliates and transfer profit to the cold wallet. Also handles escrow logic.
+    -   **Changes**: Contains the logic for processing payouts from the hot wallet to affiliates and the cold wallet, and managing escrowed funds.
 -   ****:
     -   **Importance**: Main React component for UI, routing, and state.
-    -   **Changes**: Fixed  prefixes, replaced modals with slide-out panels, and removed 'Ticket to Downline' UI.
-        -   Refactored the payment flow to an Atlos-style, 4-step modal for NOWPayments white-label.
-        -   Integrated  for QR code generation.
-        -   Corrected membership duration display from /year to /month.
-        -   Updated  component to correctly receive and use state setters (, , , ) for UI navigation.
+    -   **Changes**: Fixed  prefixes. Payment flow was refactored to an Atlos-style, 4-step modal for NOWPayments white-label, then completely rewritten for PayGate.to. Integrated  for QR code generation.  component was significantly simplified and updated to show PayGate.to credit card and crypto options. Added an 'escrow' tab to the admin dashboard navigation and its corresponding UI content, including state management (, ),  for fetching, and the  function. Corrected  import. QR code generation logic was adjusted multiple times for crypto payments (address only, then with amount, then back to address only due to ERC-20 limitations). Fixed a  by removing leftover code from the old payment modal.
 -   ****:
     -   **Importance**: Frontend dependency management.
-    -   **Changes**: Added .
--   **New Documentation Files**: , , , , ,  were created throughout the trajectory to document findings and plans.
+    -   **Changes**: Added .  was added to backend requirements.
+-   ****:
+    -   **Importance**: Documents testing protocols, user problem statements, and communication with testing agents.
+    -   **Changes**: Updated with new backend tasks related to PayGate.to integration and escrow management, and communications for the testing agent.
 </code_architecture>
 
 <pending_tasks>
--   Full implementation and integration of remaining email types with the final payment processor.
+-   Full implementation and integration of remaining email types.
 -   Full implementation of the comprehensive analytics page with filterable graphs.
 -   Re-implementation of the interactive genealogy tree () with styling fixes.
 -   Full integration of the 'Message All Downline' feature (backend logic exists, UI is hidden).
--   Development and implementation of a mass payout function for affiliate commissions using PayGate.to.
--   Testing and validation of PayGate.to for incoming payments and the new payout system.
+-   Resolution of the credit card payment error with PayGate.to (likely requires support).
+-   Complete integration of DePay.com as the new payment processor.
+-   Design and implementation of the mass payout functionality using DePay.com.
 </pending_tasks>
 
 <current_work>
-The immediate work involved resolving the application's core payment processing challenges. After a series of unsuccessful attempts to use NOWPayments due to severe delays (25+ minute confirmations), unreliable auto-conversion, and persistent issues with webhook callback URLs despite multiple fixes (including switching  to  and debugging  caching), NOWPayments was deemed unsuitable for production.
+The immediate work involved attempting to integrate PayGate.to as the primary payment processor. After repeated failures and user feedback indicating fundamental issues (payment amounts not correctly received, lack of notifications, dashboard statuses incorrect), PayGate.to was deemed unreliable.
 
-A brief investigation into CoinPayments also yielded negative results, as it did not meet the requirements for auto-conversion to specific stablecoins like USDC Polygon, and its fee structure was not ideal.
+Specifically, the last attempts with PayGate.to involved:
+1.  **Credit Card Issues**: The Provided wallet address is not allowed error persisted despite attempts to whitelist the wallet using PayGate.to's affiliate API () with the user's cold wallet address.
+2.  **Crypto Payment Issues**:
+    *   The QR code generated for crypto payments initially showed incorrect currency (POL instead of USDC) and later failed to auto-fill the amount, leading to a reversion to an address-only QR code.
+    *   The PayGate.to API for multi-crypto hosted wallets (supporting BTC, ETH, USDC, USDT) was explored, but internal complexities led to a fallback to EVM-only multi-chain support.
+    *   The most critical failure occurred when a test payment for 2 USDC through PayGate.to only resulted in 0.01 USDC being received in the hot wallet.
+    *   Crucially, email notifications were not sent, and both admin and user dashboards displayed payments as pending, with no commissions logged.
 
-The user then identified  as a promising alternative. This new payment processor directly addresses the crucial need for **automatic conversion of incoming crypto to USDC MATIC (Polygon)** and **direct settlement to the user's wallet**, which was a significant pain point with previous solutions. While PayGate.to has a slightly higher fee (1.5% compared to Coinbase Commerce's 1%), this is considered acceptable for its core functionality.
+Given these severe reliability issues, the user has lost trust in PayGate.to and has identified a new alternative: . DePay features direct-to-wallet payments and configurable auto-conversion to USDC Polygon, addressing a key product requirement. The user provided DePay's GitHub and documentation links.
 
-The current work focuses on integrating . However, a key challenge is that  does not offer a built-in mass payout function, which is essential for affiliate commissions. Therefore, the AI engineer is now analyzing PayGate.to's API documentation to understand its incoming payment capabilities and, more importantly, to design and propose a robust, separate solution for managing and executing mass payouts of affiliate commissions using the funds settled in the user's USDC Polygon wallet.
+The current task is to **analyze DePay.com and create a solid implementation plan** to replace the failed PayGate.to integration, with a focus on ensuring it provides reliable notifications and dashboard updates, similar to how Coinbase Commerce performed. The AI has already begun researching DePay and identified its  npm package as the primary integration method.
 </current_work>
 
 <optional_next_step>
-Analyze PayGate.to's API and propose 3 options for implementing the mass payout functionality.
+Analyze DePay's documentation and create a comprehensive implementation plan.
 </optional_next_step>
+

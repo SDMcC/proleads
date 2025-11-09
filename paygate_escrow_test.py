@@ -66,7 +66,7 @@ def main():
     print('🚀 COMPREHENSIVE PAYGATE.TO & ESCROW MANAGEMENT TESTING')
     print('=' * 80)
 
-    backend_url = 'https://affnet-dashboard-1.preview.emergentagent.com'
+    backend_url = 'https://instant-payout-sys.preview.emergentagent.com'
     tester = PayGateEscrowTester(backend_url)
 
     # Get admin token
