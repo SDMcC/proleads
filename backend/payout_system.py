@@ -8,8 +8,12 @@ import uuid
 from typing import List, Dict, Optional
 from decimal import Decimal
 from datetime import datetime
+from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from crypto_utils import PolygonWallet
+
+# Load environment variables
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 
