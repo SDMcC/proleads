@@ -37,12 +37,9 @@ def verify_depay_signature(signature: str, payload: bytes) -> bool:
             logger.error("DEPAY_PUBLIC_KEY not configured")
             return False
         
-        # Replace literal \n with actual newlines for PEM format
-        public_key_pem = DEPAY_PUBLIC_KEY.replace('\\n', '\n')
-        
-        # Load public key
+        # Load public key (dotenv handles newline conversion automatically)
         public_key = serialization.load_pem_public_key(
-            public_key_pem.encode('utf-8'),
+            DEPAY_PUBLIC_KEY.encode('utf-8'),
             backend=default_backend()
         )
         
