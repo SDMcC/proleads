@@ -6832,17 +6832,31 @@ function PaymentPage() {
         });
         
         try {
-          const { unmount } = await window.DePayWidgets.Payment({
+          await window.DePayWidgets.Payment({
             integration: paymentInfo.integration_id,
             payload: {
               payment_id: paymentInfo.payment_id,
               tier: paymentInfo.tier,
               user_address: paymentInfo.user_address
+            },
+            success: () => {
+              // Payment successful - redirect to dashboard
+              console.log('Payment successful! Redirecting to dashboard...');
+              setTimeout(() => {
+                window.location.href = '/dashboard';
+              }, 2000); // Wait 2 seconds to allow webhook processing
+            },
+            error: (error) => {
+              // Payment failed
+              console.error('Payment failed:', error);
+              alert('Payment failed. Please try again.');
+            },
+            close: () => {
+              // Widget closed without payment
+              console.log('Payment widget closed');
             }
           });
           
-          // Widget will handle the payment flow
-          // DePay will call our callback endpoint when payment completes
           console.log('DePay widget opened successfully for payment:', paymentInfo.payment_id);
         } catch (widgetError) {
           console.error('DePay widget error:', widgetError);
