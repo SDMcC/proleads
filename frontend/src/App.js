@@ -6822,7 +6822,7 @@ function PaymentPage() {
         }
         
         // Open DePay widget (using global DePayWidgets from CDN)
-        const { unmount } = await window.DePayWidgets.Payment({
+        console.log('Opening DePay widget with config:', {
           integration: paymentInfo.integration_id,
           payload: {
             payment_id: paymentInfo.payment_id,
@@ -6831,9 +6831,23 @@ function PaymentPage() {
           }
         });
         
-        // Widget will handle the payment flow
-        // DePay will call our callback endpoint when payment completes
-        console.log('DePay widget opened for payment:', paymentInfo.payment_id);
+        try {
+          const { unmount } = await window.DePayWidgets.Payment({
+            integration: paymentInfo.integration_id,
+            payload: {
+              payment_id: paymentInfo.payment_id,
+              tier: paymentInfo.tier,
+              user_address: paymentInfo.user_address
+            }
+          });
+          
+          // Widget will handle the payment flow
+          // DePay will call our callback endpoint when payment completes
+          console.log('DePay widget opened successfully for payment:', paymentInfo.payment_id);
+        } catch (widgetError) {
+          console.error('DePay widget error:', widgetError);
+          alert('Payment widget error: ' + widgetError.message);
+        }
       }
     } catch (error) {
       console.error('Payment creation failed:', error);
