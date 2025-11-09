@@ -166,8 +166,9 @@ class PolygonWallet:
             # Sign transaction
             signed_txn = self.account.sign_transaction(transaction)
             
-            # Send transaction
-            tx_hash = self.w3.eth.send_raw_transaction(signed_txn.raw_transaction)
+            # Send transaction (handle both web3.py v5 and v6 attribute names)
+            raw_tx = getattr(signed_txn, 'rawTransaction', None) or getattr(signed_txn, 'raw_transaction', None)
+            tx_hash = self.w3.eth.send_raw_transaction(raw_tx)
             
             logger.info(f"USDC transfer initiated: {amount} USDC to {to_address}, tx: {tx_hash.hex()}")
             
