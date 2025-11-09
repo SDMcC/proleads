@@ -2358,6 +2358,360 @@ async def get_referral_network(current_user: dict = Depends(get_current_user)):
     network_tree = await build_network_tree(current_user["address"])
     return {"network_tree": network_tree}
 
+
+# ============================================
+# DePay Payment Integration Endpoints
+# ============================================
+
+@app.post("/api/payments/depay/configuration")
+async def depay_configuration(request: Request):
+    """
+    DePay dynamic configuration endpoint
+    Called by DePay widget to get payment configuration dynamically
+    """
+    try:
+        # Get raw request body for signature verification
+        body = await request.body()
+        
+        # Get signature from header
+        signature = request.headers.get("x-signature")
+        
+        if not signature:
+            logger.warning("DePay configuration: Missing x-signature header")
+            raise HTTPException(status_code=401, detail="Missing signature header")
+        
+        # Verify DePay signature
+        if not verify_depay_signature(signature, body):
+            logger.error("DePay configuration: Invalid signature")
+            raise HTTPException(status_code=401, detail="Invalid signature")
+        
+        # Parse request payload
+        payload = json.loads(body.decode('utf-8'))
+        logger.info(f"DePay configuration request: {payload}")
+        
+        # Extract custom data from payload
+        custom_data = payload.get("payload", {})
+        payment_id = custom_data.get("payment_id")
+        tier = custom_data.get("tier")
+        user_address = custom_data.get("user_address")
+        
+        if not payment_id or not tier:
+            logger.error("DePay configuration: Missing required fields in payload")
+            raise HTTPException(status_code=400, detail="Missing payment_id or tier in payload")
+        
+        # Get tier pricing
+        tier_info = MEMBERSHIP_TIERS.get(tier)
+        if not tier_info:
+            raise HTTPException(status_code=400, detail="Invalid membership tier")
+        
+        amount = tier_info["price"]
+        
+        # Create payment configuration
+        config = create_payment_configuration(
+            amount=amount,
+            receiver_address=HOT_WALLET_ADDRESS,
+            user_address=user_address
+        )
+        
+        logger.info(f"DePay configuration created for payment {payment_id}: {amount} USDC")
+        return config
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"DePay configuration error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Configuration error: {str(e)}")
+
+
+@app.post("/api/payments/depay/callback")
+async def depay_callback(request: Request):
+    """
+    DePay webhook callback endpoint
+    Called by DePay when payment status changes (success/failed)
+    """
+    try:
+        # Get raw request body for signature verification
+        body = await request.body()
+        
+        # Get signature from header
+        signature = request.headers.get("x-signature")
+        
+        if not signature:
+            logger.warning("DePay callback: Missing x-signature header")
+            raise HTTPException(status_code=401, detail="Missing signature header")
+        
+        # Verify DePay signature
+        if not verify_depay_signature(signature, body):
+            logger.error("DePay callback: Invalid signature")
+            raise HTTPException(status_code=401, detail="Invalid signature")
+        
+        # Parse callback payload
+        payload = json.loads(body.decode('utf-8'))
+        logger.info(f"DePay callback received: {payload}")
+        
+        # Parse callback data
+        parsed_data = parse_depay_callback(payload)
+        
+        if not parsed_data:
+            logger.error("DePay callback: Failed to parse payload")
+            raise HTTPException(status_code=400, detail="Invalid callback payload")
+        
+        payment_id = parsed_data.get("payment_id")
+        status = parsed_data.get("status")
+        amount = parsed_data.get("amount")
+        transaction_hash = parsed_data.get("transaction_hash")
+        
+        if not payment_id:
+            logger.error("DePay callback: Missing payment_id in payload")
+            raise HTTPException(status_code=400, detail="Missing payment_id")
+        
+        # Find payment in database
+        payment = await db.payments.find_one({"payment_id": payment_id})
+        
+        if not payment:
+            logger.warning(f"DePay callback: Payment not found for ID: {payment_id}")
+            return {"status": "payment not found"}
+        
+        logger.info(f"Processing DePay callback: payment_id={payment_id}, status={status}, amount={amount}")
+        
+        # Update payment record
+        await db.payments.update_one(
+            {"payment_id": payment_id},
+            {"$set": {
+                "status": status,
+                "depay_callback": parsed_data,
+                "transaction_hash": transaction_hash,
+                "received_amount": amount,
+                "updated_at": datetime.utcnow()
+            }}
+        )
+        
+        # Process successful payments
+        if status == "success":
+            logger.info(f"DePay payment successful: {payment_id} - {amount} USDC")
+            
+            # Trigger payment processing (membership upgrade, commissions, payouts)
+            await handle_payment_confirmed_depay(payment, parsed_data)
+        
+        elif status == "failed":
+            logger.warning(f"DePay payment failed: {payment_id}")
+            
+            # Create admin notification
+            await create_admin_notification(
+                notification_type="payment",
+                title="Payment Failed - DePay",
+                message=f"Payment {payment_id} failed - Amount: ${amount} USDC",
+                related_user=payment.get("user_address")
+            )
+        
+        return {"status": "ok"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"DePay callback error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Callback error: {str(e)}")
+
+
+async def handle_payment_confirmed_depay(payment: dict, callback_data: dict):
+    """
+    Handle confirmed DePay payment
+    Upgrades membership, calculates commissions, and processes instant payouts
+    """
+    try:
+        payment_id = payment.get("payment_id")
+        user_address = payment["user_address"]
+        tier = payment["tier"]
+        amount = Decimal(str(callback_data.get("amount", payment["amount"])))
+        
+        logger.info(f"Processing confirmed DePay payment: {payment_id} for user {user_address}")
+        
+        # Update payment status to processing
+        await db.payments.update_one(
+            {"payment_id": str(payment_id)},
+            {"$set": {
+                "status": "processing",
+                "confirmed_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow()
+            }}
+        )
+        
+        # Calculate subscription expiry (30 days/month for all paid tiers)
+        subscription_expires_at = None
+        if tier not in ["affiliate", "vip_affiliate"]:
+            subscription_expires_at = datetime.utcnow() + timedelta(days=30)
+        
+        # Upgrade membership
+        update_data = {"membership_tier": tier}
+        if subscription_expires_at:
+            update_data["subscription_expires_at"] = subscription_expires_at
+        
+        await db.users.update_one(
+            {"address": user_address},
+            {"$set": update_data}
+        )
+        
+        logger.info(f"Upgraded user {user_address} to {tier}")
+        
+        # Get user info for notifications
+        user = await db.users.find_one({"address": user_address})
+        username = user.get("username", "Unknown User") if user else "Unknown User"
+        user_email = user.get("email", "") if user else ""
+        
+        # Calculate commissions
+        logger.info(f"Calculating commissions for ${amount}")
+        commissions = await calculate_commissions(user_address, tier, float(amount))
+        
+        # Process instant payouts
+        logger.info(f"Initiating instant payouts for {len(commissions)} commissions")
+        payout_system = PayoutSystem(db)
+        payout_results = await payout_system.process_instant_payouts(
+            payment_amount=amount,
+            commissions=commissions,
+            payment_id=payment_id
+        )
+        
+        logger.info(f"Payout results: {payout_results['status']}")
+        
+        # Update payment status to completed
+        await db.payments.update_one(
+            {"payment_id": str(payment_id)},
+            {"$set": {
+                "status": "completed",
+                "updated_at": datetime.utcnow(),
+                "payout_results": payout_results
+            }}
+        )
+        
+        # Send payment confirmation email to user
+        if user and user_email:
+            user_prefs = user.get("email_notifications", {})
+            if user_prefs.get("payment_confirmation", True):
+                try:
+                    await send_payment_confirmation_email(user_email, username, tier, float(amount))
+                    logger.info(f"Sent payment confirmation email to {user_email}")
+                except Exception as e:
+                    logger.error(f"Failed to send payment confirmation email: {str(e)}")
+        
+        # Send referral upgrade email to sponsor if exists
+        if user:
+            referrer_address = user.get("referrer_address")
+            if referrer_address:
+                referrer = await db.users.find_one({"address": referrer_address})
+                if referrer:
+                    referrer_prefs = referrer.get("email_notifications", {})
+                    if referrer_prefs.get("referral_upgrade", True):
+                        try:
+                            await send_referral_upgrade_email(
+                                referrer["email"],
+                                referrer["username"],
+                                username,
+                                tier
+                            )
+                            logger.info(f"Sent referral upgrade email to {referrer['email']}")
+                        except Exception as e:
+                            logger.error(f"Failed to send referral upgrade email: {str(e)}")
+        
+        # Create admin notification
+        await create_admin_notification(
+            notification_type="payment",
+            title="Payment Confirmed - DePay",
+            message=f"{username} upgraded to {tier.capitalize()} membership - ${amount} USDC. Instant payouts: {payout_results['status']}",
+            related_user=user_address
+        )
+        
+        # Send admin email notification
+        try:
+            await send_admin_payment_confirmation(username, tier, float(amount))
+            logger.info(f"Sent admin payment notification for {username}")
+        except Exception as e:
+            logger.error(f"Failed to send admin payment email: {str(e)}")
+        
+        # Broadcast update via WebSocket
+        await websocket_manager.broadcast(json.dumps({
+            "type": "payment_confirmed",
+            "user_address": user_address,
+            "tier": tier,
+            "amount": float(amount),
+            "processor": "depay",
+            "payout_status": payout_results['status']
+        }))
+        
+        logger.info(f"✅ Successfully processed DePay payment confirmation for {username}")
+        
+    except Exception as e:
+        logger.error(f"Error handling DePay payment confirmation: {str(e)}")
+        
+        # Update payment status to error
+        try:
+            await db.payments.update_one(
+                {"payment_id": payment.get("payment_id")},
+                {"$set": {
+                    "status": "error",
+                    "error_message": str(e),
+                    "updated_at": datetime.utcnow()
+                }}
+            )
+        except:
+            pass
+        raise
+
+
+@app.post("/api/payments/create-depay")
+async def create_depay_payment(request: PaymentRequest, current_user: dict = Depends(get_current_user)):
+    """Create payment for membership upgrade using DePay"""
+    logger.info(f"DePay payment request received: tier={request.tier}")
+    
+    tier_info = MEMBERSHIP_TIERS.get(request.tier)
+    if not tier_info:
+        raise HTTPException(status_code=400, detail="Invalid membership tier")
+    
+    if tier_info["price"] == 0:
+        # Free affiliate tier - no payment required
+        await db.users.update_one(
+            {"address": current_user["address"]},
+            {"$set": {"membership_tier": request.tier}}
+        )
+        return {"message": "Membership updated to Affiliate", "payment_required": False}
+    
+    try:
+        # Generate unique payment ID
+        payment_id = f"DEPAY-{uuid.uuid4().hex[:16].upper()}"
+        
+        # Store payment record with "pending" status
+        payment_doc = {
+            "payment_id": payment_id,
+            "user_address": current_user["address"],
+            "username": current_user.get("username", ""),
+            "email": current_user.get("email", ""),
+            "tier": request.tier,
+            "amount": tier_info["price"],
+            "currency": "USDC",
+            "status": "pending",
+            "created_at": datetime.utcnow(),
+            "payment_method": "depay"
+        }
+        
+        await db.payments.insert_one(payment_doc)
+        
+        logger.info(f"DePay payment record created: {payment_id}")
+        
+        # Return payment info for widget initialization
+        return {
+            "payment_id": payment_id,
+            "integration_id": DEPAY_INTEGRATION_ID,
+            "amount": tier_info["price"],
+            "tier": request.tier,
+            "user_address": current_user["address"],
+            "username": current_user.get("username", ""),
+            "receiver": HOT_WALLET_ADDRESS
+        }
+        
+    except Exception as e:
+        logger.error(f"DePay payment creation failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Payment creation failed: {str(e)}")
+
+
 # Admin dashboard endpoints
 @app.get("/api/admin/dashboard/overview")
 async def get_admin_dashboard_overview(admin: dict = Depends(get_admin_user)):
