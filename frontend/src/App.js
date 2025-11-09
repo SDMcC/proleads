@@ -6989,7 +6989,7 @@ function PaymentPage() {
   );
 }
 
-// Payment Modal Component - PayGate.to
+// Payment Modal Component - DePay
 function PaymentModal({ 
   isOpen, 
   onClose, 
@@ -7013,27 +7013,36 @@ function PaymentModal({
           <X className="h-6 w-6" />
         </button>
 
-        {/* Step 1: Select Payment Method */}
-        {step === 1 && (
-          <div className="text-center py-8">
-            <h2 className="text-2xl font-bold text-white mb-2">Choose Payment Method</h2>
-            <p className="text-gray-400 mb-8">Pay with credit card or cryptocurrency</p>
-            
-            <div className="bg-gray-800 rounded-lg p-6 mb-8">
-              <p className="text-gray-400 text-sm mb-2">Amount to Pay</p>
-              <p className="text-4xl font-bold text-white">${amount}</p>
-              <p className="text-gray-400 text-sm mt-2 capitalize">{tier} Membership</p>
-            </div>
-
-            <button
-              onClick={onCreatePayment}
-              disabled={loading}
-              className="w-full py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-600 text-white font-semibold rounded-lg transition-all duration-300"
-            >
-              {loading ? 'Creating Payment...' : 'Continue'}
-            </button>
+        {/* Confirmation Screen */}
+        <div className="text-center py-8">
+          <h2 className="text-2xl font-bold text-white mb-2">Confirm Payment</h2>
+          <p className="text-gray-400 mb-8">Pay securely with DePay</p>
+          
+          <div className="bg-gray-800 rounded-lg p-6 mb-8">
+            <p className="text-gray-400 text-sm mb-2">Amount to Pay</p>
+            <p className="text-4xl font-bold text-white">${amount}</p>
+            <p className="text-gray-400 text-sm mt-2 capitalize">{tier} Membership</p>
           </div>
-        )}
+
+          <div className="bg-blue-900 bg-opacity-30 border border-blue-500 rounded-lg p-4 mb-6">
+            <p className="text-blue-300 text-sm mb-2">✓ Secure Crypto Payments</p>
+            <p className="text-gray-300 text-xs">
+              Pay with USDC on multiple chains (Polygon, Ethereum, BSC, and more) or use credit card
+            </p>
+          </div>
+
+          <button
+            onClick={onCreatePayment}
+            disabled={loading}
+            className="w-full py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-600 text-white font-semibold rounded-lg transition-all duration-300"
+          >
+            {loading ? 'Opening Payment Widget...' : 'Continue to Payment'}
+          </button>
+          
+          <p className="text-gray-400 text-xs mt-4">
+            Powered by DePay • Auto-converts to USDC Polygon
+          </p>
+        </div>
 
         {/* Step 2: Payment Options */}
         {step === 2 && paymentData && (
