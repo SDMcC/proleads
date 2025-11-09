@@ -6,10 +6,14 @@ import os
 import base64
 import logging
 from typing import Dict, Optional
+from dotenv import load_dotenv
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.backends import default_backend
 from cryptography.exceptions import InvalidSignature
+
+# Load environment variables
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 
