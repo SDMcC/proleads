@@ -6815,8 +6815,14 @@ function PaymentPage() {
         // Close the modal
         setShowPaymentModal(false);
         
-        // Open DePay widget
-        const { unmount } = await DePayWidgets.Payment({
+        // Wait for DePay script to load
+        if (typeof window.DePayWidgets === 'undefined') {
+          alert('Payment system is loading. Please try again in a moment.');
+          return;
+        }
+        
+        // Open DePay widget (using global DePayWidgets from CDN)
+        const { unmount } = await window.DePayWidgets.Payment({
           integration: paymentInfo.integration_id,
           payload: {
             payment_id: paymentInfo.payment_id,
