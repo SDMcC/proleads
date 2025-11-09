@@ -172,19 +172,24 @@ def parse_depay_callback(payload: Dict) -> Optional[Dict]:
         Parsed payment data or None if invalid
     """
     try:
-        # DePay callback structure (based on documentation)
+        # DePay actual callback structure:
         # {
-        #   "status": "success" | "failed" | "pending",
-        #   "transaction": "0x...",
         #   "blockchain": "polygon",
-        #   "token": "0x...",
-        #   "amount": "20000000", // Raw amount (6 decimals for USDC)
-        #   "receiver": "0x...",
+        #   "transaction": "0x...",
         #   "sender": "0x...",
-        #   "payload": { ... } // Custom payload we sent
+        #   "receiver": "0x...",
+        #   "token": "0x...",
+        #   "amount": "1.97", // Already in decimal format (USDC)
+        #   "payload": { ... }, // Custom payload we sent
+        #   "after_block": "78811332",
+        #   "commitment": "confirmed",
+        #   "confirmations": 1,
+        #   "created_at": "2025-11-09T22:32:37.311429Z",
+        #   "confirmed_at": "2025-11-09T22:32:39.913746Z"
         # }
         
-        status = payload.get("status")
+        # DePay doesn't send status - payment callback means success
+        status = "success"
         transaction = payload.get("transaction")
         blockchain = payload.get("blockchain")
         token = payload.get("token")
@@ -193,9 +198,9 @@ def parse_depay_callback(payload: Dict) -> Optional[Dict]:
         sender = payload.get("sender")
         custom_payload = payload.get("payload", {})
         
-        # Convert USDC amount (6 decimals)
+        # Amount is already in decimal format (e.g., "1.97" for 1.97 USDC)
         if raw_amount:
-            amount_usdc = float(raw_amount) / 1_000_000
+            amount_usdc = float(raw_amount)
         else:
             amount_usdc = 0
         
