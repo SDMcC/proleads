@@ -2482,10 +2482,14 @@ async def depay_callback(request: Request):
             raise HTTPException(status_code=400, detail="Missing payment_id")
         
         # Find payment in database
+        logger.info(f"Looking for payment in database: {payment_id}")
         payment = await db.payments.find_one({"payment_id": payment_id})
         
         if not payment:
-            logger.warning(f"DePay callback: Payment not found for ID: {payment_id}")
+            logger.error(f"DePay callback: Payment not found for ID: {payment_id}")
+            # List recent payments for debugging
+            recent = await db.payments.find().sort("created_at", -1).limit(5).to_list(length=5)
+            logger.error(f"Recent payments in DB: {[p.get('payment_id') for p in recent]}")
             return {"status": "payment not found"}
         
         logger.info(f"Processing DePay callback: payment_id={payment_id}, status={status}, amount={amount}")
