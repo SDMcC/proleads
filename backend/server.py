@@ -2395,14 +2395,13 @@ async def depay_configuration(request: Request):
         payload = json.loads(body.decode('utf-8'))
         logger.info(f"DePay configuration request: {payload}")
         
-        # Extract custom data from payload
-        custom_data = payload.get("payload", {})
-        payment_id = custom_data.get("payment_id")
-        tier = custom_data.get("tier")
-        user_address = custom_data.get("user_address")
+        # DePay sends the payload data directly (not nested)
+        payment_id = payload.get("payment_id")
+        tier = payload.get("tier")
+        user_address = payload.get("user_address")
         
         if not payment_id or not tier:
-            logger.error("DePay configuration: Missing required fields in payload")
+            logger.error(f"DePay configuration: Missing required fields in payload: {payload}")
             raise HTTPException(status_code=400, detail="Missing payment_id or tier in payload")
         
         # Get tier pricing
