@@ -6789,7 +6789,7 @@ function PaymentPage() {
       
       // For free tier
       if (tiers[selectedTier]?.price === 0) {
-        const response = await axios.post(`${API_URL}/payments/create`, {
+        const response = await axios.post(`${API_URL}/payments/create-depay`, {
           tier: selectedTier
         }, {
           headers: { Authorization: `Bearer ${token}` }
@@ -6802,17 +6802,33 @@ function PaymentPage() {
         return;
       }
 
-      // For paid tiers - Create PayGate.to payment
-      const response = await axios.post(`${API_URL}/payments/create`, {
+      // For paid tiers - Create DePay payment
+      const response = await axios.post(`${API_URL}/payments/create-depay`, {
         tier: selectedTier
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      // PayGate.to returns both card and crypto links
-      if (response.data.card_payment_link) {
-        setPaymentData(response.data);
-        setPaymentStep(2); // Show payment options screen
+      // DePay payment created - now open widget
+      if (response.data.payment_id && response.data.integration_id) {
+        const paymentInfo = response.data;
+        
+        // Close the modal
+        setShowPaymentModal(false);
+        
+        // Open DePay widget
+        const { unmount } = await DePayWidgets.Payment({
+          integration: paymentInfo.integration_id,
+          payload: {
+            payment_id: paymentInfo.payment_id,
+            tier: paymentInfo.tier,
+            user_address: paymentInfo.user_address
+          }
+        });
+        
+        // Widget will handle the payment flow
+        // DePay will call our callback endpoint when payment completes
+        console.log('DePay widget opened for payment:', paymentInfo.payment_id);
       }
     } catch (error) {
       console.error('Payment creation failed:', error);
