@@ -2834,8 +2834,12 @@ function NotificationPanel({ bellButtonRef, notifications, onClose, onClearNotif
                   </p>
                 </div>
                 <button
-                  onClick={() => onClearNotification(notification.notification_id)}
-                  className="ml-2 text-gray-400 hover:text-red-400 transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onClearNotification(notification.notification_id);
+                  }}
+                  className="ml-2 text-gray-400 hover:text-blue-400 transition-colors"
+                  title="Clear from list"
                 >
                   <X className="h-4 w-4" />
                 </button>
