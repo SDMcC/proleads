@@ -2955,25 +2955,41 @@ function KYCStatsRow({ stats, user, onNavigateToKYC }) {
   const isVerified = kycStatus?.kyc_status === 'verified';
 
   return (
-    <div className={`grid grid-cols-1 md:grid-cols-2 ${isVerified ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-6 mb-8`}>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      {/* Total Earnings */}
       <StatCard
         icon={<DollarSign className="h-8 w-8 text-green-400" />}
         title="Total Earnings"
         value={`$${stats?.total_earnings?.toFixed(2) || '0.00'} USDC`}
         subtitle="Completed payments"
       />
+
+      {/* Total Referrals */}
       <StatCard
         icon={<Users className="h-8 w-8 text-blue-400" />}
         title="Total Referrals"
         value={stats?.total_referrals || 0}
         subtitle="All levels"
       />
+
+      {/* Membership Tier with Expiry */}
       <StatCard
         icon={<Award className="h-8 w-8 text-purple-400" />}
         title="Membership Tier"
         value={getTierDisplayName(user?.membership_tier || 'affiliate').toUpperCase()}
         subtitle={(() => {
           const tier = user?.membership_tier;
+          // Show subscription expiry if available
+          if (subscriptionInfo) {
+            if (subscriptionInfo.isExpired) {
+              return <span className="text-red-400">Expired {subscriptionInfo.date}</span>;
+            } else if (subscriptionInfo.isExpiringSoon) {
+              return <span className="text-yellow-400">Expires in {subscriptionInfo.daysRemaining} days</span>;
+            } else {
+              return <span className="text-green-400">Expires {subscriptionInfo.date}</span>;
+            }
+          }
+          // Show price if no expiry
           if (tier === 'affiliate' || tier === 'vip_affiliate') return 'Free';
           if (tier === 'test') return '$2/month';
           if (tier === 'bronze') return '$20/month';
@@ -2986,23 +3002,37 @@ function KYCStatsRow({ stats, user, onNavigateToKYC }) {
             onClick={() => window.location.href = '/payment'}
             className="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-all duration-300"
           >
-            Upgrade
+            {subscriptionInfo?.isExpired ? 'Renew' : 'Upgrade'}
           </button>
         }
       />
-      {isVerified && !loading && (
-        <StatCard
-          icon={<Shield className="h-8 w-8 text-green-400" />}
-          title="KYC Status"
-          value={
+
+      {/* KYC Status */}
+      <StatCard
+        icon={<Shield className={`h-8 w-8 ${isVerified ? 'text-green-400' : 'text-gray-400'}`} />}
+        title="KYC Status"
+        value={
+          isVerified ? (
             <span className="flex items-center justify-center space-x-2">
               <CheckCircle className="h-6 w-6 text-green-400" />
               <span>Verified</span>
             </span>
-          }
-          subtitle="Unlimited earnings"
-        />
-      )}
+          ) : (
+            <span className="text-gray-400">Not Verified</span>
+          )
+        }
+        subtitle={isVerified ? "Unlimited earnings" : "Verify to unlock"}
+        action={
+          !isVerified && !loading && (
+            <button
+              onClick={onNavigateToKYC}
+              className="mt-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition-all duration-300"
+            >
+              Verify Now
+            </button>
+          )
+        }
+      />
     </div>
   );
 }
