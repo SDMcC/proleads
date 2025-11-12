@@ -2304,8 +2304,12 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
             "address": referral.get("address"),
             "membership_tier": referral.get("membership_tier"),
             "created_at": referral.get("created_at"),
-            "referral_code": referral.get("referral_code")
+            "referral_code": referral.get("referral_code"),
+            "level": 1  # Direct referrals are level 1
         })
+    
+    # Sort referrals by date and get most recent 10
+    recent_referrals = sorted(formatted_referrals, key=lambda x: x.get("created_at") or datetime.min, reverse=True)[:10]
     
     return {
         "total_earnings": earnings_by_status.get("completed", 0),
@@ -2313,6 +2317,7 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
         "total_referrals": len(referrals),
         "direct_referrals": len([r for r in referrals if r.get("referrer_address") == current_user["address"]]),
         "recent_commissions": formatted_commissions,
+        "recent_referrals": recent_referrals,  # Added for dashboard
         "referral_network": formatted_referrals
     }
 
