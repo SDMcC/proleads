@@ -5961,6 +5961,21 @@ function NotificationSettingsTab({ user }) {
     }
   };
 
+  const deleteNotification = async (notificationId) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(
+        `${API_URL}/users/notifications/${notificationId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      // Refresh the notifications list
+      fetchNotifications();
+    } catch (error) {
+      console.error('Failed to delete notification:', error);
+      alert('Failed to delete notification. Please try again.');
+    }
+  };
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { 
