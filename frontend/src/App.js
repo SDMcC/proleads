@@ -6361,8 +6361,8 @@ function NotificationSettingsTab({ user }) {
                               e.stopPropagation();
                               deleteNotification(notification.notification_id);
                             }}
-                            className="ml-2 p-2 text-gray-400 hover:text-red-400 hover:bg-red-900/20 rounded-lg transition-all flex-shrink-0"
-                            title="Delete notification"
+                            className="ml-2 p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-900/20 rounded-lg transition-all flex-shrink-0"
+                            title="Clear from list"
                           >
                             <X className="h-5 w-5" />
                           </button>
