@@ -6114,18 +6114,6 @@ function NotificationSettingsTab({ user }) {
         ))}
       </div>
 
-      <div className="mt-6 p-4 bg-blue-900 bg-opacity-30 rounded-lg border border-blue-500 border-opacity-30">
-        <div className="flex items-start space-x-3">
-          <Bell className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
-          <div>
-            <p className="text-blue-300 text-sm">
-              <strong>Note:</strong> Email notifications are currently configured for testing with Ethereal Email.
-              After deployment, these will be sent to your registered email address ({user?.email}).
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* Notification History Section */}
       <div className="mt-8 bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-8">
         <div className="flex items-center justify-between mb-6">
