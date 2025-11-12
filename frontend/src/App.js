@@ -2931,7 +2931,7 @@ function AdminNotificationPanel({ bellButtonRef, notifications, onClose, onClear
 
 // Dashboard Tab Components
 // KYC Stats Row Component
-function KYCStatsRow({ stats, user, onNavigateToKYC }) {
+function KYCStatsRow({ stats, user, onNavigateToKYC, subscriptionInfo }) {
   const [kycStatus, setKycStatus] = useState(null);
   const [loading, setLoading] = useState(true);
 
