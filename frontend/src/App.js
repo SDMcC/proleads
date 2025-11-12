@@ -2516,30 +2516,16 @@ function Dashboard() {
                             {new Date(selectedNotificationForView.created_at).toLocaleDateString()} {new Date(selectedNotificationForView.created_at).toLocaleTimeString()}
                           </p>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <button
-                            onClick={async () => {
-                              await clearNotification(selectedNotificationForView.notification_id);
-                              setShowNotificationViewModal(false);
-                              setSelectedNotificationForView(null);
-                            }}
-                            className="text-white hover:bg-blue-500/20 px-3 py-2 rounded-lg transition-colors flex items-center space-x-1"
-                            title="Clear from notifications"
-                          >
-                            <X className="h-5 w-5" />
-                            <span className="text-sm">Clear</span>
-                          </button>
-                          <button
-                            onClick={() => {
-                              setShowNotificationViewModal(false);
-                              setSelectedNotificationForView(null);
-                            }}
-                            className="text-white hover:bg-white/20 p-2 rounded-lg transition-colors"
-                            title="Close"
-                          >
-                            <X className="h-6 w-6" />
-                          </button>
-                        </div>
+                        <button
+                          onClick={() => {
+                            setShowNotificationViewModal(false);
+                            setSelectedNotificationForView(null);
+                          }}
+                          className="text-white hover:bg-white/20 p-2 rounded-lg transition-colors"
+                          title="Close"
+                        >
+                          <X className="h-6 w-6" />
+                        </button>
                       </div>
                     </div>
 
