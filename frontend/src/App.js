@@ -2777,13 +2777,13 @@ function NotificationPanel({ bellButtonRef, notifications, onClose, onClearNotif
       </div>
       
       <div className="max-h-96 overflow-y-auto">
-        {notifications.length === 0 ? (
+        {notifications.filter(n => !n.read).length === 0 ? (
           <div className="p-4 text-center text-gray-400">
             <Bell className="h-8 w-8 mx-auto mb-2 opacity-50" />
-            <p>No notifications yet</p>
+            <p>No unread notifications</p>
           </div>
         ) : (
-          notifications.map((notification) => (
+          notifications.filter(n => !n.read).map((notification) => (
             <div 
               key={notification.notification_id}
               className={`p-4 border-b border-gray-700 last:border-b-0 cursor-pointer hover:bg-white hover:bg-opacity-5 transition-colors ${
