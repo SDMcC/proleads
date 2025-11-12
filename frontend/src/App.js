@@ -2360,12 +2360,12 @@ function Dashboard() {
       const notification = notifications.find(n => n.notification_id === notificationId);
       const wasUnread = notification && !notification.read;
       
-      // Delete notification from backend
-      await axios.delete(`${API_URL}/users/notifications/${notificationId}`, {
+      // Mark notification as read (dismisses from bell dropdown, keeps in history)
+      await axios.put(`${API_URL}/users/notifications/${notificationId}/read`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      // Update local state - remove the notification
+      // Update local state - remove from bell dropdown
       setNotifications(notifications.filter(n => n.notification_id !== notificationId));
       
       // Decrease unread count if notification was unread
@@ -2373,8 +2373,8 @@ function Dashboard() {
         setUnreadCount(Math.max(0, unreadCount - 1));
       }
     } catch (error) {
-      console.error('Failed to delete notification:', error);
-      alert('Failed to delete notification');
+      console.error('Failed to clear notification:', error);
+      alert('Failed to clear notification');
     }
   };
 
