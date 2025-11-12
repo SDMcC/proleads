@@ -2523,11 +2523,11 @@ function Dashboard() {
                               setShowNotificationViewModal(false);
                               setSelectedNotificationForView(null);
                             }}
-                            className="text-white hover:bg-red-500/20 px-3 py-2 rounded-lg transition-colors flex items-center space-x-1"
-                            title="Delete notification"
+                            className="text-white hover:bg-blue-500/20 px-3 py-2 rounded-lg transition-colors flex items-center space-x-1"
+                            title="Clear from notifications"
                           >
                             <X className="h-5 w-5" />
-                            <span className="text-sm">Delete</span>
+                            <span className="text-sm">Clear</span>
                           </button>
                           <button
                             onClick={() => {
