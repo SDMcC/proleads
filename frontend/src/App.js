@@ -2518,15 +2518,30 @@ function Dashboard() {
                             {new Date(selectedNotificationForView.created_at).toLocaleDateString()} {new Date(selectedNotificationForView.created_at).toLocaleTimeString()}
                           </p>
                         </div>
-                        <button
-                          onClick={() => {
-                            setShowNotificationViewModal(false);
-                            setSelectedNotificationForView(null);
-                          }}
-                          className="text-white hover:bg-white/20 p-2 rounded-lg transition-colors"
-                        >
-                          <X className="h-6 w-6" />
-                        </button>
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={async () => {
+                              await clearNotification(selectedNotificationForView.notification_id);
+                              setShowNotificationViewModal(false);
+                              setSelectedNotificationForView(null);
+                            }}
+                            className="text-white hover:bg-red-500/20 px-3 py-2 rounded-lg transition-colors flex items-center space-x-1"
+                            title="Delete notification"
+                          >
+                            <X className="h-5 w-5" />
+                            <span className="text-sm">Delete</span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowNotificationViewModal(false);
+                              setSelectedNotificationForView(null);
+                            }}
+                            className="text-white hover:bg-white/20 p-2 rounded-lg transition-colors"
+                            title="Close"
+                          >
+                            <X className="h-6 w-6" />
+                          </button>
+                        </div>
                       </div>
                     </div>
 
