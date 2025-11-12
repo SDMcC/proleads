@@ -792,7 +792,10 @@ async def register_user(user_data: UserRegistration):
         raise
     except Exception as e:
         logger.error(f"Registration failed: {str(e)}")
-        raise HTTPException(status_code=500, detail="Registration failed")
+        logger.error(f"Registration error details: {type(e).__name__}: {str(e)}")
+        import traceback
+        logger.error(f"Registration traceback: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Registration failed: {str(e)}")
 
 @app.get("/api/users/profile")
 async def get_profile(current_user: dict = Depends(get_current_user)):
