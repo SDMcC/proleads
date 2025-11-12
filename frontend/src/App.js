@@ -2360,23 +2360,21 @@ function Dashboard() {
       const notification = notifications.find(n => n.notification_id === notificationId);
       const wasUnread = notification && !notification.read;
       
-      // Mark as read in backend
-      await axios.put(`${API_URL}/users/notifications/${notificationId}/read`, {}, {
+      // Delete notification from backend
+      await axios.delete(`${API_URL}/users/notifications/${notificationId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      // Update local state
-      setNotifications(notifications.map(n => 
-        n.notification_id === notificationId ? { ...n, read: true } : n
-      ));
+      // Update local state - remove the notification
+      setNotifications(notifications.filter(n => n.notification_id !== notificationId));
       
       // Decrease unread count if notification was unread
       if (wasUnread) {
         setUnreadCount(Math.max(0, unreadCount - 1));
       }
     } catch (error) {
-      console.error('Failed to mark notification as read:', error);
-      alert('Failed to update notification');
+      console.error('Failed to delete notification:', error);
+      alert('Failed to delete notification');
     }
   };
 
