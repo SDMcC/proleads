@@ -6310,13 +6310,15 @@ function NotificationSettingsTab({ user }) {
                     notifications.map((notification) => (
                       <div
                         key={notification.notification_id}
-                        onClick={() => viewNotification(notification.notification_id)}
-                        className={`p-4 rounded-lg cursor-pointer transition-all hover:bg-gray-700/50 border ${
+                        className={`p-4 rounded-lg transition-all border ${
                           notification.read ? 'bg-gray-800/50 border-gray-700' : 'bg-blue-900/20 border-blue-700/50'
                         }`}
                       >
                         <div className="flex items-start justify-between">
-                          <div className="flex-1 min-w-0">
+                          <div 
+                            className="flex-1 min-w-0 cursor-pointer hover:opacity-80"
+                            onClick={() => viewNotification(notification.notification_id)}
+                          >
                             <div className="flex items-center space-x-2 mb-1">
                               {!notification.read && (
                                 <div className="h-2 w-2 bg-blue-500 rounded-full flex-shrink-0" />
@@ -6326,7 +6328,16 @@ function NotificationSettingsTab({ user }) {
                             <p className="text-gray-400 text-sm line-clamp-2">{notification.body}</p>
                             <p className="text-gray-500 text-xs mt-2">{formatDate(notification.created_at)}</p>
                           </div>
-                          <ChevronRight className="h-5 w-5 text-gray-500 ml-2 flex-shrink-0" />
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteNotification(notification.notification_id);
+                            }}
+                            className="ml-2 p-2 text-gray-400 hover:text-red-400 hover:bg-red-900/20 rounded-lg transition-all flex-shrink-0"
+                            title="Delete notification"
+                          >
+                            <X className="h-5 w-5" />
+                          </button>
                         </div>
                       </div>
                     ))
