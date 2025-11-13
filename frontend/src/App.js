@@ -9443,7 +9443,7 @@ function LeadsManagementTab() {
   };
 
   const deleteSchedule = async (scheduleId) => {
-    if (!confirm('Are you sure you want to delete this schedule?')) return;
+    if (!window.confirm('Are you sure you want to delete this schedule?')) return;
     
     try {
       const token = localStorage.getItem('adminToken');
