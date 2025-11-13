@@ -5049,14 +5049,37 @@ async def upload_leads_csv(
         
         # ENHANCEMENT 2: Email validation (optional)
         validation_results = None
+        invalid_emails_skipped = 0
         if validate_emails_bool:
             emails_to_validate = [lead["email"] for lead in leads_data]
             validation_results = await analyze_csv_emails(emails_to_validate, use_api=True)
             
-            invalid_count = validation_results["stats"]["total"] - validation_results["stats"]["valid"]
-            if invalid_count > 0:
-                # Store validation info but don't block upload
-                logger.warning(f"Found {invalid_count} invalid emails during upload")
+            # Filter out invalid emails
+            valid_leads = []
+            for i, lead in enumerate(leads_data):
+                if i < len(validation_results.get("validation_results", [])):
+                    result = validation_results["validation_results"][i]
+                    if result.get("valid", False):
+                        # Add validation data to valid leads
+                        lead["email_validated"] = True
+                        lead["validation_status"] = result.get("status", "VALID")
+                        lead["is_disposable"] = result.get("is_disposable", False)
+                        lead["is_role_based"] = result.get("is_role_based", False)
+                        lead["validation_date"] = datetime.utcnow()
+                        valid_leads.append(lead)
+                    else:
+                        invalid_emails_skipped += 1
+                        logger.info(f"Skipped invalid email: {lead['email']} - Status: {result.get('status', 'INVALID')}")
+                else:
+                    # If no validation result, include the lead
+                    valid_leads.append(lead)
+            
+            # Replace leads_data with only valid leads
+            original_count = len(leads_data)
+            leads_data = valid_leads
+            
+            if invalid_emails_skipped > 0:
+                logger.warning(f"Filtered out {invalid_emails_skipped} invalid emails, uploading {len(leads_data)} valid leads")
         
         # Create lead distribution record
         distribution_id = str(uuid.uuid4())
