@@ -5460,6 +5460,243 @@ async def perform_lead_distribution(distribution_id: str):
         raise
 
 # =============================================================================
+# SEQUENTIAL LEAD DISTRIBUTION FOR SCHEDULED RUNS
+# =============================================================================
+
+async def perform_scheduled_lead_distribution(schedule_id: str, schedule_name: str):
+    """
+    Perform sequential lead distribution from multiple CSVs (oldest first)
+    Distributes to all eligible members once per run
+    """
+    try:
+        logger.info(f"Starting sequential distribution for schedule: {schedule_name}")
+        
+        # Get eligible members
+        bronze_members = await db.users.find({"membership_tier": "bronze", "suspended": False}).to_list(None)
+        silver_members = await db.users.find({"membership_tier": "silver", "suspended": False}).to_list(None)
+        gold_members = await db.users.find({"membership_tier": "gold", "suspended": False}).to_list(None)
+        
+        eligible_members = bronze_members + silver_members + gold_members
+        
+        if not eligible_members:
+            logger.warning("No eligible members for scheduled distribution")
+            return
+        
+        # Define lead allocations per tier
+        tier_lead_limits = {
+            "bronze": 100,
+            "silver": 250,
+            "gold": 500
+        }
+        
+        total_leads_distributed = 0
+        distributions_made = 0
+        source_csvs = []
+        
+        # Distribute to each member
+        for member in eligible_members:
+            member_tier = member.get("membership_tier", "bronze")
+            member_limit = tier_lead_limits.get(member_tier, 100)
+            member_address = member.get("address", "")
+            
+            # Get leads for this member from oldest CSVs first
+            # Pull from available leads (distribution_count < 10) ordered by created_at (oldest first)
+            leads_cursor = db.leads.find({
+                "distribution_count": {"$lt": 10}
+            }).sort("created_at", 1).limit(member_limit)
+            
+            available_leads = await leads_cursor.to_list(None)
+            
+            if not available_leads:
+                logger.info(f"No more leads available for member {member_address}")
+                continue
+            
+            # Create member_leads records
+            member_leads = []
+            for lead in available_leads:
+                member_lead_doc = {
+                    "member_lead_id": str(uuid.uuid4()),
+                    "member_address": member_address,
+                    "member_username": member.get("username", ""),
+                    "lead_id": lead["lead_id"],
+                    "distribution_id": lead.get("distribution_id", ""),
+                    "assigned_at": datetime.utcnow(),
+                    "schedule_id": schedule_id
+                }
+                member_leads.append(member_lead_doc)
+                
+                # Track source CSV
+                dist_id = lead.get("distribution_id")
+                if dist_id and dist_id not in source_csvs:
+                    source_csvs.append(dist_id)
+                
+                # Increment distribution count for lead
+                await db.leads.update_one(
+                    {"lead_id": lead["lead_id"]},
+                    {"$inc": {"distribution_count": 1}}
+                )
+            
+            # Insert member leads
+            if member_leads:
+                await db.member_leads.insert_many(member_leads)
+                total_leads_distributed += len(member_leads)
+                distributions_made += 1
+                
+                # Send notification to member
+                try:
+                    notification_doc = {
+                        "notification_id": str(uuid.uuid4()),
+                        "user_address": member_address,
+                        "type": "lead_distribution",
+                        "title": "New Leads Available",
+                        "message": f"You have received {len(member_leads)} new leads!",
+                        "read": False,
+                        "created_at": datetime.utcnow()
+                    }
+                    await db.notifications.insert_one(notification_doc)
+                except Exception as e:
+                    logger.error(f"Failed to send notification to {member_address}: {str(e)}")
+        
+        # Mark CSVs as completed if they're exhausted (all leads distributed 10 times)
+        for dist_id in source_csvs:
+            remaining = await db.leads.count_documents({
+                "distribution_id": dist_id,
+                "distribution_count": {"$lt": 10}
+            })
+            
+            if remaining == 0:
+                # All leads from this CSV have been fully distributed
+                await db.lead_distributions.update_one(
+                    {"distribution_id": dist_id},
+                    {"$set": {"csv_status": "exhausted", "exhausted_at": datetime.utcnow()}}
+                )
+                logger.info(f"CSV {dist_id} marked as exhausted")
+        
+        # Create a summary record
+        summary_doc = {
+            "execution_id": str(uuid.uuid4()),
+            "schedule_id": schedule_id,
+            "schedule_name": schedule_name,
+            "executed_at": datetime.utcnow(),
+            "total_leads_distributed": total_leads_distributed,
+            "members_served": distributions_made,
+            "source_csvs": source_csvs,
+            "status": "completed"
+        }
+        await db.scheduled_distribution_history.insert_one(summary_doc)
+        
+        logger.info(
+            f"Scheduled distribution completed: {total_leads_distributed} leads "
+            f"distributed to {distributions_made} members from {len(source_csvs)} CSVs"
+        )
+        
+    except Exception as e:
+        logger.error(f"Failed to perform scheduled distribution: {str(e)}")
+        raise
+
+
+# =============================================================================
+# GLOBAL DISTRIBUTION STATISTICS ENDPOINT
+# =============================================================================
+
+@app.get("/api/admin/leads/overview")
+async def get_distribution_overview(admin: dict = Depends(get_admin_user)):
+    """Get global distribution statistics and overview"""
+    try:
+        # Total leads across all CSVs
+        total_leads = await db.leads.count_documents({})
+        
+        # Leads that can still be distributed (< 10 distributions)
+        remaining_leads = await db.leads.count_documents({
+            "distribution_count": {"$lt": 10}
+        })
+        
+        # Total distributions made (lifetime)
+        total_distributions = await db.member_leads.count_documents({})
+        
+        # Get CSV statistics
+        all_distributions = await db.lead_distributions.find({}).to_list(None)
+        
+        active_csvs = []
+        exhausted_csvs = []
+        
+        for dist in all_distributions:
+            dist_id = dist["distribution_id"]
+            
+            # Count remaining leads for this CSV
+            csv_remaining = await db.leads.count_documents({
+                "distribution_id": dist_id,
+                "distribution_count": {"$lt": 10}
+            })
+            
+            csv_total = dist.get("total_leads", 0)
+            csv_distributed = csv_total - csv_remaining
+            
+            csv_info = {
+                "distribution_id": dist_id,
+                "filename": dist["filename"],
+                "total_leads": csv_total,
+                "leads_distributed": csv_distributed,
+                "leads_remaining": csv_remaining,
+                "progress_percentage": round((csv_distributed / csv_total * 100) if csv_total > 0 else 0, 1),
+                "uploaded_at": dist["uploaded_at"],
+                "uploaded_by": dist.get("uploaded_by", "Unknown")
+            }
+            
+            if csv_remaining > 0:
+                csv_info["status"] = "active"
+                active_csvs.append(csv_info)
+            else:
+                csv_info["status"] = "exhausted"
+                exhausted_csvs.append(csv_info)
+        
+        # Sort active CSVs by oldest first
+        active_csvs.sort(key=lambda x: x["uploaded_at"])
+        exhausted_csvs.sort(key=lambda x: x["uploaded_at"], reverse=True)
+        
+        # Get eligible members count
+        eligible_members = await db.users.count_documents({
+            "membership_tier": {"$in": ["bronze", "silver", "gold"]},
+            "suspended": {"$ne": True}
+        })
+        
+        # Calculate estimated weeks remaining (rough estimate)
+        # Assume each member gets leads once per week, and each lead can go to 10 members
+        if eligible_members > 0 and remaining_leads > 0:
+            # Total possible distributions = remaining_leads * 10
+            total_possible_distributions = remaining_leads * 10
+            # Distributions per week = eligible_members (each gets leads once)
+            distributions_per_week = eligible_members
+            estimated_weeks = round(total_possible_distributions / distributions_per_week, 1)
+        else:
+            estimated_weeks = 0
+        
+        # Get next scheduled distribution
+        next_schedule = await db.distribution_schedules.find_one(
+            {"enabled": True},
+            sort=[("next_run", 1)]
+        )
+        
+        return {
+            "total_leads": total_leads,
+            "remaining_leads": remaining_leads,
+            "distributed_leads": total_distributions,
+            "active_csvs_count": len(active_csvs),
+            "exhausted_csvs_count": len(exhausted_csvs),
+            "active_csvs": active_csvs,
+            "exhausted_csvs": exhausted_csvs,
+            "eligible_members": eligible_members,
+            "estimated_weeks_remaining": estimated_weeks,
+            "next_scheduled_run": next_schedule.get("next_run") if next_schedule else None,
+            "next_schedule_name": next_schedule.get("name") if next_schedule else None
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to fetch distribution overview: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch overview")
+
+
+# =============================================================================
 # ENHANCEMENT 1: DUPLICATE DETECTION ENDPOINTS
 # =============================================================================
 
