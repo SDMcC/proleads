@@ -5737,7 +5737,7 @@ async def get_distribution_schedules(
         total_count = await db.distribution_schedules.count_documents({})
         
         # Get schedules with pagination
-        schedules_cursor = db.distribution_schedules.find({}).skip(skip).limit(limit).sort("created_at", -1)
+        schedules_cursor = db.distribution_schedules.find({}, {"_id": 0}).skip(skip).limit(limit).sort("created_at", -1)
         schedules = await schedules_cursor.to_list(None)
         
         return {
