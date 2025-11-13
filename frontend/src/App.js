@@ -9575,42 +9575,6 @@ function LeadsManagementTab() {
           <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
             <h3 className="text-xl font-bold text-white mb-4">Upload Lead CSV</h3>
             
-            {duplicateReport && (
-              <div className="mb-4 p-4 bg-yellow-900 bg-opacity-50 border border-yellow-600 rounded-lg">
-                <h4 className="text-yellow-300 font-semibold mb-2">{duplicateReport.message}</h4>
-                <p className="text-gray-300 text-sm mb-3">
-                  {duplicateReport.error === 'duplicate_in_csv' && 'Please remove duplicates from your CSV and try again.'}
-                  {duplicateReport.error === 'duplicate_in_database' && `Found ${duplicateReport.total_duplicates} duplicates. You can skip them and upload ${duplicateReport.total_new_leads} new leads.`}
-                </p>
-                {duplicateReport.duplicates && duplicateReport.duplicates.length > 0 && (
-                  <div className="mb-3">
-                    <p className="text-gray-400 text-sm mb-2">Sample duplicates:</p>
-                    <div className="bg-black bg-opacity-30 rounded p-2 max-h-32 overflow-y-auto">
-                      {duplicateReport.duplicates.slice(0, 10).map((dup, i) => (
-                        <div key={i} className="text-gray-300 text-xs">{dup}</div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                <div className="flex space-x-3">
-                  {duplicateReport.error === 'duplicate_in_database' && (
-                    <button
-                      onClick={handleSkipDuplicatesAndRetry}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-all duration-300"
-                    >
-                      Skip Duplicates & Upload
-                    </button>
-                  )}
-                  <button
-                    onClick={() => { setDuplicateReport(null); setCsvFile(null); }}
-                    className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded-lg transition-all duration-300"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            )}
-
             <form onSubmit={handleFileUpload} className="space-y-4">
               <div>
                 <label className="block text-gray-300 text-sm font-medium mb-2">
