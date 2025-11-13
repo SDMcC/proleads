@@ -234,7 +234,7 @@ Bob Johnson,bob@test.com,789 Pine Rd"""
         headers = {'Authorization': f'Bearer {self.admin_token}'}
         
         url = f"{self.base_url}/api/admin/leads/validate-csv"
-        files = {'file': ('validate_test.csv', csv_content, 'text/csv')}
+        files = {'csv_file': ('validate_test.csv', csv_content, 'text/csv')}
         
         try:
             response = requests.post(url, files=files, headers=headers)
@@ -254,6 +254,11 @@ Bob Johnson,bob@test.com,789 Pine Rd"""
                     return True
             else:
                 print(f"❌ CSV validation failed - Status: {response.status_code}")
+                try:
+                    error_detail = response.json().get('detail', 'No detail provided')
+                    print(f"   Error: {error_detail}")
+                except:
+                    print(f"   Response: {response.text}")
                 return False
         except Exception as e:
             print(f"❌ CSV validation error: {str(e)}")
