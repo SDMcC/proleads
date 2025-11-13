@@ -5760,7 +5760,7 @@ async def get_distribution_schedule(
 ):
     """Get a specific distribution schedule"""
     try:
-        schedule = await db.distribution_schedules.find_one({"schedule_id": schedule_id})
+        schedule = await db.distribution_schedules.find_one({"schedule_id": schedule_id}, {"_id": 0})
         
         if not schedule:
             raise HTTPException(status_code=404, detail="Schedule not found")
@@ -5768,7 +5768,7 @@ async def get_distribution_schedule(
         # Get recent distributions for this schedule
         distributions_cursor = db.lead_distributions.find({
             "schedule_id": schedule_id
-        }).sort("uploaded_at", -1).limit(10)
+        }, {"_id": 0}).sort("uploaded_at", -1).limit(10)
         recent_distributions = await distributions_cursor.to_list(None)
         
         return {
