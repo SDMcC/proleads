@@ -26,7 +26,7 @@ January 9, 2025
   - Added `handle_payment_confirmed_depay()`: Processes successful payments
   
 - **`/app/backend/.env`**:
-  - Added `DEPAY_INTEGRATION_ID=f2bfd96b-2ce7-4d74-93d6-6ec805750417`
+  - Added `DEPAY_INTEGRATION_ID=affiliate-hub-137`
   - Added `DEPAY_PUBLIC_KEY` (RSA public key for signature verification)
 
 #### Dependencies Added:
@@ -115,8 +115,8 @@ Escrow: Captures any failed payouts for admin review
 #### In DePay Dashboard (https://app.depay.com):
 - **Integration ID**: `f2bfd96b-2ce7-4d74-93d6-6ec805750417`
 - **Dynamic Configuration**: Enabled
-- **Configuration Endpoint**: `https://instant-payout-sys.preview.emergentagent.com/api/payments/depay/configuration`
-- **Callback Endpoint**: `https://instant-payout-sys.preview.emergentagent.com/api/payments/depay/callback`
+- **Configuration Endpoint**: `https://affiliate-hub-137.preview.emergentagent.com/api/payments/depay/configuration`
+- **Callback Endpoint**: `https://affiliate-hub-137.preview.emergentagent.com/api/payments/depay/callback`
 - **Public Key**: Provided by DePay (stored in backend .env)
 
 #### Payment Configuration:

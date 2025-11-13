@@ -25,7 +25,7 @@ JWT_SECRET=[your-jwt-secret]
 JWT_ALGORITHM=HS256
 
 # DePay Payment Integration
-DEPAY_INTEGRATION_ID=f2bfd96b-2ce7-4d74-93d6-6ec805750417
+DEPAY_INTEGRATION_ID=affiliate-hub-137
 DEPAY_PUBLIC_KEY=[DePay public key for webhook verification]
 OUR_PRIVATE_KEY=[Your RSA private key for response signing]
 

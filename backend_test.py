@@ -7525,7 +7525,7 @@ class Web3MembershipTester:
 
 def main():
     # Get the backend URL from environment or use default
-    backend_url = "https://instant-payout-sys.preview.emergentagent.com"
+    backend_url = "https://affiliate-hub-137.preview.emergentagent.com"
     
     print("🚀 Starting Web3 Membership Platform API Tests")
     print("=============================")
@@ -9392,7 +9392,7 @@ if __name__ == "__main__":
         print("🎯 RUNNING SPECIFIC TEST: CSV Lead Upload Functionality")
         print("=" * 80)
         
-        backend_url = "https://instant-payout-sys.preview.emergentagent.com"
+        backend_url = "https://affiliate-hub-137.preview.emergentagent.com"
         tester = Web3MembershipTester(backend_url)
         
         # Run the specific CSV upload test
@@ -9408,7 +9408,7 @@ if __name__ == "__main__":
         print("🎯 RUNNING SPECIFIC TEST: Referral Relationship Fix Verification")
         print("=" * 80)
         
-        backend_url = "https://instant-payout-sys.preview.emergentagent.com"
+        backend_url = "https://affiliate-hub-137.preview.emergentagent.com"
         tester = Web3MembershipTester(backend_url)
         
         # Run the specific referral relationship fix test
@@ -9424,7 +9424,7 @@ if __name__ == "__main__":
         print("🎯 RUNNING SPECIFIC TEST: Corrected Lead Distribution Algorithm")
         print("=" * 80)
         
-        backend_url = "https://instant-payout-sys.preview.emergentagent.com"
+        backend_url = "https://affiliate-hub-137.preview.emergentagent.com"
         tester = Web3MembershipTester(backend_url)
         
         # Run the specific lead distribution test
@@ -9440,7 +9440,7 @@ if __name__ == "__main__":
         print("🎯 RUNNING SPECIFIC TEST: Admin Members Management Enhancement - Subscription Expiry & Suspend/Unsuspend")
         print("=" * 80)
         
-        backend_url = "https://instant-payout-sys.preview.emergentagent.com"
+        backend_url = "https://affiliate-hub-137.preview.emergentagent.com"
         tester = Web3MembershipTester(backend_url)
         
         # Run the specific subscription expiry test
@@ -9456,7 +9456,7 @@ if __name__ == "__main__":
         print("🎯 RUNNING SPECIFIC TEST: Notification System Backend Implementation")
         print("=" * 80)
         
-        backend_url = "https://instant-payout-sys.preview.emergentagent.com"
+        backend_url = "https://affiliate-hub-137.preview.emergentagent.com"
         tester = Web3MembershipTester(backend_url)
         
         # Run the specific notification system test
@@ -9472,7 +9472,7 @@ if __name__ == "__main__":
         print("🎯 RUNNING SPECIFIC TEST: Internal Ticketing System Backend Implementation")
         print("=" * 80)
         
-        backend_url = "https://instant-payout-sys.preview.emergentagent.com"
+        backend_url = "https://affiliate-hub-137.preview.emergentagent.com"
         tester = Web3MembershipTester(backend_url)
         
         # Run the specific ticketing system test
@@ -9488,7 +9488,7 @@ if __name__ == "__main__":
         print("🎯 RUNNING SPECIFIC TEST: Admin Milestone Management System Backend Implementation")
         print("=" * 80)
         
-        backend_url = "https://instant-payout-sys.preview.emergentagent.com"
+        backend_url = "https://affiliate-hub-137.preview.emergentagent.com"
         tester = Web3MembershipTester(backend_url)
         
         # Run the specific milestone system test
@@ -9504,7 +9504,7 @@ if __name__ == "__main__":
         print("🎯 RUNNING SPECIFIC TEST: Email Notification System")
         print("=" * 80)
         
-        backend_url = "https://instant-payout-sys.preview.emergentagent.com"
+        backend_url = "https://affiliate-hub-137.preview.emergentagent.com"
         tester = Web3MembershipTester(backend_url)
         
         # Run the specific email notification test
@@ -9523,7 +9523,7 @@ if __name__ == "__main__":
         print("🎯 RUNNING SPECIFIC TEST: Notification History Endpoints")
         print("=" * 80)
         
-        backend_url = "https://instant-payout-sys.preview.emergentagent.com"
+        backend_url = "https://affiliate-hub-137.preview.emergentagent.com"
         tester = Web3MembershipTester(backend_url)
         
         # Run the specific notification history test
@@ -9539,7 +9539,7 @@ if __name__ == "__main__":
         print("🎯 RUNNING DEPLOYMENT VALIDATION TESTS")
         print("=" * 80)
         
-        backend_url = "https://instant-payout-sys.preview.emergentagent.com"
+        backend_url = "https://affiliate-hub-137.preview.emergentagent.com"
         tester = Web3MembershipTester(backend_url)
         
         # Run deployment validation tests
@@ -9564,7 +9564,7 @@ if __name__ == "__main__":
         print("🚨 RUNNING URGENT LOGIN INVESTIGATION")
         print("=" * 80)
         
-        backend_url = "https://instant-payout-sys.preview.emergentagent.com"
+        backend_url = "https://affiliate-hub-137.preview.emergentagent.com"
         tester = Web3MembershipTester(backend_url)
         
         # Run the login investigation
@@ -9580,7 +9580,7 @@ if __name__ == "__main__":
         print("🎯 RUNNING SPECIFIC TEST: PayGate.to Payment System and Escrow Management")
         print("=" * 80)
         
-        backend_url = "https://instant-payout-sys.preview.emergentagent.com"
+        backend_url = "https://affiliate-hub-137.preview.emergentagent.com"
         tester = Web3MembershipTester(backend_url)
         
         # Run PayGate.to and Escrow tests

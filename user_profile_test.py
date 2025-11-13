@@ -243,7 +243,7 @@ class UserProfileTester:
         return all_passed
 
 def main():
-    backend_url = "https://instant-payout-sys.preview.emergentagent.com"
+    backend_url = "https://affiliate-hub-137.preview.emergentagent.com"
     
     print("🚀 User Profile and Registration System Test")
     print("=" * 50)

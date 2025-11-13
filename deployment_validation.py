@@ -259,7 +259,7 @@ class DeploymentValidator:
 
 def main():
     # Get backend URL from environment or use default
-    backend_url = os.getenv("REACT_APP_BACKEND_URL", "https://instant-payout-sys.preview.emergentagent.com")
+    backend_url = os.getenv("REACT_APP_BACKEND_URL", "https://affiliate-hub-137.preview.emergentagent.com")
     
     # Create validator instance
     validator = DeploymentValidator(backend_url)
