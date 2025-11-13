@@ -9560,6 +9560,16 @@ function LeadsManagementTab() {
       <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-2">
         <div className="flex space-x-2">
           <button
+            onClick={() => { setActiveTab('overview'); setPage(1); }}
+            className={`flex-1 px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+              activeTab === 'overview'
+                ? 'bg-blue-600 text-white'
+                : 'text-gray-300 hover:bg-white hover:bg-opacity-10'
+            }`}
+          >
+            Overview
+          </button>
+          <button
             onClick={() => { setActiveTab('distributions'); setPage(1); }}
             className={`flex-1 px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
               activeTab === 'distributions'
