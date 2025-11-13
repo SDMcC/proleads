@@ -9602,6 +9602,159 @@ function LeadsManagementTab() {
         </div>
       </div>
 
+      {/* Overview Tab */}
+      {activeTab === 'overview' && (
+        <div className="space-y-6">
+          {overviewLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto"></div>
+            </div>
+          ) : overview ? (
+            <>
+              {/* Global Statistics */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+                  <p className="text-gray-400 text-sm mb-2">Total Leads</p>
+                  <p className="text-3xl font-bold text-white">{overview.total_leads.toLocaleString()}</p>
+                </div>
+                <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+                  <p className="text-gray-400 text-sm mb-2">Remaining</p>
+                  <p className="text-3xl font-bold text-green-400">{overview.remaining_leads.toLocaleString()}</p>
+                </div>
+                <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+                  <p className="text-gray-400 text-sm mb-2">Distributed</p>
+                  <p className="text-3xl font-bold text-blue-400">{overview.distributed_leads.toLocaleString()}</p>
+                </div>
+                <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+                  <p className="text-gray-400 text-sm mb-2">Est. Weeks Left</p>
+                  <p className="text-3xl font-bold text-purple-400">{overview.estimated_weeks_remaining}</p>
+                </div>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-lg font-semibold text-white">Overall Distribution Progress</h3>
+                  <span className="text-gray-400 text-sm">
+                    {overview.total_leads > 0 ? Math.round((overview.distributed_leads / (overview.total_leads * 10)) * 100) : 0}%
+                  </span>
+                </div>
+                <div className="w-full bg-gray-700 rounded-full h-4">
+                  <div 
+                    className="bg-gradient-to-r from-blue-500 to-purple-500 h-4 rounded-full transition-all duration-500"
+                    style={{width: `${overview.total_leads > 0 ? Math.min(100, (overview.distributed_leads / (overview.total_leads * 10)) * 100) : 0}%`}}
+                  ></div>
+                </div>
+                <p className="text-gray-400 text-sm mt-2">
+                  {overview.distributed_leads.toLocaleString()} of {(overview.total_leads * 10).toLocaleString()} possible distributions
+                </p>
+              </div>
+
+              {/* Next Scheduled Run */}
+              {overview.next_scheduled_run && (
+                <div className="bg-gradient-to-r from-blue-900 to-purple-900 bg-opacity-50 backdrop-blur-sm rounded-xl p-6 border border-blue-500">
+                  <h3 className="text-lg font-semibold text-white mb-2">Next Scheduled Distribution</h3>
+                  <p className="text-gray-300"><span className="font-medium">{overview.next_schedule_name}</span></p>
+                  <p className="text-blue-300 text-lg font-medium mt-1">
+                    {new Date(overview.next_scheduled_run).toLocaleString()}
+                  </p>
+                  <p className="text-gray-400 text-sm mt-2">
+                    Will distribute leads to {overview.eligible_members} eligible members
+                  </p>
+                </div>
+              )}
+
+              {/* Active CSVs */}
+              <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+                <h3 className="text-xl font-bold text-white mb-4">
+                  Active CSVs ({overview.active_csvs_count})
+                </h3>
+                {overview.active_csvs && overview.active_csvs.length > 0 ? (
+                  <div className="space-y-4">
+                    {overview.active_csvs.map((csv, index) => (
+                      <div key={csv.distribution_id} className="bg-black bg-opacity-30 rounded-lg p-4 border border-gray-700">
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2">
+                              {index === 0 && (
+                                <span className="px-2 py-1 bg-green-600 text-white text-xs rounded">NEXT</span>
+                              )}
+                              <h4 className="text-white font-semibold">{csv.filename}</h4>
+                            </div>
+                            <p className="text-gray-400 text-sm mt-1">Uploaded: {new Date(csv.uploaded_at).toLocaleDateString()}</p>
+                          </div>
+                          <span className="px-3 py-1 bg-green-900 bg-opacity-50 text-green-300 text-sm rounded">
+                            Active
+                          </span>
+                        </div>
+                        
+                        <div className="grid grid-cols-3 gap-4 mb-3">
+                          <div>
+                            <p className="text-gray-500 text-xs">Total</p>
+                            <p className="text-white font-medium">{csv.total_leads}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-500 text-xs">Distributed</p>
+                            <p className="text-blue-400 font-medium">{csv.leads_distributed}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-500 text-xs">Remaining</p>
+                            <p className="text-green-400 font-medium">{csv.leads_remaining}</p>
+                          </div>
+                        </div>
+
+                        <div className="w-full bg-gray-700 rounded-full h-2">
+                          <div 
+                            className="bg-blue-500 h-2 rounded-full transition-all duration-500"
+                            style={{width: `${csv.progress_percentage}%`}}
+                          ></div>
+                        </div>
+                        <p className="text-gray-400 text-xs mt-1">{csv.progress_percentage}% distributed</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-400 text-center py-8">No active CSVs. Upload new leads to get started.</p>
+                )}
+              </div>
+
+              {/* Exhausted CSVs */}
+              {overview.exhausted_csvs && overview.exhausted_csvs.length > 0 && (
+                <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+                  <h3 className="text-xl font-bold text-white mb-4">
+                    Completed CSVs ({overview.exhausted_csvs_count})
+                  </h3>
+                  <div className="space-y-3">
+                    {overview.exhausted_csvs.slice(0, 5).map((csv) => (
+                      <div key={csv.distribution_id} className="bg-black bg-opacity-20 rounded-lg p-3 border border-gray-800">
+                        <div className="flex justify-between items-center">
+                          <div className="flex-1">
+                            <h4 className="text-white font-medium text-sm">{csv.filename}</h4>
+                            <p className="text-gray-500 text-xs mt-1">
+                              {csv.total_leads} leads • Uploaded {new Date(csv.uploaded_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <span className="px-2 py-1 bg-gray-700 text-gray-300 text-xs rounded">
+                            Completed
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                    {overview.exhausted_csvs.length > 5 && (
+                      <p className="text-gray-400 text-sm text-center">
+                        + {overview.exhausted_csvs.length - 5} more completed
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            <p className="text-gray-400 text-center py-8">No overview data available</p>
+          )}
+        </div>
+      )}
+
       {/* Distributions Tab */}
       {activeTab === 'distributions' && (
         <>
