@@ -5143,7 +5143,15 @@ async def upload_leads_csv(
         
         # Add validation summary if performed
         if validation_results:
-            response["validation"] = validation_results["stats"]
+            response["validation"] = {
+                "total_checked": validation_results["stats"]["total"],
+                "valid": len(leads_data),
+                "invalid_skipped": invalid_emails_skipped,
+                "invalid_format": validation_results["stats"].get("invalid_format", 0),
+                "invalid_domain": validation_results["stats"].get("invalid_domain", 0),
+                "disposable": validation_results["stats"].get("disposable", 0),
+                "role_based": validation_results["stats"].get("role_based", 0)
+            }
         
         return response
         
