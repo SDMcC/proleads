@@ -5326,6 +5326,434 @@ async def perform_lead_distribution(distribution_id: str):
         )
         raise
 
+# =============================================================================
+# ENHANCEMENT 1: DUPLICATE DETECTION ENDPOINTS
+# =============================================================================
+
+@app.get("/api/admin/leads/duplicates")
+async def get_duplicate_leads(admin: dict = Depends(get_admin_user)):
+    """Get a report of duplicate email addresses in the database"""
+    try:
+        # Use MongoDB aggregation to find duplicate emails
+        pipeline = [
+            {
+                "$group": {
+                    "_id": "$email",
+                    "count": {"$sum": 1},
+                    "lead_ids": {"$push": "$lead_id"},
+                    "distributions": {"$push": "$distribution_id"},
+                    "names": {"$push": "$name"}
+                }
+            },
+            {
+                "$match": {
+                    "count": {"$gt": 1}
+                }
+            },
+            {
+                "$sort": {"count": -1}
+            },
+            {
+                "$limit": 100
+            }
+        ]
+        
+        duplicates_cursor = db.leads.aggregate(pipeline)
+        duplicates = await duplicates_cursor.to_list(None)
+        
+        return {
+            "total_duplicates": len(duplicates),
+            "duplicates": duplicates
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to fetch duplicate leads: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch duplicates")
+
+
+@app.post("/api/admin/leads/merge-duplicates")
+async def merge_duplicate_leads(
+    email: str,
+    keep_lead_id: str,
+    admin: dict = Depends(get_admin_user)
+):
+    """Merge duplicate leads - keep one, update references to others"""
+    try:
+        # Find all leads with this email
+        duplicate_leads_cursor = db.leads.find({"email": email})
+        duplicate_leads = await duplicate_leads_cursor.to_list(None)
+        
+        if len(duplicate_leads) <= 1:
+            raise HTTPException(status_code=400, detail="No duplicates found for this email")
+        
+        # Get the lead to keep
+        lead_to_keep = next((l for l in duplicate_leads if l["lead_id"] == keep_lead_id), None)
+        if not lead_to_keep:
+            raise HTTPException(status_code=404, detail="Lead to keep not found")
+        
+        # Get leads to merge
+        leads_to_merge = [l for l in duplicate_leads if l["lead_id"] != keep_lead_id]
+        
+        # Update all member_leads references to point to kept lead
+        merge_count = 0
+        for old_lead in leads_to_merge:
+            result = await db.member_leads.update_many(
+                {"lead_id": old_lead["lead_id"]},
+                {"$set": {"lead_id": keep_lead_id}}
+            )
+            merge_count += result.modified_count
+            
+            # Increment distribution count on kept lead
+            await db.leads.update_one(
+                {"lead_id": keep_lead_id},
+                {"$inc": {"distribution_count": old_lead.get("distribution_count", 0)}}
+            )
+        
+        # Delete duplicate leads
+        delete_result = await db.leads.delete_many({
+            "email": email,
+            "lead_id": {"$ne": keep_lead_id}
+        })
+        
+        return {
+            "message": f"Merged {len(leads_to_merge)} duplicate leads",
+            "kept_lead_id": keep_lead_id,
+            "merged_references": merge_count,
+            "deleted_duplicates": delete_result.deleted_count
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to merge duplicate leads: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to merge duplicates")
+
+
+# =============================================================================
+# ENHANCEMENT 2: EMAIL VERIFICATION ENDPOINTS
+# =============================================================================
+
+@app.post("/api/admin/leads/validate-csv")
+async def validate_csv_before_upload(
+    request: Request,
+    use_api: bool = True,
+    admin: dict = Depends(get_admin_user)
+):
+    """Validate CSV emails before actual upload (preview mode)"""
+    try:
+        form = await request.form()
+        csv_file = form.get("csv_file")
+        
+        if not csv_file:
+            raise HTTPException(status_code=400, detail="CSV file is required")
+        
+        # Parse CSV
+        contents = await csv_file.read()
+        csv_content = contents.decode('utf-8')
+        csv_reader = csv.DictReader(io.StringIO(csv_content))
+        
+        # Extract emails
+        emails = []
+        email_header = None
+        for header in csv_reader.fieldnames:
+            if header.lower() == 'email':
+                email_header = header
+                break
+        
+        if not email_header:
+            raise HTTPException(status_code=400, detail="CSV must contain 'email' column")
+        
+        for row in csv_reader:
+            email = row.get(email_header, '').strip()
+            if email:
+                emails.append(email)
+        
+        # Validate emails
+        validation_result = await analyze_csv_emails(emails, use_api=use_api)
+        
+        return validation_result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to validate CSV: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to validate CSV")
+
+
+@app.post("/api/admin/leads/validate-emails")
+async def validate_emails(
+    request_data: EmailValidationRequest,
+    admin: dict = Depends(get_admin_user)
+):
+    """Validate a list of email addresses"""
+    try:
+        result = await analyze_csv_emails(request_data.emails, use_api=request_data.use_api)
+        return result
+    except Exception as e:
+        logger.error(f"Failed to validate emails: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to validate emails")
+
+
+@app.post("/api/admin/leads/batch-validate")
+async def batch_validate_existing_leads(
+    distribution_id: Optional[str] = None,
+    admin: dict = Depends(get_admin_user)
+):
+    """Validate existing leads in database"""
+    try:
+        # Get leads to validate
+        query = {"distribution_id": distribution_id} if distribution_id else {}
+        leads_cursor = db.leads.find(query).limit(1000)  # Limit to prevent timeout
+        leads = await leads_cursor.to_list(None)
+        
+        if not leads:
+            return {
+                "total_validated": 0,
+                "valid_count": 0,
+                "invalid_count": 0,
+                "results": []
+            }
+        
+        # Extract emails
+        emails = [lead["email"] for lead in leads]
+        lead_map = {lead["email"]: lead for lead in leads}
+        
+        # Validate using batch API
+        validation_result = await analyze_csv_emails(emails, use_api=True)
+        
+        # Update database with validation results
+        for result in validation_result.get("validation_results", []):
+            email = result.get("email")
+            if email in lead_map:
+                lead = lead_map[email]
+                await db.leads.update_one(
+                    {"lead_id": lead["lead_id"]},
+                    {"$set": {
+                        "email_validated": result.get("valid", False),
+                        "validation_date": datetime.utcnow(),
+                        "validation_status": result.get("status", "UNKNOWN"),
+                        "is_disposable": result.get("is_disposable", False),
+                        "is_role_based": result.get("is_role_based", False)
+                    }}
+                )
+        
+        stats = validation_result.get("stats", {})
+        
+        return {
+            "total_validated": stats.get("total", 0),
+            "valid_count": stats.get("valid", 0),
+            "invalid_count": stats.get("total", 0) - stats.get("valid", 0),
+            "stats": stats,
+            "results": validation_result.get("validation_results", [])[:50]  # Return first 50
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to batch validate: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to validate leads")
+
+
+# =============================================================================
+# ENHANCEMENT 3: SCHEDULED DISTRIBUTIONS ENDPOINTS
+# =============================================================================
+
+@app.post("/api/admin/leads/schedules")
+async def create_distribution_schedule(
+    schedule: DistributionSchedule,
+    admin: dict = Depends(get_admin_user)
+):
+    """Create a new distribution schedule"""
+    try:
+        # Validate frequency-specific fields
+        if schedule.frequency == "weekly":
+            if not schedule.day_of_week or schedule.day_of_week < 1 or schedule.day_of_week > 7:
+                raise HTTPException(
+                    status_code=400,
+                    detail="day_of_week must be between 1 (Monday) and 7 (Sunday) for weekly schedules"
+                )
+        elif schedule.frequency == "monthly":
+            if not schedule.day_of_month or schedule.day_of_month < 1 or schedule.day_of_month > 31:
+                raise HTTPException(
+                    status_code=400,
+                    detail="day_of_month must be between 1 and 31 for monthly schedules"
+                )
+        else:
+            raise HTTPException(status_code=400, detail="frequency must be 'weekly' or 'monthly'")
+        
+        # Calculate next run time
+        schedule_dict = schedule.dict()
+        next_run = calculate_next_run(schedule_dict)
+        
+        schedule_doc = {
+            "schedule_id": str(uuid.uuid4()),
+            "name": schedule.name,
+            "frequency": schedule.frequency,
+            "day_of_week": schedule.day_of_week,
+            "day_of_month": schedule.day_of_month,
+            "time": schedule.time,
+            "enabled": schedule.enabled,
+            "min_leads_required": schedule.min_leads_required,
+            "tier_allocations": schedule.tier_allocations or {},
+            "last_run": None,
+            "next_run": next_run,
+            "run_count": 0,
+            "skipped_count": 0,
+            "error_count": 0,
+            "created_by": admin["username"],
+            "created_at": datetime.utcnow()
+        }
+        
+        await db.distribution_schedules.insert_one(schedule_doc)
+        
+        logger.info(f"Created distribution schedule: {schedule.name} (next run: {next_run})")
+        
+        return {
+            "schedule_id": schedule_doc["schedule_id"],
+            "message": "Schedule created successfully",
+            "next_run": next_run.isoformat()
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to create schedule: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to create schedule")
+
+
+@app.get("/api/admin/leads/schedules")
+async def get_distribution_schedules(
+    page: int = 1,
+    limit: int = 20,
+    admin: dict = Depends(get_admin_user)
+):
+    """Get all distribution schedules"""
+    try:
+        skip = (page - 1) * limit
+        
+        # Get total count
+        total_count = await db.distribution_schedules.count_documents({})
+        
+        # Get schedules with pagination
+        schedules_cursor = db.distribution_schedules.find({}).skip(skip).limit(limit).sort("created_at", -1)
+        schedules = await schedules_cursor.to_list(None)
+        
+        return {
+            "schedules": schedules,
+            "total_count": total_count,
+            "page": page,
+            "limit": limit,
+            "total_pages": (total_count + limit - 1) // limit
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to fetch schedules: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch schedules")
+
+
+@app.get("/api/admin/leads/schedules/{schedule_id}")
+async def get_distribution_schedule(
+    schedule_id: str,
+    admin: dict = Depends(get_admin_user)
+):
+    """Get a specific distribution schedule"""
+    try:
+        schedule = await db.distribution_schedules.find_one({"schedule_id": schedule_id})
+        
+        if not schedule:
+            raise HTTPException(status_code=404, detail="Schedule not found")
+        
+        # Get recent distributions for this schedule
+        distributions_cursor = db.lead_distributions.find({
+            "schedule_id": schedule_id
+        }).sort("uploaded_at", -1).limit(10)
+        recent_distributions = await distributions_cursor.to_list(None)
+        
+        return {
+            "schedule": schedule,
+            "recent_distributions": recent_distributions
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to fetch schedule: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch schedule")
+
+
+@app.put("/api/admin/leads/schedules/{schedule_id}")
+async def update_distribution_schedule(
+    schedule_id: str,
+    updates: ScheduleUpdate,
+    admin: dict = Depends(get_admin_user)
+):
+    """Update a schedule (enable/disable, change time, etc.)"""
+    try:
+        schedule = await db.distribution_schedules.find_one({"schedule_id": schedule_id})
+        
+        if not schedule:
+            raise HTTPException(status_code=404, detail="Schedule not found")
+        
+        # Build update document
+        update_doc = {}
+        if updates.name is not None:
+            update_doc["name"] = updates.name
+        if updates.frequency is not None:
+            update_doc["frequency"] = updates.frequency
+        if updates.day_of_week is not None:
+            update_doc["day_of_week"] = updates.day_of_week
+        if updates.day_of_month is not None:
+            update_doc["day_of_month"] = updates.day_of_month
+        if updates.time is not None:
+            update_doc["time"] = updates.time
+        if updates.min_leads_required is not None:
+            update_doc["min_leads_required"] = updates.min_leads_required
+        if updates.tier_allocations is not None:
+            update_doc["tier_allocations"] = updates.tier_allocations
+        if updates.enabled is not None:
+            update_doc["enabled"] = updates.enabled
+        
+        # If time-related fields changed, recalculate next_run
+        if any(key in update_doc for key in ["frequency", "day_of_week", "day_of_month", "time"]):
+            # Merge with existing schedule data
+            updated_schedule = {**schedule, **update_doc}
+            next_run = calculate_next_run(updated_schedule)
+            update_doc["next_run"] = next_run
+        
+        if update_doc:
+            await db.distribution_schedules.update_one(
+                {"schedule_id": schedule_id},
+                {"$set": update_doc}
+            )
+        
+        return {"message": "Schedule updated successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to update schedule: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to update schedule")
+
+
+@app.delete("/api/admin/leads/schedules/{schedule_id}")
+async def delete_distribution_schedule(
+    schedule_id: str,
+    admin: dict = Depends(get_admin_user)
+):
+    """Delete a schedule"""
+    try:
+        result = await db.distribution_schedules.delete_one({"schedule_id": schedule_id})
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Schedule not found")
+        
+        return {"message": "Schedule deleted successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to delete schedule: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to delete schedule")
+
+
 # Admin Configuration Management Endpoints
 @app.get("/api/admin/config/system")
 async def get_system_config(admin: dict = Depends(get_admin_user)):
