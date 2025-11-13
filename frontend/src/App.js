@@ -9384,6 +9384,22 @@ function LeadsManagementTab() {
     }
   };
 
+  const fetchOverview = async () => {
+    try {
+      setOverviewLoading(true);
+      const token = localStorage.getItem('adminToken');
+      const response = await axios.get(`${API_URL}/admin/leads/overview`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setOverview(response.data);
+    } catch (error) {
+      console.error('Failed to fetch overview:', error);
+    } finally {
+      setOverviewLoading(false);
+    }
+  };
+
   const handleFileUpload = async (e) => {
     e.preventDefault();
     if (!csvFile) {
