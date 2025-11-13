@@ -629,7 +629,7 @@ backend:
   - task: "Lead Distribution Enhancement 1 - Duplicate Detection"
     implemented: true
     working: true
-    file: "server.py, email_validator.py"
+    file: "server.py, email_validator.py, App.js"
     stuck_count: 0
     priority: "high"
     needs_retesting: false
