@@ -9422,13 +9422,10 @@ function LeadsManagementTab() {
         let message = `Successfully uploaded ${retryResponse.data.total_leads} new leads (skipped ${response.data.total_duplicates} duplicates)!`;
         if (retryResponse.data.validation) {
           message += `\n\nValidation: ${retryResponse.data.validation.valid} valid, ${retryResponse.data.validation.invalid_format} invalid format`;
-          setValidationReport(retryResponse.data.validation);
         }
         
         alert(message);
         setCsvFile(null);
-        setDuplicateReport(null);
-        setValidationReport(null);
         fetchDistributions();
         setUploading(false);
         return;
@@ -9437,13 +9434,10 @@ function LeadsManagementTab() {
       let message = `Successfully uploaded ${response.data.total_leads} leads!`;
       if (response.data.validation) {
         message += `\n\nValidation: ${response.data.validation.valid} valid, ${response.data.validation.invalid_format} invalid format`;
-        setValidationReport(response.data.validation);
       }
       
       alert(message);
       setCsvFile(null);
-      setDuplicateReport(null);
-      setValidationReport(null);
       fetchDistributions();
     } catch (error) {
       console.error('Failed to upload CSV:', error);
