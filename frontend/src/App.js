@@ -9323,7 +9323,9 @@ function LeadsManagementTab() {
   const [overviewLoading, setOverviewLoading] = useState(true);
 
   useEffect(() => {
-    if (activeTab === 'distributions') {
+    if (activeTab === 'overview') {
+      fetchOverview();
+    } else if (activeTab === 'distributions') {
       fetchDistributions();
     } else if (activeTab === 'schedules') {
       fetchSchedules();
