@@ -7641,6 +7641,13 @@ def main():
     else:
         print("\n✅ Internal Ticketing System test passed")
     
+    # Test Lead Distribution System Enhancements (Priority 1g)
+    lead_enhancements_success = tester.test_lead_distribution_enhancements()
+    if not lead_enhancements_success:
+        print("\n⚠️ Lead Distribution System Enhancements test failed")
+    else:
+        print("\n✅ Lead Distribution System Enhancements test passed")
+    
     # Test Priority 2: User Experience APIs
     priority2_success = tester.test_priority2_user_experience_apis()
     if not priority2_success:
