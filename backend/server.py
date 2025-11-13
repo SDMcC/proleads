@@ -4908,9 +4908,20 @@ async def get_referral_info(referral_code: str):
 
 # Leads Distribution System
 @app.post("/api/admin/leads/upload")
-async def upload_leads_csv(request: Request, admin: dict = Depends(get_admin_user)):
-    """Upload CSV file for lead distribution"""
+async def upload_leads_csv(
+    request: Request,
+    check_duplicates: str = Form("true"),
+    validate_emails: str = Form("false"),
+    skip_duplicates: str = Form("false"),
+    admin: dict = Depends(get_admin_user)
+):
+    """Upload CSV file for lead distribution with duplicate detection and email validation"""
     try:
+        # Parse form parameters
+        check_duplicates_bool = check_duplicates.lower() == "true"
+        validate_emails_bool = validate_emails.lower() == "true"
+        skip_duplicates_bool = skip_duplicates.lower() == "true"
+        
         form = await request.form()
         csv_file = form.get("csv_file")
         
@@ -4962,7 +4973,7 @@ async def upload_leads_csv(request: Request, admin: dict = Depends(get_admin_use
             lead_data = {
                 "lead_id": str(uuid.uuid4()),
                 "name": row.get(header_mapping['name'], '').strip(),
-                "email": row.get(header_mapping['email'], '').strip(),
+                "email": row.get(header_mapping['email'], '').strip().lower(),
                 "address": row.get(header_mapping['address'], '').strip(),
                 "distribution_count": 0,
                 "created_at": datetime.utcnow()
@@ -4971,6 +4982,81 @@ async def upload_leads_csv(request: Request, admin: dict = Depends(get_admin_use
         
         if len(leads_data) == 0:
             raise HTTPException(status_code=400, detail="CSV file is empty")
+        
+        # ENHANCEMENT 1: Check for duplicates
+        if check_duplicates_bool:
+            # Check for duplicates within CSV
+            emails_in_csv = [lead["email"] for lead in leads_data]
+            email_counts = {}
+            duplicates_in_csv = []
+            
+            for email in emails_in_csv:
+                if email in email_counts:
+                    duplicates_in_csv.append(email)
+                email_counts[email] = email_counts.get(email, 0) + 1
+            
+            if duplicates_in_csv and not skip_duplicates_bool:
+                return {
+                    "error": "duplicate_in_csv",
+                    "message": f"Found {len(set(duplicates_in_csv))} duplicate emails within the CSV",
+                    "duplicates": list(set(duplicates_in_csv))[:20],  # Show first 20
+                    "total_duplicates": len(set(duplicates_in_csv)),
+                    "action_required": "remove_duplicates_or_skip"
+                }
+            
+            # Check for duplicates against existing leads in database
+            existing_emails = set()
+            for lead in leads_data:
+                existing = await db.leads.find_one({"email": lead["email"]})
+                if existing:
+                    existing_emails.add(lead["email"])
+            
+            if existing_emails and not skip_duplicates_bool:
+                return {
+                    "error": "duplicate_in_database",
+                    "message": f"Found {len(existing_emails)} emails that already exist in database",
+                    "duplicates": list(existing_emails)[:20],
+                    "total_duplicates": len(existing_emails),
+                    "total_new_leads": len(leads_data) - len(existing_emails),
+                    "actions": {
+                        "skip_duplicates": "Upload only new leads",
+                        "cancel": "Cancel upload"
+                    }
+                }
+            
+            # If skip_duplicates is enabled, filter out duplicates
+            if skip_duplicates_bool:
+                # Remove duplicates from leads_data
+                original_count = len(leads_data)
+                unique_emails = set()
+                filtered_leads = []
+                
+                for lead in leads_data:
+                    if lead["email"] not in unique_emails and lead["email"] not in existing_emails:
+                        unique_emails.add(lead["email"])
+                        filtered_leads.append(lead)
+                
+                leads_data = filtered_leads
+                skipped_count = original_count - len(leads_data)
+                
+                if len(leads_data) == 0:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"All {original_count} leads were duplicates. No new leads to upload."
+                    )
+                
+                logger.info(f"Skipped {skipped_count} duplicate leads, uploading {len(leads_data)} new leads")
+        
+        # ENHANCEMENT 2: Email validation (optional)
+        validation_results = None
+        if validate_emails_bool:
+            emails_to_validate = [lead["email"] for lead in leads_data]
+            validation_results = await analyze_csv_emails(emails_to_validate, use_api=True)
+            
+            invalid_count = validation_results["stats"]["total"] - validation_results["stats"]["valid"]
+            if invalid_count > 0:
+                # Store validation info but don't block upload
+                logger.warning(f"Found {invalid_count} invalid emails during upload")
         
         # Create lead distribution record
         distribution_id = str(uuid.uuid4())
@@ -4982,15 +5068,27 @@ async def upload_leads_csv(request: Request, admin: dict = Depends(get_admin_use
             "uploaded_by": admin["username"],
             "uploaded_at": datetime.utcnow(),
             "processing_started_at": None,
-            "processing_completed_at": None
+            "processing_completed_at": None,
+            "validation_performed": validate_emails_bool,
+            "duplicates_skipped": skip_duplicates_bool
         }
         
         # Store distribution record
         await db.lead_distributions.insert_one(distribution_doc)
         
-        # Store individual leads
-        for lead in leads_data:
+        # Store individual leads with validation data
+        for i, lead in enumerate(leads_data):
             lead["distribution_id"] = distribution_id
+            
+            # Add validation data if available
+            if validation_results and i < len(validation_results.get("validation_results", [])):
+                result = validation_results["validation_results"][i]
+                lead["email_validated"] = result.get("valid", False)
+                lead["validation_status"] = result.get("status", "UNKNOWN")
+                lead["is_disposable"] = result.get("is_disposable", False)
+                lead["is_role_based"] = result.get("is_role_based", False)
+                lead["validation_date"] = datetime.utcnow()
+        
         await db.leads.insert_many(leads_data)
         
         # Calculate eligible members for distribution
@@ -5014,13 +5112,19 @@ async def upload_leads_csv(request: Request, admin: dict = Depends(get_admin_use
             }}
         )
         
-        return {
+        response = {
             "distribution_id": distribution_id,
             "total_leads": len(leads_data),
             "eligible_members": eligible_members,
             "estimated_weeks": estimated_weeks,
             "status": "queued"
         }
+        
+        # Add validation summary if performed
+        if validation_results:
+            response["validation"] = validation_results["stats"]
+        
+        return response
         
     except HTTPException:
         raise
