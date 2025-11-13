@@ -9419,13 +9419,20 @@ function LeadsManagementTab() {
           }
         });
         
-        let message = `Successfully uploaded ${retryResponse.data.total_leads} new leads (skipped ${response.data.total_duplicates} duplicates)!`;
+        let message = `Successfully uploaded ${retryResponse.data.total_leads} valid leads (skipped ${response.data.total_duplicates} duplicates)!`;
         if (retryResponse.data.validation) {
           const stats = retryResponse.data.validation;
-          message += `\n\nEmail Validation:\n✓ Valid: ${stats.valid}\n✗ Invalid Format: ${stats.invalid_format || 0}`;
-          if (stats.invalid_domain) message += `\n✗ Invalid Domain: ${stats.invalid_domain}`;
-          if (stats.disposable) message += `\n⚠ Disposable: ${stats.disposable}`;
-          if (stats.role_based) message += `\n⚠ Role-based: ${stats.role_based}`;
+          if (stats.invalid_skipped > 0) {
+            message = `Successfully uploaded ${retryResponse.data.total_leads} valid leads (skipped ${response.data.total_duplicates} duplicates + ${stats.invalid_skipped} invalid emails)!`;
+          }
+          message += `\n\nEmail Validation (${stats.total_checked} checked):\n✓ Valid & Uploaded: ${stats.valid}`;
+          if (stats.invalid_skipped > 0) {
+            message += `\n✗ Invalid & Skipped: ${stats.invalid_skipped}`;
+            if (stats.invalid_format > 0) message += `\n  • Invalid Format: ${stats.invalid_format}`;
+            if (stats.invalid_domain > 0) message += `\n  • Invalid Domain: ${stats.invalid_domain}`;
+            if (stats.disposable > 0) message += `\n  • Disposable Email: ${stats.disposable}`;
+            if (stats.role_based > 0) message += `\n  • Role-based Email: ${stats.role_based}`;
+          }
         }
         
         alert(message);
