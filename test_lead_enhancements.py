@@ -193,12 +193,18 @@ John Duplicate,john@test.com,789 Pine Rd"""
         
         # Verify response structure for email validation
         if response2:
-            required_keys = ['total', 'valid', 'invalid_format']
-            missing_keys = [key for key in required_keys if key not in response2]
-            if not missing_keys:
-                print("✅ Email validation response contains required fields")
+            # Check if response has stats structure
+            if 'stats' in response2:
+                stats = response2['stats']
+                required_keys = ['total', 'valid', 'invalid_format']
+                missing_keys = [key for key in required_keys if key not in stats]
+                if not missing_keys:
+                    print("✅ Email validation response contains required fields")
+                else:
+                    print(f"❌ Email validation response missing keys: {missing_keys}")
+                    return False
             else:
-                print(f"❌ Email validation response missing keys: {missing_keys}")
+                print("❌ Email validation response missing 'stats' field")
                 return False
         
         # Test 3: POST /api/admin/leads/batch-validate
