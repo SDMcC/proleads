@@ -9598,7 +9598,7 @@ function LeadsManagementTab() {
                     onChange={(e) => setCheckDuplicates(e.target.checked)}
                     className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
                   />
-                  <span className="text-gray-300 text-sm">Check for Duplicates</span>
+                  <span className="text-gray-300 text-sm">Skip Duplicates (auto-removes duplicate emails)</span>
                 </label>
                 
                 <label className="flex items-center space-x-2 cursor-pointer">
@@ -9608,7 +9608,7 @@ function LeadsManagementTab() {
                     onChange={(e) => setValidateEmails(e.target.checked)}
                     className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
                   />
-                  <span className="text-gray-300 text-sm">Validate Emails</span>
+                  <span className="text-gray-300 text-sm">Validate Emails (checks format & deliverability)</span>
                 </label>
               </div>
 
