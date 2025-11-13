@@ -79,14 +79,17 @@ def calculate_next_run(schedule: dict) -> datetime:
 
 
 async def execute_scheduled_distribution(db, schedule: dict):
-    """Execute a scheduled distribution"""
+    """
+    Execute a scheduled distribution
+    This pulls leads from multiple CSVs (oldest first) and distributes to all eligible members
+    """
     schedule_id = schedule["schedule_id"]
     schedule_name = schedule.get("name", "Unnamed Schedule")
     
     try:
         logger.info(f"Executing scheduled distribution: {schedule_name} (ID: {schedule_id})")
         
-        # Check if there are enough undistributed leads
+        # Check if there are enough undistributed leads (across all CSVs)
         available_leads = await db.leads.count_documents({
             "distribution_count": {"$lt": 10}
         })
@@ -108,29 +111,13 @@ async def execute_scheduled_distribution(db, schedule: dict):
             )
             return
         
-        # Create a distribution record for this scheduled run
-        distribution_id = str(uuid.uuid4())
-        distribution_doc = {
-            "distribution_id": distribution_id,
-            "filename": f"auto_distribution_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}",
-            "total_leads": available_leads,
-            "status": "processing",
-            "uploaded_by": f"SCHEDULE:{schedule_name}",
-            "uploaded_at": datetime.utcnow(),
-            "schedule_id": schedule_id,
-            "auto_distributed": True,
-            "processing_started_at": datetime.utcnow()
-        }
-        await db.lead_distributions.insert_one(distribution_doc)
-        
-        logger.info(f"Created distribution {distribution_id} for schedule {schedule_name}")
-        
-        # Import and execute distribution function
+        # Import distribution function
         # Note: We're importing here to avoid circular imports
-        from server import perform_lead_distribution
+        from server import perform_scheduled_lead_distribution
         
-        # Perform the distribution
-        await perform_lead_distribution(distribution_id)
+        # Perform the sequential distribution (pulls from multiple CSVs automatically)
+        logger.info(f"Starting scheduled distribution for {schedule_name}")
+        await perform_scheduled_lead_distribution(schedule_id, schedule_name)
         
         # Update schedule
         next_run = calculate_next_run(schedule)
