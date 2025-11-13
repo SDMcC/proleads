@@ -9421,7 +9421,11 @@ function LeadsManagementTab() {
         
         let message = `Successfully uploaded ${retryResponse.data.total_leads} new leads (skipped ${response.data.total_duplicates} duplicates)!`;
         if (retryResponse.data.validation) {
-          message += `\n\nValidation: ${retryResponse.data.validation.valid} valid, ${retryResponse.data.validation.invalid_format} invalid format`;
+          const stats = retryResponse.data.validation;
+          message += `\n\nEmail Validation:\n✓ Valid: ${stats.valid}\n✗ Invalid Format: ${stats.invalid_format || 0}`;
+          if (stats.invalid_domain) message += `\n✗ Invalid Domain: ${stats.invalid_domain}`;
+          if (stats.disposable) message += `\n⚠ Disposable: ${stats.disposable}`;
+          if (stats.role_based) message += `\n⚠ Role-based: ${stats.role_based}`;
         }
         
         alert(message);
