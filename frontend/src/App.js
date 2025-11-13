@@ -9296,7 +9296,7 @@ function LeadsTab() {
 
 // Leads Management Tab Component for Admin (Enhanced with Duplicate Detection, Email Verification, and Scheduling)
 function LeadsManagementTab() {
-  const [activeTab, setActiveTab] = useState('distributions'); // 'distributions', 'duplicates', 'schedules'
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'distributions', 'duplicates', 'schedules'
   const [distributions, setDistributions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -9317,6 +9317,10 @@ function LeadsManagementTab() {
   // Duplicates state
   const [duplicates, setDuplicates] = useState([]);
   const [duplicatesLoading, setDuplicatesLoading] = useState(true);
+
+  // Overview state
+  const [overview, setOverview] = useState(null);
+  const [overviewLoading, setOverviewLoading] = useState(true);
 
   useEffect(() => {
     if (activeTab === 'distributions') {
