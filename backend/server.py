@@ -5099,20 +5099,18 @@ async def upload_leads_csv(
         # Store distribution record
         await db.lead_distributions.insert_one(distribution_doc)
         
-        # Store individual leads with validation data
-        for i, lead in enumerate(leads_data):
+        # Store individual leads (validation data already added if validation was performed)
+        for lead in leads_data:
             lead["distribution_id"] = distribution_id
-            
-            # Add validation data if available
-            if validation_results and i < len(validation_results.get("validation_results", [])):
-                result = validation_results["validation_results"][i]
-                lead["email_validated"] = result.get("valid", False)
-                lead["validation_status"] = result.get("status", "UNKNOWN")
-                lead["is_disposable"] = result.get("is_disposable", False)
-                lead["is_role_based"] = result.get("is_role_based", False)
-                lead["validation_date"] = datetime.utcnow()
         
-        await db.leads.insert_many(leads_data)
+        if len(leads_data) > 0:
+            await db.leads.insert_many(leads_data)
+        else:
+            # All leads were invalid or duplicates
+            raise HTTPException(
+                status_code=400,
+                detail="No valid leads to upload. All leads were either duplicates or invalid."
+            )
         
         # Calculate eligible members for distribution
         eligible_members = await db.users.count_documents({
