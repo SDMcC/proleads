@@ -192,24 +192,32 @@ async def analyze_csv_emails(emails: List[str], use_api: bool = True) -> Dict:
         
         for result in batch_result.get("results", []):
             email = result.get("email", "")
-            valid = result.get("valid", False)
             status = result.get("status", "UNKNOWN")
             validations = result.get("validations", {})
             
+            # Determine validity based on actual validation checks
+            # Email is valid if it passes syntax AND domain checks
+            syntax_valid = validations.get("syntax", False)
+            domain_valid = validations.get("domain_exists", False)
+            mx_valid = validations.get("mx_records", False)
+            
+            # Email is valid if syntax and domain are good (MX records are optional)
+            is_valid = syntax_valid and domain_valid
+            
             validation_results.append({
                 "email": email,
-                "valid": valid,
+                "valid": is_valid,
                 "status": status,
                 "is_disposable": validations.get("is_disposable", False),
                 "is_role_based": validations.get("is_role_based", False),
                 "checks": validations
             })
             
-            if valid:
+            if is_valid:
                 stats["valid"] += 1
-            elif not validations.get("syntax", False):
+            elif not syntax_valid:
                 stats["invalid_format"] += 1
-            elif not validations.get("domain_exists", False):
+            elif not domain_valid:
                 stats["invalid_domain"] += 1
             
             if validations.get("is_disposable", False):
