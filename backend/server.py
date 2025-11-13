@@ -91,6 +91,8 @@ app.add_middleware(
 async def startup_event():
     """Load system configuration on startup"""
     await load_system_config()
+    # Start the distribution scheduler
+    await start_scheduler_task()
 
 # Database connection
 client = AsyncIOMotorClient(os.getenv("MONGO_URL"))
