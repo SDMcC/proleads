@@ -9383,7 +9383,8 @@ function LeadsManagementTab() {
       const formData = new FormData();
       formData.append('csv_file', csvFile);
       formData.append('check_duplicates', checkDuplicates);
-      formData.append('skip_duplicates', skipDuplicates);
+      // Always skip duplicates automatically when check is enabled
+      formData.append('skip_duplicates', checkDuplicates ? 'true' : 'false');
       formData.append('validate_emails', validateEmails);
 
       const response = await axios.post(`${API_URL}/admin/leads/upload`, formData, {
@@ -9393,9 +9394,34 @@ function LeadsManagementTab() {
         }
       });
 
-      // Check for duplicate error
+      // Check for duplicate error (shouldn't happen with auto-skip, but handle anyway)
       if (response.data.error === 'duplicate_in_csv' || response.data.error === 'duplicate_in_database') {
-        setDuplicateReport(response.data);
+        // Auto-retry with skip_duplicates enabled
+        const retryFormData = new FormData();
+        retryFormData.append('csv_file', csvFile);
+        retryFormData.append('check_duplicates', 'true');
+        retryFormData.append('skip_duplicates', 'true');
+        retryFormData.append('validate_emails', validateEmails);
+        
+        const retryResponse = await axios.post(`${API_URL}/admin/leads/upload`, retryFormData, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+        
+        let message = `Successfully uploaded ${retryResponse.data.total_leads} new leads (skipped ${response.data.total_duplicates} duplicates)!`;
+        if (retryResponse.data.validation) {
+          message += `\n\nValidation: ${retryResponse.data.validation.valid} valid, ${retryResponse.data.validation.invalid_format} invalid format`;
+          setValidationReport(retryResponse.data.validation);
+        }
+        
+        alert(message);
+        setCsvFile(null);
+        setDuplicateReport(null);
+        setValidationReport(null);
+        fetchDistributions();
+        setUploading(false);
         return;
       }
 
