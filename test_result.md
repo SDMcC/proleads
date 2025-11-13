@@ -659,7 +659,7 @@ backend:
   - task: "Lead Distribution Enhancement 3 - Scheduled Distributions"
     implemented: true
     working: true
-    file: "server.py, scheduler.py"
+    file: "server.py, scheduler.py, App.js"
     stuck_count: 0
     priority: "high"
     needs_retesting: false
