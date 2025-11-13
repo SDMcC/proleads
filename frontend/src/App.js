@@ -9447,15 +9447,6 @@ function LeadsManagementTab() {
     }
   };
 
-  const handleSkipDuplicatesAndRetry = async () => {
-    setSkipDuplicates(true);
-    setDuplicateReport(null);
-    // Trigger upload again
-    const event = { preventDefault: () => {} };
-    await handleFileUpload(event);
-    setSkipDuplicates(false);
-  };
-
   const triggerDistribution = async (distributionId) => {
     try {
       const token = localStorage.getItem('adminToken');
