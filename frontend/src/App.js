@@ -128,6 +128,20 @@ class ErrorBoundary extends React.Component {
 }
 
 function App() {
+  // Suppress MetaMask connection errors (we use DePay for payments)
+  useEffect(() => {
+    const handleError = (event) => {
+      if (event.message && event.message.includes('MetaMask')) {
+        event.preventDefault();
+        console.log('MetaMask error suppressed (DePay is used for payments)');
+        return true;
+      }
+    };
+    
+    window.addEventListener('error', handleError);
+    return () => window.removeEventListener('error', handleError);
+  }, []);
+
   return (
     <ErrorBoundary>
       <AuthProvider>
