@@ -9433,7 +9433,11 @@ function LeadsManagementTab() {
 
       let message = `Successfully uploaded ${response.data.total_leads} leads!`;
       if (response.data.validation) {
-        message += `\n\nValidation: ${response.data.validation.valid} valid, ${response.data.validation.invalid_format} invalid format`;
+        const stats = response.data.validation;
+        message += `\n\nEmail Validation:\n✓ Valid: ${stats.valid}\n✗ Invalid Format: ${stats.invalid_format || 0}`;
+        if (stats.invalid_domain) message += `\n✗ Invalid Domain: ${stats.invalid_domain}`;
+        if (stats.disposable) message += `\n⚠ Disposable: ${stats.disposable}`;
+        if (stats.role_based) message += `\n⚠ Role-based: ${stats.role_based}`;
       }
       
       alert(message);
