@@ -9307,9 +9307,6 @@ function LeadsManagementTab() {
   // Enhancement options
   const [checkDuplicates, setCheckDuplicates] = useState(true);
   const [validateEmails, setValidateEmails] = useState(false);
-  const [skipDuplicates, setSkipDuplicates] = useState(false);
-  const [duplicateReport, setDuplicateReport] = useState(null);
-  const [validationReport, setValidationReport] = useState(null);
 
   // Schedules state
   const [schedules, setSchedules] = useState([]);
