@@ -186,6 +186,31 @@ class LeadDistribution(BaseModel):
     eligible_members: int
     estimated_weeks: int
 
+# Enhanced Lead System Models
+class DistributionSchedule(BaseModel):
+    name: str
+    frequency: str  # 'weekly' or 'monthly'
+    day_of_week: Optional[int] = None  # 1-7 for weekly (1=Monday, 7=Sunday)
+    day_of_month: Optional[int] = None  # 1-31 for monthly
+    time: str = "09:00"  # UTC time HH:MM
+    min_leads_required: int = 50
+    tier_allocations: Optional[Dict[str, int]] = None  # Optional custom allocations
+    enabled: bool = True
+
+class ScheduleUpdate(BaseModel):
+    name: Optional[str] = None
+    frequency: Optional[str] = None
+    day_of_week: Optional[int] = None
+    day_of_month: Optional[int] = None
+    time: Optional[str] = None
+    min_leads_required: Optional[int] = None
+    tier_allocations: Optional[Dict[str, int]] = None
+    enabled: Optional[bool] = None
+
+class EmailValidationRequest(BaseModel):
+    emails: List[str]
+    use_api: bool = True
+
 class MembershipTierConfig(BaseModel):
     tier_name: str
     price: float
