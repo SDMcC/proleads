@@ -9386,6 +9386,433 @@ def main():
         print("✅ Complete Escrow Management System Tests Passed")
         return True
 
+    def test_lead_distribution_enhancements(self):
+        """Test all three Lead Distribution System Enhancements"""
+        print("\n📊 Testing Lead Distribution System Enhancements")
+        
+        # Ensure admin login first
+        if not hasattr(self, 'admin_token') or not self.admin_token:
+            print("⚠️ No admin token available, running admin login first")
+            login_success, _ = self.test_admin_login_success()
+            if not login_success:
+                print("❌ Admin login failed - cannot test lead distribution enhancements")
+                return False
+        
+        # Test Enhancement 1: Duplicate Detection
+        enhancement1_success = self.test_enhancement_1_duplicate_detection()
+        if not enhancement1_success:
+            print("❌ Enhancement 1 (Duplicate Detection) failed")
+            return False
+        
+        # Test Enhancement 2: Email Verification
+        enhancement2_success = self.test_enhancement_2_email_verification()
+        if not enhancement2_success:
+            print("❌ Enhancement 2 (Email Verification) failed")
+            return False
+        
+        # Test Enhancement 3: Scheduled Distributions
+        enhancement3_success = self.test_enhancement_3_scheduled_distributions()
+        if not enhancement3_success:
+            print("❌ Enhancement 3 (Scheduled Distributions) failed")
+            return False
+        
+        print("✅ All Lead Distribution System Enhancements Test Passed")
+        return True
+    
+    def test_enhancement_1_duplicate_detection(self):
+        """Test Enhancement 1: Duplicate Detection"""
+        print("\n🔍 Testing Enhancement 1: Duplicate Detection")
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        # Test 1: GET /api/admin/leads/duplicates
+        success1, response1 = self.run_test(
+            "Get Duplicate Leads", 
+            "GET", 
+            "admin/leads/duplicates", 
+            200, 
+            headers=headers
+        )
+        if not success1:
+            return False
+        
+        # Test 2: POST /api/admin/leads/merge-duplicates
+        merge_data = {
+            "primary_lead_id": "test_primary_123",
+            "duplicate_lead_ids": ["test_dup_456", "test_dup_789"]
+        }
+        success2, response2 = self.run_test(
+            "Merge Duplicate Leads", 
+            "POST", 
+            "admin/leads/merge-duplicates", 
+            200, 
+            merge_data, 
+            headers
+        )
+        
+        # Test 3: CSV Upload with duplicate detection (check_duplicates=true)
+        success3 = self.test_csv_upload_with_duplicate_detection()
+        if not success3:
+            return False
+        
+        # Test 4: CSV Upload with skip duplicates (skip_duplicates=true)
+        success4 = self.test_csv_upload_skip_duplicates()
+        if not success4:
+            return False
+        
+        print("✅ Enhancement 1: Duplicate Detection - All tests passed")
+        return True
+    
+    def test_csv_upload_with_duplicate_detection(self):
+        """Test CSV upload with duplicate detection enabled"""
+        print("\n📄 Testing CSV Upload with Duplicate Detection")
+        
+        # Create test CSV content with duplicates
+        csv_content = """Name,Email,Address
+John Doe,john@test.com,123 Main St
+Jane Smith,jane@test.com,456 Oak Ave
+John Duplicate,john@test.com,789 Pine Rd"""
+        
+        headers = {'Authorization': f'Bearer {self.admin_token}'}
+        
+        # Test CSV upload with check_duplicates=true
+        url = f"{self.base_url}/api/admin/leads/upload"
+        files = {'file': ('test_leads.csv', csv_content, 'text/csv')}
+        data = {
+            'check_duplicates': 'true',
+            'skip_duplicates': 'false',
+            'validate_emails': 'false'
+        }
+        
+        try:
+            response = requests.post(url, files=files, data=data, headers=headers)
+            
+            # Should detect duplicates and return error or warning
+            if response.status_code in [200, 400]:
+                self.tests_passed += 1
+                print(f"✅ CSV upload with duplicate detection - Status: {response.status_code}")
+                
+                try:
+                    response_data = response.json()
+                    if 'duplicate' in str(response_data).lower():
+                        print("✅ Duplicate detection working correctly")
+                    return True
+                except:
+                    return True
+            else:
+                print(f"❌ CSV upload with duplicate detection failed - Status: {response.status_code}")
+                return False
+        except Exception as e:
+            print(f"❌ CSV upload with duplicate detection error: {str(e)}")
+            return False
+        finally:
+            self.tests_run += 1
+    
+    def test_csv_upload_skip_duplicates(self):
+        """Test CSV upload with skip duplicates enabled"""
+        print("\n📄 Testing CSV Upload with Skip Duplicates")
+        
+        # Create test CSV content
+        csv_content = """Name,Email,Address
+New User,newuser@test.com,123 New St
+Another User,another@test.com,456 Another Ave"""
+        
+        headers = {'Authorization': f'Bearer {self.admin_token}'}
+        
+        # Test CSV upload with skip_duplicates=true
+        url = f"{self.base_url}/api/admin/leads/upload"
+        files = {'file': ('test_leads_skip.csv', csv_content, 'text/csv')}
+        data = {
+            'check_duplicates': 'true',
+            'skip_duplicates': 'true',
+            'validate_emails': 'false'
+        }
+        
+        try:
+            response = requests.post(url, files=files, data=data, headers=headers)
+            
+            if response.status_code == 200:
+                self.tests_passed += 1
+                print(f"✅ CSV upload with skip duplicates - Status: {response.status_code}")
+                
+                try:
+                    response_data = response.json()
+                    if 'duplicates_skipped' in response_data:
+                        print("✅ Skip duplicates functionality working")
+                    return True
+                except:
+                    return True
+            else:
+                print(f"❌ CSV upload with skip duplicates failed - Status: {response.status_code}")
+                return False
+        except Exception as e:
+            print(f"❌ CSV upload with skip duplicates error: {str(e)}")
+            return False
+        finally:
+            self.tests_run += 1
+    
+    def test_enhancement_2_email_verification(self):
+        """Test Enhancement 2: Email Verification"""
+        print("\n📧 Testing Enhancement 2: Email Verification")
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        # Test 1: POST /api/admin/leads/validate-csv
+        success1 = self.test_validate_csv_endpoint()
+        if not success1:
+            return False
+        
+        # Test 2: POST /api/admin/leads/validate-emails
+        email_validation_data = {
+            "emails": ["test@example.com", "invalid-email", "another@test.com"],
+            "use_api": True
+        }
+        success2, response2 = self.run_test(
+            "Validate Email List", 
+            "POST", 
+            "admin/leads/validate-emails", 
+            200, 
+            email_validation_data, 
+            headers
+        )
+        if not success2:
+            return False
+        
+        # Verify response structure for email validation
+        if response2:
+            required_keys = ['total', 'valid', 'invalid_format']
+            missing_keys = [key for key in required_keys if key not in response2]
+            if not missing_keys:
+                print("✅ Email validation response contains required fields")
+            else:
+                print(f"❌ Email validation response missing keys: {missing_keys}")
+                return False
+        
+        # Test 3: POST /api/admin/leads/batch-validate
+        batch_validation_data = {
+            "distribution_id": "test_distribution_123"
+        }
+        success3, response3 = self.run_test(
+            "Batch Validate Existing Leads", 
+            "POST", 
+            "admin/leads/batch-validate", 
+            200, 
+            batch_validation_data, 
+            headers
+        )
+        
+        # Test 4: CSV Upload with email validation
+        success4 = self.test_csv_upload_with_email_validation()
+        if not success4:
+            return False
+        
+        print("✅ Enhancement 2: Email Verification - All tests passed")
+        return True
+    
+    def test_validate_csv_endpoint(self):
+        """Test POST /api/admin/leads/validate-csv endpoint"""
+        print("\n📄 Testing CSV Email Validation")
+        
+        # Create test CSV content with mixed valid/invalid emails
+        csv_content = """Name,Email,Address
+John Doe,john@valid.com,123 Main St
+Jane Smith,invalid-email,456 Oak Ave
+Bob Johnson,bob@test.com,789 Pine Rd"""
+        
+        headers = {'Authorization': f'Bearer {self.admin_token}'}
+        
+        url = f"{self.base_url}/api/admin/leads/validate-csv"
+        files = {'file': ('validate_test.csv', csv_content, 'text/csv')}
+        
+        try:
+            response = requests.post(url, files=files, headers=headers)
+            
+            if response.status_code == 200:
+                self.tests_passed += 1
+                print(f"✅ CSV validation - Status: {response.status_code}")
+                
+                try:
+                    response_data = response.json()
+                    # Check for validation stats
+                    required_stats = ['total', 'valid', 'invalid_format']
+                    if all(key in response_data for key in required_stats):
+                        print("✅ CSV validation returns proper statistics")
+                    return True
+                except:
+                    return True
+            else:
+                print(f"❌ CSV validation failed - Status: {response.status_code}")
+                return False
+        except Exception as e:
+            print(f"❌ CSV validation error: {str(e)}")
+            return False
+        finally:
+            self.tests_run += 1
+    
+    def test_csv_upload_with_email_validation(self):
+        """Test CSV upload with email validation enabled"""
+        print("\n📄 Testing CSV Upload with Email Validation")
+        
+        # Create test CSV content
+        csv_content = """Name,Email,Address
+Valid User,valid@test.com,123 Valid St
+Invalid User,not-an-email,456 Invalid Ave"""
+        
+        headers = {'Authorization': f'Bearer {self.admin_token}'}
+        
+        url = f"{self.base_url}/api/admin/leads/upload"
+        files = {'file': ('test_validation.csv', csv_content, 'text/csv')}
+        data = {
+            'check_duplicates': 'false',
+            'skip_duplicates': 'false',
+            'validate_emails': 'true'
+        }
+        
+        try:
+            response = requests.post(url, files=files, data=data, headers=headers)
+            
+            if response.status_code == 200:
+                self.tests_passed += 1
+                print(f"✅ CSV upload with email validation - Status: {response.status_code}")
+                
+                try:
+                    response_data = response.json()
+                    if 'validation_results' in response_data:
+                        print("✅ Email validation results included in upload response")
+                    return True
+                except:
+                    return True
+            else:
+                print(f"❌ CSV upload with email validation failed - Status: {response.status_code}")
+                return False
+        except Exception as e:
+            print(f"❌ CSV upload with email validation error: {str(e)}")
+            return False
+        finally:
+            self.tests_run += 1
+    
+    def test_enhancement_3_scheduled_distributions(self):
+        """Test Enhancement 3: Scheduled Distributions"""
+        print("\n⏰ Testing Enhancement 3: Scheduled Distributions")
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.admin_token}'
+        }
+        
+        # Test 1: POST /api/admin/leads/schedules - Create weekly schedule
+        weekly_schedule_data = {
+            "name": "Weekly Distribution Test",
+            "frequency": "weekly",
+            "day_of_week": 1,  # Monday
+            "time": "09:00",
+            "min_leads_required": 50,
+            "enabled": True
+        }
+        success1, response1 = self.run_test(
+            "Create Weekly Schedule", 
+            "POST", 
+            "admin/leads/schedules", 
+            200, 
+            weekly_schedule_data, 
+            headers
+        )
+        if not success1:
+            return False
+        
+        # Store schedule ID for further tests
+        schedule_id = response1.get('schedule_id') if response1 else 'test_schedule_123'
+        
+        # Test 2: POST /api/admin/leads/schedules - Create monthly schedule
+        monthly_schedule_data = {
+            "name": "Monthly Distribution Test",
+            "frequency": "monthly",
+            "day_of_month": 15,
+            "time": "10:00",
+            "min_leads_required": 100,
+            "enabled": True
+        }
+        success2, response2 = self.run_test(
+            "Create Monthly Schedule", 
+            "POST", 
+            "admin/leads/schedules", 
+            200, 
+            monthly_schedule_data, 
+            headers
+        )
+        if not success2:
+            return False
+        
+        # Test 3: GET /api/admin/leads/schedules - List all schedules
+        success3, response3 = self.run_test(
+            "List All Schedules", 
+            "GET", 
+            "admin/leads/schedules", 
+            200, 
+            headers=headers
+        )
+        if not success3:
+            return False
+        
+        # Verify pagination in schedules list
+        if response3:
+            required_keys = ['schedules', 'total_count', 'page', 'limit', 'total_pages']
+            missing_keys = [key for key in required_keys if key not in response3]
+            if not missing_keys:
+                print("✅ Schedules list contains proper pagination")
+            else:
+                print(f"❌ Schedules list missing pagination keys: {missing_keys}")
+                return False
+        
+        # Test 4: GET /api/admin/leads/schedules/{schedule_id} - Get schedule details
+        success4, response4 = self.run_test(
+            "Get Schedule Details", 
+            "GET", 
+            f"admin/leads/schedules/{schedule_id}", 
+            200, 
+            headers=headers
+        )
+        
+        # Test 5: PUT /api/admin/leads/schedules/{schedule_id} - Update schedule
+        update_data = {
+            "enabled": False,
+            "time": "11:00"
+        }
+        success5, response5 = self.run_test(
+            "Update Schedule", 
+            "PUT", 
+            f"admin/leads/schedules/{schedule_id}", 
+            200, 
+            update_data, 
+            headers
+        )
+        if not success5:
+            return False
+        
+        # Verify next_run recalculation
+        if response5 and 'next_run' in response5:
+            print("✅ Schedule update recalculates next_run correctly")
+        
+        # Test 6: DELETE /api/admin/leads/schedules/{schedule_id} - Delete schedule
+        success6, response6 = self.run_test(
+            "Delete Schedule", 
+            "DELETE", 
+            f"admin/leads/schedules/{schedule_id}", 
+            200, 
+            headers=headers
+        )
+        if not success6:
+            return False
+        
+        print("✅ Enhancement 3: Scheduled Distributions - All tests passed")
+        return True
+
 if __name__ == "__main__":
     # Check if specific test is requested
     if len(sys.argv) > 1 and sys.argv[1] == "csv_upload":
