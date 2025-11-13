@@ -10025,5 +10025,21 @@ if __name__ == "__main__":
         print("=" * 80)
         
         sys.exit(0 if overall_success else 1)
+    elif len(sys.argv) > 1 and sys.argv[1] == "lead_enhancements":
+        print("🎯 RUNNING SPECIFIC TEST: Lead Distribution System Enhancements")
+        print("=" * 80)
+        
+        backend_url = "https://affiliate-hub-137.preview.emergentagent.com"
+        tester = Web3MembershipTester(backend_url)
+        
+        # Run the specific lead distribution enhancements test
+        success = tester.test_lead_distribution_enhancements()
+        
+        print("\n" + "=" * 80)
+        print(f"🎯 FINAL RESULT: {'✅ PASSED' if success else '❌ FAILED'}")
+        print(f"📊 Tests passed: {tester.tests_passed}/{tester.tests_run}")
+        print("=" * 80)
+        
+        sys.exit(0 if success else 1)
     else:
         sys.exit(main())
