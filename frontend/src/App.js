@@ -9386,8 +9386,6 @@ function LeadsManagementTab() {
     }
 
     setUploading(true);
-    setDuplicateReport(null);
-    setValidationReport(null);
     
     try {
       const token = localStorage.getItem('adminToken');
