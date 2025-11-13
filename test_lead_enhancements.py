@@ -98,17 +98,13 @@ class LeadDistributionEnhancementsTester:
         if not success1:
             return False
         
-        # Test 2: POST /api/admin/leads/merge-duplicates
-        merge_data = {
-            "primary_lead_id": "test_primary_123",
-            "duplicate_lead_ids": ["test_dup_456", "test_dup_789"]
-        }
+        # Test 2: POST /api/admin/leads/merge-duplicates (with query parameters)
         success2, response2 = self.run_test(
             "Merge Duplicate Leads", 
             "POST", 
-            "admin/leads/merge-duplicates", 
+            "admin/leads/merge-duplicates?email=test@example.com&keep_lead_id=test_primary_123", 
             200, 
-            merge_data, 
+            None, 
             headers
         )
         
