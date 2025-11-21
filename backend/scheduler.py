@@ -133,7 +133,7 @@ async def execute_scheduled_distribution(db, schedule: dict):
         )
         
         logger.info(
-            f"Completed scheduled distribution {distribution_id}. "
+            f"Completed scheduled distribution for {schedule_name}. "
             f"Next run: {next_run.isoformat()}"
         )
         
