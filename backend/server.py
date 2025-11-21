@@ -5542,6 +5542,28 @@ async def perform_scheduled_lead_distribution(schedule_id: str, schedule_name: s
                 total_leads_distributed += len(member_leads)
                 distributions_made += 1
                 
+                # Generate CSV file for member
+                csv_content = "Name,Email,Address\n"
+                for lead in available_leads:
+                    csv_content += f'"{lead["name"]}","{lead["email"]}","{lead["address"]}"\n'
+                
+                # Create CSV file record
+                csv_file_doc = {
+                    "file_id": str(uuid.uuid4()),
+                    "member_address": member_address,
+                    "member_username": member.get("username", ""),
+                    "member_tier": member_tier,
+                    "distribution_id": schedule_id,
+                    "filename": f"leads_{member.get('username', 'member')}_{schedule_id[:8]}.csv",
+                    "csv_content": csv_content,
+                    "lead_count": len(member_leads),
+                    "created_at": datetime.utcnow(),
+                    "downloaded": False,
+                    "downloaded_at": None,
+                    "download_count": 0
+                }
+                await db.member_csv_files.insert_one(csv_file_doc)
+                
                 # Send notification to member
                 try:
                     notification_doc = {
