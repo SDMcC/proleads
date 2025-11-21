@@ -631,7 +631,7 @@ function Footer() {
           <div>
             <h3 className="text-lg font-semibold mb-4">Support</h3>
             <ul className="space-y-2">
-              <li><span className="text-gray-400">Email: support@proleads.network</span></li>
+              <li><span className="text-gray-400">Email: support@members.proleads.network</span></li>
               <li><span className="text-gray-400">24/7 Member Support</span></li>
             </ul>
           </div>
