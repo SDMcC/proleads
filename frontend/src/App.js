@@ -1665,11 +1665,9 @@ function LandingPage() {
                   <Users className="h-12 w-12 text-primary" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-black dark:text-white mb-3">Empowering Your Business Growth</h3>
+                  <h3 className="text-xl font-bold text-black dark:text-white mb-3">Effortless Scaling at Every Stage</h3>
                   <p className="text-body-color dark:text-body-color-dark">
-                    Proleads Network takes your network marketing to the next level by handling lead generation for you. 
-                    Your leads arrive weekly, complete with verified information, so you can focus on building relationships 
-                    and expanding your team. Designed for marketers like you, our system turns your existing reach into unstoppable momentum.
+                    Whether you're just starting or already have an audience, our done-for-you system hands you qualified prospects on autopilot—saving you time and making expansion feel seamless.
                   </p>
                 </div>
               </div>
