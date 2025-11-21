@@ -1703,12 +1703,11 @@ function LandingPage() {
                   <Award className="h-12 w-12 text-primary" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-black dark:text-white mb-3">Maximize Your Earnings Potential</h3>
+                  <h3 className="text-xl font-bold text-black dark:text-white mb-3">Turn Your Network Into Recurring Income</h3>
                   <p className="text-body-color dark:text-body-color-dark">
-                    Proleads Network isn't just about growth — it's about income. Every member becomes an{' '}
-                    <a href="/affiliates" className="text-blue-600 hover:text-blue-800 font-medium">affiliate</a>, 
-                    earning up to 30% recurring commissions on referrals, plus bonuses up to four tiers deep. 
-                    Refer just 4 members, and their payouts can cover your membership cost. It's passive income designed for network marketers ready to profit from their network.
+                    Every member gets instant access to our{' '}
+                    <a href="/affiliates" className="text-blue-600 hover:text-blue-800 font-medium">affiliate program</a>: 
+                    earn up to 30% recurring commissions plus bonuses up to four tiers deep. Most members only need 3–4 referrals to make their membership free (or highly profitable).
                   </p>
                 </div>
               </div>
