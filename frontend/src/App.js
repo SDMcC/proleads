@@ -1598,14 +1598,12 @@ function LandingPage() {
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Zap className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="text-xl font-bold text-black dark:text-white mb-3">A New Idea</h3>
+              <h3 className="text-xl font-bold text-black dark:text-white mb-3">A Smarter Way to Grow</h3>
               <p className="text-body-color dark:text-body-color-dark">
-                Proleads Network redefines lead generation. Get a consistent supply of high quality leads to fuel your network, 
-                plus earn passive income by sharing the system. Refer just 4 new members, and their commissions can cover 
-                your entire membership cost - making your growth practically free.
+                Get a steady stream of high-quality leads + earn recurring income by sharing the system. Most members only need to refer 3–4 people for their membership to pay for itself.
               </p>
               <a href="/affiliates" className="text-blue-600 hover:text-blue-800 font-medium mt-2 inline-block">
-                Explore Our Affiliate Program →
+                Explore the Referral Program →
               </a>
             </div>
             
