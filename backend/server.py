@@ -5736,8 +5736,28 @@ async def get_distribution_overview(admin: dict = Depends(get_admin_user)):
         # Total distributions made (lifetime)
         total_distributions = await db.member_leads.count_documents({})
         
-        # Get CSV statistics
-        all_distributions = await db.lead_distributions.find({}).to_list(None)
+        # Get CSV statistics using aggregation (much faster!)
+        # Use aggregation to count remaining leads per distribution in one query
+        pipeline = [
+            {
+                "$match": {
+                    "distribution_count": {"$lt": 10}
+                }
+            },
+            {
+                "$group": {
+                    "_id": "$distribution_id",
+                    "remaining_count": {"$sum": 1}
+                }
+            }
+        ]
+        
+        remaining_by_dist_cursor = db.leads.aggregate(pipeline)
+        remaining_by_dist_list = await remaining_by_dist_cursor.to_list(None)
+        remaining_by_dist = {item["_id"]: item["remaining_count"] for item in remaining_by_dist_list}
+        
+        # Get all distributions (limit to recent 100 for performance)
+        all_distributions = await db.lead_distributions.find({}).sort("uploaded_at", -1).limit(100).to_list(None)
         
         active_csvs = []
         exhausted_csvs = []
@@ -5745,11 +5765,8 @@ async def get_distribution_overview(admin: dict = Depends(get_admin_user)):
         for dist in all_distributions:
             dist_id = dist["distribution_id"]
             
-            # Count remaining leads for this CSV
-            csv_remaining = await db.leads.count_documents({
-                "distribution_id": dist_id,
-                "distribution_count": {"$lt": 10}
-            })
+            # Get remaining count from our aggregation result
+            csv_remaining = remaining_by_dist.get(dist_id, 0)
             
             csv_total = dist.get("total_leads", 0)
             csv_distributed = csv_total - csv_remaining
