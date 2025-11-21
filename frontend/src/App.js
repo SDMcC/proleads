@@ -1573,14 +1573,13 @@ function LandingPage() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-black dark:text-white mb-4">
-              Innovate Your Network Marketing
+              Stop Struggling With Lead Flow
             </h2>
             <p className="text-lg text-body-color dark:text-body-color-dark max-w-4xl mx-auto leading-relaxed">
-              Network marketing isn't easy - building a thriving downline, chasing referrals, and securing steady income takes work. 
-              If you're a network marketer with a growing network, Proleads Network is your edge. We deliver high quality, 
-              blockchain-verified leads straight to you, so you can focus on growing your empire. Our exclusive tools and 
-              done-for-you system make it simple to unlock predictable results and new ways to earn. Every network marketer 
-              needs fresh leads - and Proleads Network delivers.
+              Generating consistent leads is one of the hardest parts of growing an online business. Proleads Network removes that bottleneck. 
+              Every week we deliver fresh, qualified leads directly to you so you can spend your time closing deals and scaling. 
+              Plus, our built-in referral program lets active members earn generous recurring commissions — many cover (or exceed) 
+              their membership cost with just a handful of referrals.
             </p>
           </div>
 
