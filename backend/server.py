@@ -5577,12 +5577,21 @@ async def perform_scheduled_lead_distribution(schedule_id: str, schedule_name: s
                     }
                     await db.notifications.insert_one(notification_doc)
                     
-                    # Send email notification
+                    # Send email notification (check if email was sent recently to prevent duplicates)
                     member_email = member.get("email", "")
                     if member_email:
-                        from email_service import send_email
-                        email_subject = "🎉 New Leads Available - Proleads Network"
-                        email_body = f"""
+                        # Check if email was sent in the last 5 minutes
+                        five_mins_ago = datetime.utcnow() - timedelta(minutes=5)
+                        recent_email = await db.email_history.find_one({
+                            "to_email": member_email,
+                            "notification_type": "lead_distribution",
+                            "sent_at": {"$gte": five_mins_ago}
+                        })
+                        
+                        if not recent_email:
+                            from email_service import send_email
+                            email_subject = "🎉 New Leads Available - Proleads Network"
+                            email_body = f"""
 Hello {member.get('username', 'Member')},
 
 Great news! You have received {len(member_leads)} new leads in your Proleads Network account.
@@ -5600,17 +5609,19 @@ Thank you for being a valued member of Proleads Network!
 Best regards,
 The Proleads Network Team
 """
-                        try:
-                            await send_email(
-                                to_email=member_email,
-                                subject=email_subject,
-                                body=email_body,
-                                notification_type="lead_distribution",
-                                store_in_history=True
-                            )
-                            logger.info(f"Email sent to {member_email} for lead distribution")
-                        except Exception as email_error:
-                            logger.error(f"Failed to send email to {member_email}: {str(email_error)}")
+                            try:
+                                await send_email(
+                                    to_email=member_email,
+                                    subject=email_subject,
+                                    body=email_body,
+                                    notification_type="lead_distribution",
+                                    store_in_history=True
+                                )
+                                logger.info(f"Email sent to {member_email} for lead distribution")
+                            except Exception as email_error:
+                                logger.error(f"Failed to send email to {member_email}: {str(email_error)}")
+                        else:
+                            logger.info(f"Skipping email to {member_email} - already sent recently")
                     
                 except Exception as e:
                     logger.error(f"Failed to send notification to {member_address}: {str(e)}")
