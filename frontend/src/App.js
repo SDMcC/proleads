@@ -1449,11 +1449,11 @@ function LandingPage() {
                 </div>
                 
                 <h1 className="mb-5 text-3xl font-bold leading-tight text-white sm:text-4xl sm:leading-tight md:text-5xl md:leading-tight drop-shadow-lg">
-                  Welcome To Proleads Network
+                  Welcome to Proleads Network
                 </h1>
                 
                 <p className="mb-12 text-base leading-relaxed text-gray-100 sm:text-lg md:text-xl drop-shadow-md">
-                  A Constant Supply Of Fresh Leads For Your Business. Network marketing made simple with blockchain-verified leads straight to your members area.
+                  A Reliable Weekly Supply of Fresh, High-Quality Leads for Your Business. Get vetted buyer leads delivered straight to your dashboard.
                 </p>
                 
                 {referrerInfo && (
