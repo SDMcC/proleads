@@ -160,9 +160,18 @@ async def run_distribution_scheduler():
     client = AsyncIOMotorClient(os.getenv("MONGO_URL"))
     db = client[os.getenv("DB_NAME")]
     
+    # Log startup
+    await log_scheduler_event(db, "startup", "Scheduler started successfully")
+    
     while True:
         try:
+            # Update heartbeat
+            await update_scheduler_heartbeat(db)
+            
             now = datetime.now(timezone.utc)
+            
+            # Log check
+            await log_scheduler_event(db, "check", f"Checking for schedules at {now.isoformat()}")
             
             # Find schedules that need to run
             schedules_to_run = await db.distribution_schedules.find({
@@ -172,13 +181,38 @@ async def run_distribution_scheduler():
             
             if schedules_to_run:
                 logger.info(f"Found {len(schedules_to_run)} schedule(s) to execute")
+                await log_scheduler_event(
+                    db, 
+                    "found_schedules", 
+                    f"Found {len(schedules_to_run)} schedule(s) to execute at {now.isoformat()}"
+                )
             
             for schedule in schedules_to_run:
                 try:
+                    await log_scheduler_event(
+                        db,
+                        "execute_start",
+                        f"Starting execution of schedule: {schedule.get('name')}",
+                        schedule_id=schedule.get('schedule_id')
+                    )
                     await execute_scheduled_distribution(db, schedule)
+                    await log_scheduler_event(
+                        db,
+                        "execute_complete",
+                        f"Completed execution of schedule: {schedule.get('name')}",
+                        schedule_id=schedule.get('schedule_id')
+                    )
                 except Exception as e:
+                    error_msg = str(e)
                     logger.error(
-                        f"Failed to run schedule {schedule.get('name', 'unknown')}: {str(e)}"
+                        f"Failed to run schedule {schedule.get('name', 'unknown')}: {error_msg}"
+                    )
+                    await log_scheduler_event(
+                        db,
+                        "execute_error",
+                        f"Failed to execute schedule: {schedule.get('name')}",
+                        schedule_id=schedule.get('schedule_id'),
+                        error=error_msg
                     )
             
             # Sleep for 1 minute
@@ -186,6 +220,7 @@ async def run_distribution_scheduler():
             
         except Exception as e:
             logger.error(f"Scheduler error: {str(e)}")
+            await log_scheduler_event(db, "error", f"Scheduler loop error: {str(e)}", error=str(e))
             await asyncio.sleep(60)
 
 
