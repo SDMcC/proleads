@@ -5654,6 +5654,70 @@ The Proleads Network Team
 
 
 # =============================================================================
+# SCHEDULER HEALTH MONITORING ENDPOINTS
+# =============================================================================
+
+@app.get("/api/admin/scheduler/status")
+async def get_scheduler_status(admin: dict = Depends(get_admin_user)):
+    """Get scheduler health status"""
+    try:
+        # Get last heartbeat
+        health = await db.scheduler_health.find_one({"service": "scheduler"})
+        
+        if not health:
+            return {
+                "status": "unknown",
+                "message": "Scheduler has not reported any heartbeat yet",
+                "last_heartbeat": None,
+                "running": False
+            }
+        
+        last_heartbeat = health.get("last_heartbeat")
+        now = datetime.utcnow()
+        
+        # Check if heartbeat is recent (within last 2 minutes)
+        if last_heartbeat:
+            time_diff = (now - last_heartbeat).total_seconds()
+            running = time_diff < 120  # 2 minutes
+        else:
+            running = False
+        
+        return {
+            "status": "running" if running else "stopped",
+            "message": f"Last heartbeat {int(time_diff if last_heartbeat else 999)} seconds ago" if last_heartbeat else "No heartbeat",
+            "last_heartbeat": last_heartbeat.isoformat() if last_heartbeat else None,
+            "running": running
+        }
+    except Exception as e:
+        logger.error(f"Failed to get scheduler status: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to get scheduler status")
+
+
+@app.get("/api/admin/scheduler/events")
+async def get_scheduler_events(
+    limit: int = 50,
+    event_type: str = None,
+    admin: dict = Depends(get_admin_user)
+):
+    """Get recent scheduler events (for production monitoring)"""
+    try:
+        query = {}
+        if event_type:
+            query["event_type"] = event_type
+        
+        events_cursor = db.scheduler_events.find(query, {"_id": 0}).sort("timestamp", -1).limit(limit)
+        events = await events_cursor.to_list(None)
+        
+        return {
+            "events": events,
+            "total": len(events)
+        }
+    except Exception as e:
+        logger.error(f"Failed to get scheduler events: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to get scheduler events")
+
+
+# =============================================================================
 # GLOBAL DISTRIBUTION STATISTICS ENDPOINT
 # =============================================================================
 
