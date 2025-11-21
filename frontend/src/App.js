@@ -1736,10 +1736,10 @@ function LandingPage() {
         
         <div className="container mx-auto px-4 text-center relative z-10">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Ready to turn your network into a paycheck?
+            Ready to fill your pipeline and turn referrals into recurring revenue?
           </h2>
           <p className="text-xl mb-8 text-blue-100">
-            Pick your membership level and begin building your income today.
+            Pick your plan and get your first batch of leads this week.
           </p>
           <a 
             href={`/register${referralCode ? `?ref=${referralCode}` : ''}`}
