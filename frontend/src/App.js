@@ -512,24 +512,24 @@ function FAQSection() {
 
   const faqs = [
     {
-      question: "How does the affiliate program work?",
-      answer: "Every member becomes an affiliate and can earn commissions by referring new members. You earn up to 30% recurring commissions on referrals, with payments made instantly in USDC."
+      question: "How does the referral program work?",
+      answer: "Every member is automatically an affiliate. Share your link and earn up to 30% recurring commissions + multi-tier bonuses, paid instantly in USDC."
     },
     {
       question: "What kind of leads do you provide?",
-      answer: "We provide fresh, verified leads for network marketing. Leads are delivered weekly to your member dashboard and include contact information for prospects interested in business opportunities."
+      answer: "Fresh, vetted leads actively interested in business opportunities, side income, or premium offers. Delivered weekly with full contact details."
     },
     {
       question: "How are commissions paid?",
-      answer: "All commissions are paid instantly in USDC cryptocurrency directly to your wallet address. Payments are processed automatically when new members join your network."
+      answer: "Instantly in USDC cryptocurrency to your wallet as soon as someone joins through your link."
     },
     {
-      question: "Can I cancel my membership anytime?",
-      answer: "Yes, you can cancel your membership at any time. Due to the nature of cryptocurrency payments and instant commission distribution, refunds are subject to our refund policy."
+      question: "Can I cancel anytime?",
+      answer: "Yes—cancel any time. Refunds follow our standard policy (detailed on the billing page)."
     },
     {
-      question: "What's the difference between membership tiers?",
-      answer: "Higher tiers receive more weekly leads and have access to deeper commission structures (up to 4 levels). All tiers include affiliate program access and member dashboard."
+      question: "What's the difference between tiers?",
+      answer: "Higher tiers get more weekly leads and deeper referral bonuses (up to 4 levels). All tiers include full referral program access."
     }
   ];
 
