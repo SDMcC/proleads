@@ -9404,6 +9404,25 @@ function LeadsManagementTab() {
     }
   };
 
+  const fetchSchedulerStatus = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const [statusRes, eventsRes] = await Promise.all([
+        axios.get(`${API_URL}/admin/scheduler/status`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get(`${API_URL}/admin/scheduler/events?limit=20`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      ]);
+      
+      setSchedulerStatus(statusRes.data);
+      setSchedulerEvents(eventsRes.data.events || []);
+    } catch (error) {
+      console.error('Failed to fetch scheduler status:', error);
+    }
+  };
+
   const handleFileUpload = async (e) => {
     e.preventDefault();
     if (!csvFile) {
