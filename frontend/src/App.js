@@ -407,7 +407,7 @@ function EnhancedMembershipTiers({ tiers, referralCode, loading }) {
             Choose Your Membership Level
           </h2>
           <p className="text-lg text-body-color dark:text-body-color-dark max-w-3xl mx-auto">
-            Select the tier that matches your network marketing goals. Each membership includes weekly leads and access to our affiliate program.
+            Select the tier that matches your growth goals. Every plan includes weekly leads, full dashboard access, and the referral program.
           </p>
         </div>
 
