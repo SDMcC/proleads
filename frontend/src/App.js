@@ -1677,11 +1677,9 @@ function LandingPage() {
                   <DollarSign className="h-12 w-12 text-primary" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-black dark:text-white mb-3">Cost-Effective Lead Generation</h3>
+                  <h3 className="text-xl font-bold text-black dark:text-white mb-3">Cost-Effective Leads That Actually Work</h3>
                   <p className="text-body-color dark:text-body-color-dark">
-                    Why spend big on outdated lead sources? Proleads Network delivers quality leads every week at a fraction 
-                    of the cost. With no long-term contracts, it's the smartest way to connect with prospects ready to join 
-                    or buy, helping you grow your business without breaking the bank.
+                    Stop overpaying for stale or low-quality leads. Get fresh, high-intent prospects delivered weekly at a fraction of traditional advertising costs—no contracts, cancel anytime.
                   </p>
                 </div>
               </div>
