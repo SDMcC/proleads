@@ -1691,11 +1691,9 @@ function LandingPage() {
                   <Target className="h-12 w-12 text-primary" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-black dark:text-white mb-3">Maximizing ROI with Targeted Leads</h3>
+                  <h3 className="text-xl font-bold text-black dark:text-white mb-3">Higher ROI with Targeted Prospects</h3>
                   <p className="text-body-color dark:text-body-color-dark">
-                    Our leads are built for results. Each one is fresh, verified, and primed for network marketing, 
-                    boosting your chances of turning prospects into customers or team members. By prioritizing quality, 
-                    we help you maximize your return on investment with every subscription.
+                    Every lead is carefully vetted and actively seeking business opportunities, giving you significantly better conversion rates and maximizing the return on your subscription.
                   </p>
                 </div>
               </div>
