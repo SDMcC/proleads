@@ -1588,11 +1588,9 @@ function LandingPage() {
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Activity className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="text-xl font-bold text-black dark:text-white mb-3">Predictable Results</h3>
+              <h3 className="text-xl font-bold text-black dark:text-white mb-3">Predictable Lead Flow</h3>
               <p className="text-body-color dark:text-body-color-dark">
-                No more wasting time on lead generation. Our service delivers fresh leads directly to your members area 
-                every week, so you can focus on closing deals and building your team. With our proven system, you'll 
-                connect with prospects ready to act, driving steady growth for your business.
+                Fresh leads arrive in your dashboard every week. No more cold outreach or expensive ads — just consistent prospects ready to talk business.
               </p>
             </div>
             
