@@ -5554,6 +5554,42 @@ async def perform_scheduled_lead_distribution(schedule_id: str, schedule_name: s
                         "created_at": datetime.utcnow()
                     }
                     await db.notifications.insert_one(notification_doc)
+                    
+                    # Send email notification
+                    member_email = member.get("email", "")
+                    if member_email:
+                        from email_service import send_email
+                        email_subject = "🎉 New Leads Available - Proleads Network"
+                        email_body = f"""
+Hello {member.get('username', 'Member')},
+
+Great news! You have received {len(member_leads)} new leads in your Proleads Network account.
+
+Your leads are ready and waiting for you in your dashboard.
+
+Log in now to access your leads: {os.getenv('APP_URL', 'https://members.proleads.network')}
+
+Tier: {member_tier.title()}
+Leads Received: {len(member_leads)}
+Distribution Date: {datetime.utcnow().strftime('%B %d, %Y at %H:%M UTC')}
+
+Thank you for being a valued member of Proleads Network!
+
+Best regards,
+The Proleads Network Team
+"""
+                        try:
+                            await send_email(
+                                to_email=member_email,
+                                subject=email_subject,
+                                body=email_body,
+                                notification_type="lead_distribution",
+                                store_in_history=True
+                            )
+                            logger.info(f"Email sent to {member_email} for lead distribution")
+                        except Exception as email_error:
+                            logger.error(f"Failed to send email to {member_email}: {str(email_error)}")
+                    
                 except Exception as e:
                     logger.error(f"Failed to send notification to {member_address}: {str(e)}")
         
