@@ -9322,6 +9322,10 @@ function LeadsManagementTab() {
   const [overview, setOverview] = useState(null);
   const [overviewLoading, setOverviewLoading] = useState(true);
 
+  // Scheduler status state
+  const [schedulerStatus, setSchedulerStatus] = useState(null);
+  const [schedulerEvents, setSchedulerEvents] = useState([]);
+
   useEffect(() => {
     if (activeTab === 'overview') {
       fetchOverview();
