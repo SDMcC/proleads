@@ -8,6 +8,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 import uuid
 import logging
 from dotenv import load_dotenv
+from scheduler_health import update_scheduler_heartbeat, log_scheduler_event
 
 load_dotenv()
 
