@@ -1611,10 +1611,9 @@ function LandingPage() {
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <TrendingUp className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="text-xl font-bold text-black dark:text-white mb-3">Exponential Growth</h3>
+              <h3 className="text-xl font-bold text-black dark:text-white mb-3">Scalable Momentum</h3>
               <p className="text-body-color dark:text-body-color-dark">
-                Our subscription model fuels your growth. Weekly leads keep your pipeline full and your downline thriving. 
-                With Proleads Network, you're not just maintaining momentum - you're unlocking the potential to grow faster and smarter.
+                Weekly leads keep your pipeline full while the referral program turns your network into an additional income stream. Grow faster without working harder.
               </p>
             </div>
           </div>
