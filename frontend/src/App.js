@@ -10987,7 +10987,7 @@ function IntegrationsTab() {
   };
 
   const handleRotateKey = async (keyId) => {
-    if (!confirm('Are you sure you want to rotate this API key? The old key will be valid for 24 hours.')) {
+    if (!window.confirm('Are you sure you want to rotate this API key? The old key will be valid for 24 hours.')) {
       return;
     }
     
