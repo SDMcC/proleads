@@ -1210,3 +1210,23 @@ agent_communication:
         agent: "main"
         comment: "✅ AWS S3 INTEGRATION IMPLEMENTED: Replaced local file system storage with AWS S3 cloud storage for persistent file storage across deployments. CHANGES: 1) Created s3_utils.py with upload/download/presigned URL functions using boto3, 2) Updated KYC document upload endpoint to save to S3 (kyc_documents/{filename}), 3) Updated KYC document retrieval to fetch from S3, 4) Updated ticket attachment upload to save to S3 (attachments/{filename}), 5) Updated ticket attachment retrieval to fetch from S3 with fallback for old local files, 6) Added boto3==1.35.36 to requirements.txt. CONFIGURATION REQUIRED: User needs to add AWS environment variables to deployment: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_S3_BUCKET=proleads-network-files, AWS_REGION=eu-north-1. S3 bucket already created by user. TESTING: Pending deployment with AWS credentials."
 
+
+metadata:
+  created_by: "main_agent"
+  version: "2.0"
+  test_sequence: 145
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "SSO Authentication System (AutoMailer Integration)"
+    - "CSV Export API (AutoMailer Integration)"
+    - "API Key Management System (Admin)"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: "🚀 SSO & CSV INTEGRATION IMPLEMENTATION COMPLETED: Implemented complete SSO and CSV export integration for AutoMailer on the Proleads Network side. IMPLEMENTATION SUMMARY: 1) SSO Authentication System - 3 endpoints (POST /api/sso/initiate, POST /api/sso/verify, GET /api/sso/user-info) with JWT-based authentication, single-use token enforcement, 10-minute token expiry. 2) CSV Export API - 2 endpoints (POST /api/integrations/csv-export, GET /api/integrations/csv-files) with API key authentication, rate limiting (100 req/hour), on-the-fly CSV generation from database. 3) API Key Management - 4 admin endpoints (create, list, revoke, rotate) with bcrypt hashing, usage tracking, 24-hour rotation grace period. 4) Helper Functions - validate_api_key(), check_rate_limit(), create_integration_indexes(). 5) Database Collections - sso_sessions, integration_api_keys, csv_export_logs with proper indexes. SECURITY: All endpoints properly secured with API key auth or admin auth, rate limiting implemented, bcrypt hashing for API keys, single-use SSO tokens, comprehensive audit logging. TESTING REQUIRED: Need comprehensive backend testing of all 9 new endpoints covering authentication, authorization, rate limiting, error handling, and edge cases. Admin credentials: admin/admin123."
+
