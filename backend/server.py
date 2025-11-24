@@ -114,6 +114,10 @@ DEPAY_PUBLIC_KEY = os.getenv("DEPAY_PUBLIC_KEY")
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin123")  # Change in production
 
+# SSO Configuration (for AutoMailer integration)
+SSO_SECRET_KEY = os.getenv("SSO_SECRET_KEY")
+SSO_TOKEN_EXPIRY_MINUTES = 10
+
 # Default membership tiers and commission rates (will be overridden by database config)
 DEFAULT_MEMBERSHIP_TIERS = {
     "affiliate": {"price": 0, "commissions": [0.25, 0.05]},
