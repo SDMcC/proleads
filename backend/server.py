@@ -95,6 +95,8 @@ async def startup_event():
     await load_system_config()
     # Start the distribution scheduler
     await start_scheduler_task()
+    # Create integration database indexes
+    await create_integration_indexes()
 
 # Database connection
 client = AsyncIOMotorClient(os.getenv("MONGO_URL"))
