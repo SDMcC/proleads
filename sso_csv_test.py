@@ -181,7 +181,11 @@ class SSOCSVIntegrationTester:
         
         if rotate_success and rotate_response.get('new_api_key'):
             old_api_key = self.api_key
-            self.api_key = rotate_response.get('new_api_key')
+            # Extract new API key from response
+            if isinstance(rotate_response.get('new_api_key'), dict):
+                self.api_key = rotate_response.get('new_api_key', {}).get('api_key')
+            else:
+                self.api_key = rotate_response.get('new_api_key')
             api_key_preview = str(self.api_key)[:20] if self.api_key else "None"
             print(f"✅ API Key rotated: {api_key_preview}...")
         
