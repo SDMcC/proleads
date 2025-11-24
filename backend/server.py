@@ -305,6 +305,59 @@ class KYCApproval(BaseModel):
     approved: bool
     rejection_reason: Optional[str] = None
 
+# =============================================================================
+# SSO & INTEGRATION PYDANTIC MODELS
+# =============================================================================
+
+# SSO Models
+class SSOInitiateRequest(BaseModel):
+    target_app: str  # "automailer"
+    redirect_url: str
+
+class SSOInitiateResponse(BaseModel):
+    sso_token: str
+    expires_at: datetime
+    redirect_url: str
+
+class SSOVerifyRequest(BaseModel):
+    sso_token: str
+
+class SSOVerifyResponse(BaseModel):
+    valid: bool
+    user: Optional[dict] = None
+    error: Optional[str] = None
+
+# CSV Export Models
+class CSVExportRequest(BaseModel):
+    user_id: str
+    file_id: str
+    format: str = "csv"
+
+class CSVExportResponse(BaseModel):
+    success: bool
+    csv_data: Optional[str] = None
+    metadata: Optional[dict] = None
+    error: Optional[str] = None
+
+# API Key Models
+class APIKeyCreate(BaseModel):
+    integration_name: str
+    description: str
+    permissions: List[str]
+    rate_limit: int = 100
+    rate_limit_period: str = "hour"
+
+class APIKeyResponse(BaseModel):
+    key_id: str
+    api_key: str
+    integration_name: str
+    permissions: List[str]
+    rate_limit: int
+    rate_limit_period: str
+    created_at: datetime
+    expires_at: Optional[datetime]
+    status: str
+
 # WebSocket connection manager
 class ConnectionManager:
     def __init__(self):
