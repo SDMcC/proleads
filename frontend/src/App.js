@@ -9351,9 +9351,27 @@ function LeadsTab() {
                             <span>Download</span>
                           </button>
                           <button
-                            onClick={() => window.open('https://mailer-hub.preview.emergentagent.com/dashboard', '_blank')}
+                            onClick={async () => {
+                              try {
+                                const token = localStorage.getItem('token');
+                                const response = await axios.post(
+                                  `${API_URL}/sso/initiate`,
+                                  {
+                                    target_app: 'sendloop',
+                                    redirect_url: 'https://mailer-hub.preview.emergentagent.com/dashboard'
+                                  },
+                                  { headers: { 'Authorization': `Bearer ${token}` } }
+                                );
+                                if (response.data.redirect_url) {
+                                  window.open(response.data.redirect_url, '_blank');
+                                }
+                              } catch (error) {
+                                console.error('Failed to initiate SSO:', error);
+                                alert('Failed to open Sendloop. Please try again.');
+                              }
+                            }}
                             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center space-x-2"
-                            title="Export to AutoMailer"
+                            title="Export to Sendloop"
                           >
                             <ExternalLink className="h-4 w-4" />
                             <span>Export</span>
