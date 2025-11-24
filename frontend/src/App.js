@@ -9015,6 +9015,11 @@ function AdminDashboard() {
           <LeadsManagementTab />
         )}
 
+        {/* Integrations Tab */}
+        {activeTab === 'integrations' && (
+          <IntegrationsTab />
+        )}
+
         {/* Configuration Tab */}
         {activeTab === 'configuration' && (
           <ConfigurationTab />
