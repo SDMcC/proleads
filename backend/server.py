@@ -8067,6 +8067,635 @@ async def get_analytics_graphs(
         raise HTTPException(status_code=500, detail="Failed to fetch analytics graphs")
 
 
+# =============================================================================
+# SSO & INTEGRATION HELPER FUNCTIONS
+# =============================================================================
+
+# Rate limiting storage (in production, use Redis)
+rate_limit_storage = defaultdict(list)
+
+async def validate_api_key(api_key: str, required_permissions: List[str]) -> bool:
+    """
+    Validate API key and check permissions
+    """
+    try:
+        # Find API key in database (stored as hash)
+        api_keys = await db.integration_api_keys.find({
+            "status": "active"
+        }).to_list(None)
+        
+        for key_record in api_keys:
+            # Compare hashed API key
+            if bcrypt.checkpw(api_key.encode('utf-8'), key_record["api_key_hash"].encode('utf-8')):
+                # Check permissions
+                key_permissions = key_record.get("permissions", [])
+                if all(perm in key_permissions for perm in required_permissions):
+                    # Update last used
+                    await db.integration_api_keys.update_one(
+                        {"key_id": key_record["key_id"]},
+                        {
+                            "$set": {"last_used_at": datetime.utcnow()},
+                            "$inc": {"usage_count": 1}
+                        }
+                    )
+                    return True
+        
+        return False
+        
+    except Exception as e:
+        logger.error(f"API key validation error: {str(e)}")
+        return False
+
+
+async def check_rate_limit(api_key: str, limit: int = 100, period_seconds: int = 3600):
+    """
+    Check rate limit for API key (token bucket algorithm)
+    In production, use Redis for distributed rate limiting
+    """
+    try:
+        current_time = datetime.utcnow()
+        key_requests = rate_limit_storage[api_key]
+        
+        # Remove requests outside the time window
+        cutoff_time = current_time - timedelta(seconds=period_seconds)
+        rate_limit_storage[api_key] = [
+            req_time for req_time in key_requests
+            if req_time > cutoff_time
+        ]
+        
+        # Check if limit exceeded
+        if len(rate_limit_storage[api_key]) >= limit:
+            return False, {
+                "limit": limit,
+                "remaining": 0,
+                "reset": int((rate_limit_storage[api_key][0] + timedelta(seconds=period_seconds)).timestamp())
+            }
+        
+        # Add current request
+        rate_limit_storage[api_key].append(current_time)
+        
+        return True, {
+            "limit": limit,
+            "remaining": limit - len(rate_limit_storage[api_key]),
+            "reset": int((current_time + timedelta(seconds=period_seconds)).timestamp())
+        }
+        
+    except Exception as e:
+        logger.error(f"Rate limit check error: {str(e)}")
+        return True, {"limit": limit, "remaining": limit, "reset": 0}
+
+
+async def create_integration_indexes():
+    """Create database indexes for integration features"""
+    try:
+        # SSO sessions index
+        await db.sso_sessions.create_index("token_id", unique=True)
+        await db.sso_sessions.create_index("expires_at")
+        await db.sso_sessions.create_index([("user_id", 1), ("created_at", -1)])
+        
+        # API keys index
+        await db.integration_api_keys.create_index("key_id", unique=True)
+        await db.integration_api_keys.create_index("integration_name")
+        await db.integration_api_keys.create_index("status")
+        
+        # CSV export logs index
+        await db.csv_export_logs.create_index("export_id", unique=True)
+        await db.csv_export_logs.create_index([("user_id", 1), ("exported_at", -1)])
+        await db.csv_export_logs.create_index("file_id")
+        
+        logger.info("Integration database indexes created successfully")
+        
+    except Exception as e:
+        logger.error(f"Failed to create integration indexes: {str(e)}")
+
+
+# =============================================================================
+# SSO AUTHENTICATION ENDPOINTS
+# =============================================================================
+
+@app.post("/api/sso/initiate", response_model=SSOInitiateResponse)
+async def sso_initiate(
+    request: SSOInitiateRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Initiate SSO flow - generate short-lived token for external app
+    """
+    try:
+        # Generate SSO token
+        token_id = str(uuid.uuid4())
+        expires_at = datetime.utcnow() + timedelta(minutes=SSO_TOKEN_EXPIRY_MINUTES)
+        
+        # Create JWT payload
+        payload = {
+            "token_id": token_id,
+            "user_id": current_user["user_id"],
+            "email": current_user["email"],
+            "username": current_user["username"],
+            "address": current_user["address"],
+            "membership_tier": current_user["membership_tier"],
+            "subscription_expires_at": current_user.get("subscription_expires_at").isoformat() if current_user.get("subscription_expires_at") else None,
+            "target_app": request.target_app,
+            "exp": expires_at,
+            "iat": datetime.utcnow(),
+            "type": "sso"
+        }
+        
+        # Generate JWT token
+        sso_token = jwt.encode(payload, SSO_SECRET_KEY, algorithm="HS256")
+        
+        # Store SSO session in database (for single-use enforcement)
+        await db.sso_sessions.insert_one({
+            "token_id": token_id,
+            "user_id": current_user["user_id"],
+            "target_app": request.target_app,
+            "created_at": datetime.utcnow(),
+            "expires_at": expires_at,
+            "used": False,
+            "used_at": None
+        })
+        
+        # Build redirect URL
+        redirect_url = f"{request.redirect_url}?sso_token={sso_token}"
+        if "?" in request.redirect_url:
+            redirect_url = f"{request.redirect_url}&sso_token={sso_token}"
+        
+        logger.info(f"SSO token generated for user {current_user['username']} -> {request.target_app}")
+        
+        return SSOInitiateResponse(
+            sso_token=sso_token,
+            expires_at=expires_at,
+            redirect_url=redirect_url
+        )
+        
+    except Exception as e:
+        logger.error(f"Failed to initiate SSO: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to initiate SSO")
+
+
+@app.post("/api/sso/verify", response_model=SSOVerifyResponse)
+async def sso_verify(
+    request: SSOVerifyRequest,
+    x_api_key: Optional[str] = Header(None, alias="X-API-Key")
+):
+    """
+    Verify SSO token - called by external app (requires API key)
+    """
+    try:
+        # Verify API key from headers
+        if not x_api_key:
+            raise HTTPException(status_code=401, detail="API key required")
+        
+        # Validate API key
+        api_key_valid = await validate_api_key(x_api_key, ["sso_verify", "user_info"])
+        if not api_key_valid:
+            raise HTTPException(status_code=401, detail="Invalid API key")
+        
+        # Decode JWT token
+        try:
+            payload = jwt.decode(
+                request.sso_token,
+                SSO_SECRET_KEY,
+                algorithms=["HS256"]
+            )
+        except jwt.ExpiredSignatureError:
+            return SSOVerifyResponse(valid=False, error="Token expired")
+        except jwt.InvalidTokenError:
+            return SSOVerifyResponse(valid=False, error="Invalid token")
+        
+        # Check if token type is SSO
+        if payload.get("type") != "sso":
+            return SSOVerifyResponse(valid=False, error="Invalid token type")
+        
+        # Check if token has been used (single-use enforcement)
+        token_id = payload.get("token_id")
+        sso_session = await db.sso_sessions.find_one({"token_id": token_id})
+        
+        if not sso_session:
+            return SSOVerifyResponse(valid=False, error="Token not found")
+        
+        if sso_session.get("used"):
+            return SSOVerifyResponse(valid=False, error="Token already used")
+        
+        # Mark token as used
+        await db.sso_sessions.update_one(
+            {"token_id": token_id},
+            {
+                "$set": {
+                    "used": True,
+                    "used_at": datetime.utcnow()
+                }
+            }
+        )
+        
+        # Return user data
+        user_data = {
+            "user_id": payload["user_id"],
+            "email": payload["email"],
+            "username": payload["username"],
+            "address": payload["address"],
+            "membership_tier": payload["membership_tier"],
+            "subscription_expires_at": payload.get("subscription_expires_at")
+        }
+        
+        logger.info(f"SSO token verified for user {payload['username']}")
+        
+        return SSOVerifyResponse(valid=True, user=user_data)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to verify SSO token: {str(e)}")
+        return SSOVerifyResponse(valid=False, error="Verification failed")
+
+
+@app.get("/api/sso/user-info")
+async def sso_user_info(
+    user_id: str,
+    x_api_key: Optional[str] = Header(None, alias="X-API-Key")
+):
+    """
+    Get user information for SSO session
+    """
+    try:
+        # Validate API key
+        if not x_api_key:
+            raise HTTPException(status_code=401, detail="API key required")
+        
+        api_key_valid = await validate_api_key(x_api_key, ["user_info"])
+        if not api_key_valid:
+            raise HTTPException(status_code=401, detail="Invalid API key")
+        
+        # Get user from database
+        user = await db.users.find_one({"user_id": user_id})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Return user information
+        return {
+            "user_id": user["user_id"],
+            "email": user["email"],
+            "username": user["username"],
+            "address": user["address"],
+            "membership_tier": user["membership_tier"],
+            "subscription_status": "active" if not user.get("suspended") else "suspended",
+            "subscription_expires_at": user.get("subscription_expires_at").isoformat() if user.get("subscription_expires_at") else None
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get user info: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to get user info")
+
+
+# =============================================================================
+# INTEGRATION API - CSV EXPORT
+# =============================================================================
+
+@app.post("/api/integrations/csv-export", response_model=CSVExportResponse)
+async def integration_csv_export(
+    request: CSVExportRequest,
+    x_api_key: Optional[str] = Header(None, alias="X-API-Key")
+):
+    """
+    Export user's lead CSV for external integration (AutoMailer)
+    Requires API key authentication
+    """
+    try:
+        # Validate API key
+        if not x_api_key:
+            raise HTTPException(status_code=401, detail="API key required")
+        
+        api_key_valid = await validate_api_key(x_api_key, ["csv_export"])
+        if not api_key_valid:
+            logger.warning(f"Invalid API key used for CSV export")
+            raise HTTPException(status_code=401, detail="Invalid API key")
+        
+        # Check rate limit
+        rate_limit_ok, rate_info = await check_rate_limit(x_api_key)
+        if not rate_limit_ok:
+            logger.warning(f"Rate limit exceeded for API key")
+            raise HTTPException(
+                status_code=429,
+                detail="Rate limit exceeded",
+                headers={
+                    "X-RateLimit-Limit": str(rate_info["limit"]),
+                    "X-RateLimit-Remaining": str(rate_info["remaining"]),
+                    "X-RateLimit-Reset": str(rate_info["reset"]),
+                    "Retry-After": "60"
+                }
+            )
+        
+        # Verify user exists
+        user = await db.users.find_one({"user_id": request.user_id})
+        if not user:
+            logger.warning(f"CSV export requested for non-existent user: {request.user_id}")
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Get CSV file from database
+        csv_file = await db.member_csv_files.find_one({
+            "file_id": request.file_id,
+            "member_address": user["address"]
+        })
+        
+        if not csv_file:
+            logger.warning(f"CSV file {request.file_id} not found for user {request.user_id}")
+            raise HTTPException(
+                status_code=403,
+                detail="CSV file not found or user does not have access"
+            )
+        
+        # Get CSV content (stored in database)
+        csv_content = csv_file.get("csv_content", "")
+        
+        if not csv_content:
+            logger.error(f"CSV file {request.file_id} has no content")
+            raise HTTPException(status_code=500, detail="CSV file has no content")
+        
+        # Count lines
+        line_count = len(csv_content.split('\n')) - 1  # Subtract header row
+        
+        # Log export event
+        await db.csv_export_logs.insert_one({
+            "export_id": str(uuid.uuid4()),
+            "user_id": request.user_id,
+            "file_id": request.file_id,
+            "integration": "automailer",
+            "exported_at": datetime.utcnow(),
+            "line_count": line_count,
+            "api_key_id": x_api_key[:8] + "..."  # Log first 8 chars only
+        })
+        
+        logger.info(f"CSV export successful: user={request.user_id}, file={request.file_id}, lines={line_count}")
+        
+        # Return CSV data
+        return CSVExportResponse(
+            success=True,
+            csv_data=csv_content,
+            metadata={
+                "filename": csv_file.get("filename", f"leads_{request.user_id}.csv"),
+                "line_count": line_count,
+                "exported_at": datetime.utcnow().isoformat(),
+                "user_id": request.user_id,
+                "file_id": request.file_id
+            }
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to export CSV: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to export CSV")
+
+
+@app.get("/api/integrations/csv-files")
+async def integration_list_csv_files(
+    user_id: str,
+    x_api_key: Optional[str] = Header(None, alias="X-API-Key")
+):
+    """
+    List available CSV files for a user
+    """
+    try:
+        # Validate API key
+        if not x_api_key:
+            raise HTTPException(status_code=401, detail="API key required")
+        
+        api_key_valid = await validate_api_key(x_api_key, ["csv_export"])
+        if not api_key_valid:
+            raise HTTPException(status_code=401, detail="Invalid API key")
+        
+        # Check rate limit
+        rate_limit_ok, rate_info = await check_rate_limit(x_api_key)
+        if not rate_limit_ok:
+            raise HTTPException(status_code=429, detail="Rate limit exceeded")
+        
+        # Verify user exists
+        user = await db.users.find_one({"user_id": user_id})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Get all CSV files for user
+        csv_files = await db.member_csv_files.find({
+            "member_address": user["address"]
+        }).sort("created_at", -1).to_list(None)
+        
+        # Format response
+        files = []
+        for csv_file in csv_files:
+            files.append({
+                "file_id": csv_file["file_id"],
+                "filename": csv_file["filename"],
+                "line_count": csv_file.get("lead_count", 0),
+                "created_at": csv_file["created_at"].isoformat(),
+                "distribution_id": csv_file.get("distribution_id", "")
+            })
+        
+        return {
+            "success": True,
+            "files": files,
+            "total_files": len(files)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to list CSV files: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to list CSV files")
+
+
+# =============================================================================
+# ADMIN API KEY MANAGEMENT
+# =============================================================================
+
+@app.post("/api/admin/integrations/api-keys")
+async def admin_create_api_key(
+    request: APIKeyCreate,
+    current_admin: dict = Depends(get_admin_user)
+):
+    """
+    Generate new API key for external integrations (Admin only)
+    """
+    try:
+        # Generate API key
+        api_key_raw = f"{request.integration_name}_live_key_" + secrets.token_urlsafe(32)
+        key_id = str(uuid.uuid4())
+        
+        # Hash API key before storing
+        api_key_hash = bcrypt.hashpw(api_key_raw.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        
+        # Store in database
+        await db.integration_api_keys.insert_one({
+            "key_id": key_id,
+            "api_key_hash": api_key_hash,  # Never store plain text
+            "integration_name": request.integration_name,
+            "description": request.description,
+            "permissions": request.permissions,
+            "rate_limit": request.rate_limit,
+            "rate_limit_period": request.rate_limit_period,
+            "created_at": datetime.utcnow(),
+            "created_by": current_admin["username"],
+            "expires_at": None,
+            "status": "active",
+            "last_used_at": None,
+            "usage_count": 0
+        })
+        
+        logger.info(f"API key created: {request.integration_name} by {current_admin['username']}")
+        
+        return {
+            "success": True,
+            "api_key": {
+                "key_id": key_id,
+                "api_key": api_key_raw,  # Only shown once!
+                "integration_name": request.integration_name,
+                "permissions": request.permissions,
+                "rate_limit": request.rate_limit,
+                "rate_limit_period": request.rate_limit_period,
+                "created_at": datetime.utcnow().isoformat(),
+                "expires_at": None,
+                "status": "active"
+            },
+            "warning": "This API key will only be displayed once. Store it securely."
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to create API key: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to create API key")
+
+
+@app.get("/api/admin/integrations/api-keys")
+async def admin_list_api_keys(current_admin: dict = Depends(get_admin_user)):
+    """
+    List all API keys (without revealing actual keys)
+    """
+    try:
+        api_keys = await db.integration_api_keys.find({}).sort("created_at", -1).to_list(None)
+        
+        keys = []
+        for key in api_keys:
+            keys.append({
+                "key_id": key["key_id"],
+                "integration_name": key["integration_name"],
+                "description": key.get("description", ""),
+                "permissions": key["permissions"],
+                "rate_limit": key["rate_limit"],
+                "rate_limit_period": key["rate_limit_period"],
+                "created_at": key["created_at"].isoformat(),
+                "status": key["status"],
+                "last_used_at": key.get("last_used_at").isoformat() if key.get("last_used_at") else None,
+                "usage_count": key.get("usage_count", 0)
+            })
+        
+        return {
+            "success": True,
+            "api_keys": keys,
+            "total": len(keys)
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to list API keys: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to list API keys")
+
+
+@app.delete("/api/admin/integrations/api-keys/{key_id}")
+async def admin_revoke_api_key(
+    key_id: str,
+    current_admin: dict = Depends(get_admin_user)
+):
+    """
+    Revoke an API key
+    """
+    try:
+        result = await db.integration_api_keys.update_one(
+            {"key_id": key_id},
+            {"$set": {"status": "revoked", "revoked_at": datetime.utcnow()}}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=404, detail="API key not found")
+        
+        logger.info(f"API key revoked: {key_id} by {current_admin['username']}")
+        
+        return {
+            "success": True,
+            "message": "API key revoked successfully"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to revoke API key: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to revoke API key")
+
+
+@app.post("/api/admin/integrations/api-keys/{key_id}/rotate")
+async def admin_rotate_api_key(
+    key_id: str,
+    current_admin: dict = Depends(get_admin_user)
+):
+    """
+    Rotate an API key (generate new key, keep old valid for 24h)
+    """
+    try:
+        # Get existing key
+        existing_key = await db.integration_api_keys.find_one({"key_id": key_id})
+        if not existing_key:
+            raise HTTPException(status_code=404, detail="API key not found")
+        
+        # Generate new API key
+        new_api_key_raw = f"{existing_key['integration_name']}_live_key_" + secrets.token_urlsafe(32)
+        new_key_id = str(uuid.uuid4())
+        new_api_key_hash = bcrypt.hashpw(new_api_key_raw.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        
+        # Create new key record
+        await db.integration_api_keys.insert_one({
+            "key_id": new_key_id,
+            "api_key_hash": new_api_key_hash,
+            "integration_name": existing_key["integration_name"],
+            "description": existing_key.get("description", ""),
+            "permissions": existing_key["permissions"],
+            "rate_limit": existing_key["rate_limit"],
+            "rate_limit_period": existing_key["rate_limit_period"],
+            "created_at": datetime.utcnow(),
+            "created_by": current_admin["username"],
+            "expires_at": None,
+            "status": "active",
+            "last_used_at": None,
+            "usage_count": 0,
+            "rotated_from": key_id
+        })
+        
+        # Set old key to expire in 24 hours
+        old_key_valid_until = datetime.utcnow() + timedelta(hours=24)
+        await db.integration_api_keys.update_one(
+            {"key_id": key_id},
+            {
+                "$set": {
+                    "status": "rotating",
+                    "expires_at": old_key_valid_until,
+                    "rotated_to": new_key_id
+                }
+            }
+        )
+        
+        logger.info(f"API key rotated: {key_id} -> {new_key_id} by {current_admin['username']}")
+        
+        return {
+            "success": True,
+            "new_api_key": new_api_key_raw,
+            "old_api_key_valid_until": old_key_valid_until.isoformat(),
+            "message": "API key rotated successfully. Update AutoMailer configuration within 24 hours."
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to rotate API key: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to rotate API key")
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
