@@ -148,8 +148,13 @@ class SSOCSVIntegrationTester:
         )
         
         if revoke_create_success:
-            revoke_key_id = revoke_create_response.get('key_id')
-            revoke_api_key = revoke_create_response.get('api_key')
+            # Extract key ID and API key from response
+            if isinstance(revoke_create_response.get('api_key'), dict):
+                revoke_key_id = revoke_create_response.get('api_key', {}).get('key_id')
+                revoke_api_key = revoke_create_response.get('api_key', {}).get('api_key')
+            else:
+                revoke_key_id = revoke_create_response.get('key_id')
+                revoke_api_key = revoke_create_response.get('api_key')
             
             # 5. Revoke the test key
             revoke_success, _ = self.run_test(
