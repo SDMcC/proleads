@@ -75,7 +75,8 @@ class SSOCSVIntegrationTester:
         
         if success and response.get('token'):
             self.admin_token = response.get('token')
-            print(f"✅ Admin token obtained: {self.admin_token[:20]}...")
+            token_preview = str(self.admin_token)[:20] if self.admin_token else "None"
+            print(f"✅ Admin token obtained: {token_preview}...")
             return True
         else:
             print("❌ Failed to get admin token")
