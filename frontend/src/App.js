@@ -9200,6 +9200,30 @@ function LeadsTab() {
         </div>
       </div>
 
+      {/* AutoMailer Integration Banner */}
+      <div className="bg-gradient-to-r from-blue-900 to-indigo-900 bg-opacity-50 border border-blue-700 rounded-xl p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="bg-blue-600 bg-opacity-30 rounded-full p-3">
+              <Mail className="h-8 w-8 text-blue-300" />
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold text-white mb-1">Export to AutoMailer</h3>
+              <p className="text-blue-200 text-sm">
+                Create automated email campaigns with your leads. Click "Export" on any file to open AutoMailer.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => window.open('https://mailer-hub.preview.emergentagent.com/dashboard', '_blank')}
+            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-all duration-300 flex items-center space-x-2 whitespace-nowrap"
+          >
+            <ExternalLink className="h-5 w-5" />
+            <span>Open AutoMailer</span>
+          </button>
+        </div>
+      </div>
+
       {csvFiles.length === 0 ? (
         <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-8 text-center">
           <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
