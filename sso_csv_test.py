@@ -223,7 +223,8 @@ class SSOCSVIntegrationTester:
             return False
         
         sso_token = sso_initiate_response.get('sso_token')
-        print(f"✅ SSO Token generated: {sso_token[:20]}...")
+        sso_token_preview = str(sso_token)[:20] if sso_token else "None"
+        print(f"✅ SSO Token generated: {sso_token_preview}...")
         
         # 9. SSO Verify
         sso_verify_data = {
