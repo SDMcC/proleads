@@ -9281,13 +9281,23 @@ function LeadsTab() {
                         </div>
                       </td>
                       <td className="py-4 px-4">
-                        <button
-                          onClick={() => downloadCsvFile(file.file_id, file.filename)}
-                          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center space-x-2"
-                        >
-                          <Download className="h-4 w-4" />
-                          <span>Download</span>
-                        </button>
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => downloadCsvFile(file.file_id, file.filename)}
+                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center space-x-2"
+                          >
+                            <Download className="h-4 w-4" />
+                            <span>Download</span>
+                          </button>
+                          <button
+                            onClick={() => window.open('https://mailer-hub.preview.emergentagent.com/dashboard', '_blank')}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center space-x-2"
+                            title="Export to AutoMailer"
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                            <span>Export</span>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
