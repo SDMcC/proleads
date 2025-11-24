@@ -8,12 +8,12 @@ import uuid
 def create_test_milestones():
     # Get admin token
     admin_data = {'username': 'admin', 'password': 'admin123'}
-    response = requests.post('https://affiliate-hub-137.preview.emergentagent.com/api/admin/login', json=admin_data)
+    response = requests.post('https://smartlead-hub-2.preview.emergentagent.com/api/admin/login', json=admin_data)
     admin_token = response.json()['token']
 
     # Get some users to create milestones for
     headers = {'Authorization': f'Bearer {admin_token}', 'Content-Type': 'application/json'}
-    response = requests.get('https://affiliate-hub-137.preview.emergentagent.com/api/admin/members?limit=10', headers=headers)
+    response = requests.get('https://smartlead-hub-2.preview.emergentagent.com/api/admin/members?limit=10', headers=headers)
     members = response.json()['members']
 
     if len(members) < 3:
