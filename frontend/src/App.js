@@ -8027,6 +8027,7 @@ function AdminDashboard() {
                 { id: 'kyc', label: 'KYC Verification', icon: Shield },
                 { id: 'leads', label: 'Leads Distribution', icon: FileText },
                 { id: 'tickets', label: 'Tickets', icon: MessageCircle },
+                { id: 'integrations', label: 'Integrations', icon: Link },
                 { id: 'configuration', label: 'Configuration', icon: Settings }
               ].map(({ id, label, icon: Icon }) => (
                 <button
