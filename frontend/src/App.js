@@ -10969,7 +10969,7 @@ function IntegrationsTab() {
   };
 
   const handleRevokeKey = async (keyId) => {
-    if (!confirm('Are you sure you want to revoke this API key? This action cannot be undone.')) {
+    if (!window.confirm('Are you sure you want to revoke this API key? This action cannot be undone.')) {
       return;
     }
     
