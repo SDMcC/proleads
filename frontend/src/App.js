@@ -55,7 +55,10 @@ import {
   Ticket,
   MessageSquare,
   Sun,
-  Moon
+  Moon,
+  Link,
+  Key,
+  RotateCw
 } from 'lucide-react';
 import './App.css';
 
