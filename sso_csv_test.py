@@ -112,10 +112,17 @@ class SSOCSVIntegrationTester:
             return False
         
         # Save API key for subsequent tests
-        self.api_key = create_response.get('api_key')
-        self.api_key_id = create_response.get('key_id')
+        # The response contains the full API key data, extract the actual key
+        if isinstance(create_response.get('api_key'), dict):
+            self.api_key = create_response.get('api_key', {}).get('api_key')
+            self.api_key_id = create_response.get('api_key', {}).get('key_id')
+        else:
+            self.api_key = create_response.get('api_key')
+            self.api_key_id = create_response.get('key_id')
+        
         api_key_preview = str(self.api_key)[:20] if self.api_key else "None"
         print(f"✅ API Key created: {api_key_preview}...")
+        print(f"   Key ID: {self.api_key_id}")
         
         # 3. List API Keys
         list_success, list_response = self.run_test(
