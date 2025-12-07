@@ -115,12 +115,12 @@ No more manual work. No more forgetting to follow up. Just set it and let Sendlo
 
 Every member gets instant access to our referral program. Share your unique link, and when someone joins, you earn:
 
-**Level 1:** Up to 30% recurring commission  
-**Level 2:** Up to 20% recurring commission  
-**Level 3:** Up to 15% recurring commission  
-**Level 4:** Up to 10% recurring commission  
+**Level 1:** Up to 30% recurring commission (paid instantly in USDC!)  
+**Level 2:** Up to 15% recurring commission (paid instantly in USDC!)  
+**Level 3:** Up to 10% recurring commission (paid instantly in USDC!)  
+**Level 4:** Up to 5% recurring commission (paid instantly in USDC!)  
 
-*That's passive income flowing in every single month from your network.*
+*That's passive income flowing directly to your crypto wallet every single time you earn — no waiting, no delays.*
 
 Most members cover their membership cost with just 3-4 referrals. Some members are earning more than they're paying — turning Proleads into a profit center, not just an expense.
 
