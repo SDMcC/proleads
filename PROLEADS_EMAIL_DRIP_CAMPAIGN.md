@@ -281,14 +281,19 @@ Imagine you're on the **Gold tier** and you refer just **5 people** who also joi
 Now, let's say each of those 5 people refers 3 people (that's 15 people at Level 2):
 
 **Your Level 2 commissions:**  
-15 referrals × $19.80 = **$297/month**
+15 referrals × $14.85 = **$222.75/month**
 
 And if those 15 people each refer just 2 people (that's 30 at Level 3):
 
 **Your Level 3 commissions:**  
-30 referrals × $14.85 = **$445.50/month**
+30 referrals × $9.90 = **$297/month**
 
-**Total recurring income: $891/month**
+And if those 30 people each refer just 1 person (that's 30 at Level 4):
+
+**Your Level 4 commissions:**  
+30 referrals × $4.95 = **$148.50/month**
+
+**Total recurring income: $816.75/month**
 
 *From just 5 direct referrals.*
 
