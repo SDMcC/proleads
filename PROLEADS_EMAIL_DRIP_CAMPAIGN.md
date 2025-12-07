@@ -529,22 +529,26 @@ Then, when you're ready to unlock your weekly leads, upgrade to Bronze, Silver, 
 • Start earning commissions immediately  
 • Perfect for building your network  
 • Upgrade anytime to unlock weekly leads  
+• **Instant USDC payouts to your wallet**
 
-**🥉 BRONZE ($39/month)**
-• 500 fresh leads every week  
+**🥉 BRONZE ($19/month)**
+• 100 fresh leads every week  
 • Sendloop automation included  
-• Commission rates: 10% / 5% / 5% / 5%  
+• Commission rates: 25% / 5% / 3% / 2%  
+• **Instant USDC payouts to your wallet**
 
-**🥈 SILVER ($59/month) — MOST POPULAR**
-• 500 fresh leads every week  
+**🥈 SILVER ($49/month) — MOST POPULAR**
+• 250 fresh leads every week  
 • Sendloop automation included  
-• Commission rates: 20% / 10% / 10% / 5%  
+• Commission rates: 27% / 10% / 5% / 3%  
+• **Instant USDC payouts to your wallet**
 • **BEST VALUE for serious entrepreneurs**  
 
 **🥇 GOLD ($99/month)**
 • 500 fresh leads every week  
 • Sendloop automation included  
-• Commission rates: 30% / 20% / 15% / 10%  
+• Commission rates: 30% / 15% / 10% / 5%  
+• **Instant USDC payouts to your wallet**
 • **Maximum earning potential**  
 
 ---
