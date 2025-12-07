@@ -897,6 +897,17 @@ async def register_user(user_data: UserRegistration):
         logger.error(f"Registration traceback: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Registration failed: {str(e)}")
 
+@app.get("/api/users/me")
+async def get_current_user_info(current_user: dict = Depends(get_current_user)):
+    """Get current user basic info"""
+    return {
+        "user_id": current_user["user_id"],
+        "address": current_user["address"],
+        "username": current_user["username"],
+        "email": current_user["email"],
+        "membership_tier": current_user["membership_tier"]
+    }
+
 @app.get("/api/users/profile")
 async def get_profile(current_user: dict = Depends(get_current_user)):
     """Get user profile"""
