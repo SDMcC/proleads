@@ -189,9 +189,9 @@ It wasn't complicated. He simply:
 
 John's story isn't unique. We have members across dozens of industries seeing similar results:
 
-• **Sarah (Real Estate Agent):** $1,800/mo in commissions, 15+ new property showings per month  
-• **Mike (Financial Advisor):** $2,400/mo in commissions, 47 qualified leads converted to consultations  
-• **Lisa (E-commerce Owner):** $4,100/mo in commissions, built a team of 12 referrals  
+• **Sarah (Real Estate Agent):** $1,800/mo in instant USDC commissions, 15+ new property showings per month  
+• **Mike (Financial Advisor):** $2,400/mo in instant USDC commissions, 47 qualified leads converted to consultations  
+• **Lisa (E-commerce Owner):** $4,100/mo in instant USDC commissions, built a team of 12 referrals  
 
 These aren't overnight success stories. They're real people who committed to using the system and showing up consistently.
 
