@@ -9354,14 +9354,25 @@ function LeadsTab() {
                             onClick={async () => {
                               try {
                                 const token = localStorage.getItem('token');
+                                
+                                // Get current user info
+                                const userResponse = await axios.get(`${API_URL}/users/me`, {
+                                  headers: { 'Authorization': `Bearer ${token}` }
+                                });
+                                const userId = userResponse.data.user_id;
+                                
+                                // Initiate SSO with file information in redirect URL
+                                const redirectUrl = `https://mailer-hub.preview.emergentagent.com/import?user_id=${userId}&file_id=${file.file_id}&source=proleads`;
+                                
                                 const response = await axios.post(
                                   `${API_URL}/sso/initiate`,
                                   {
                                     target_app: 'sendloop',
-                                    redirect_url: 'https://mailer-hub.preview.emergentagent.com/dashboard'
+                                    redirect_url: redirectUrl
                                   },
                                   { headers: { 'Authorization': `Bearer ${token}` } }
                                 );
+                                
                                 if (response.data.redirect_url) {
                                   window.open(response.data.redirect_url, '_blank');
                                 }
