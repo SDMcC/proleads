@@ -201,7 +201,7 @@ Because the opportunity is right here in front of you.
 
 ✅ Weekly leads to grow your business  
 ✅ Automation tools to save you time  
-✅ Recurring commissions to build passive income  
+✅ Recurring commissions paid instantly in USDC to build passive income  
 
 **All you have to do is start.**
 
