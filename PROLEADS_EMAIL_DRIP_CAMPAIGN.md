@@ -504,12 +504,14 @@ Now it's time to make a decision.
 • Your unique referral link to start earning commissions  
 • Full dashboard with analytics, tracking, and lead management tools  
 
-**💰 RECURRING INCOME POTENTIAL:**
+**💰 RECURRING INCOME POTENTIAL (PAID INSTANTLY IN USDC):**
 
 • Up to 30% commissions on Level 1 referrals  
-• Up to 20% commissions on Level 2 referrals  
-• Up to 15% commissions on Level 3 referrals  
-• Up to 10% commissions on Level 4 referrals  
+• Up to 15% commissions on Level 2 referrals  
+• Up to 10% commissions on Level 3 referrals  
+• Up to 5% commissions on Level 4 referrals  
+
+**Every commission is sent directly to your crypto wallet as USDC (stablecoin) — instantly. No waiting for PayPal. No bank transfer delays. Just instant access to your earnings 24/7.**
 
 *Most members only need 3-4 referrals to make their membership FREE.*
 
