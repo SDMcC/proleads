@@ -162,13 +162,13 @@ Then he joined Proleads Network.
 
 **Here's what happened:**
 
-**Month 1:** John signed up for the Silver tier ($59/mo). He got 500 leads delivered to his dashboard and immediately started reaching out using Sendloop's automated sequences.
+**Month 1:** John signed up for the Silver tier ($49/mo). He got 250 leads delivered to his dashboard and immediately started reaching out using Sendloop's automated sequences.
 
 Result: 8 new client consultations, 3 closed deals = $4,500 in revenue.
 
-**Month 2:** John shared his Proleads referral link with 5 friends in his mastermind group. 3 of them signed up.
+**Month 2:** John shared his Proleads referral link with 5 friends in his mastermind group. 3 of them signed up at Silver tier.
 
-Result: $94/month in recurring commissions + another 500 fresh leads.
+Result: $39.69/month in recurring commissions (paid instantly in USDC!) + another 250 fresh leads.
 
 **Month 3:** His referrals started referring others (Level 2 commissions kicking in). John continued using his weekly leads to close more deals.
 
