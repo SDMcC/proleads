@@ -325,10 +325,10 @@ And remember: **This is ON TOP of the weekly leads you're using to grow your act
 
 So you're:
 ✅ Getting qualified leads to scale your revenue  
-✅ Earning recurring commissions from your network  
+✅ Earning recurring commissions paid instantly in USDC from your network  
 ✅ Using Sendloop automation to save time  
 
-**It's a complete ecosystem designed for growth.**
+**It's a complete ecosystem designed for growth — with the fastest payouts in the industry.**
 
 ---
 
