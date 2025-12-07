@@ -172,9 +172,9 @@ Result: $39.69/month in recurring commissions (paid instantly in USDC!) + anothe
 
 **Month 3:** His referrals started referring others (Level 2 commissions kicking in). John continued using his weekly leads to close more deals.
 
-Result: $237/month in commissions + 12 new clients = $18,000 in revenue.
+Result: $127/month in commissions (paid instantly in USDC!) + 12 new clients = $18,000 in revenue.
 
-**Today (Month 6):** John's commission income has grown to $3,200/month — more than covering his Proleads membership cost. His agency has doubled in size thanks to the consistent lead flow.
+**Today (Month 6):** John's commission income has grown to $2,800/month — all paid instantly in USDC to his wallet. This more than covers his Proleads membership cost, and his agency has doubled in size thanks to the consistent lead flow.
 
 **John's secret?**
 
