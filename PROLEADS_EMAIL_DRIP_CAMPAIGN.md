@@ -70,7 +70,7 @@ P.S. Want to skip ahead and see what membership looks like? [Check out our prici
 
 Quick question:
 
-**How much would it be worth to you to have 500+ qualified leads land in your dashboard every single week?**
+**How much would it be worth to you to have up to 500 qualified leads land in your dashboard every single week?**
 
 No hunting. No cold outreach. No expensive ad campaigns that drain your budget.
 
