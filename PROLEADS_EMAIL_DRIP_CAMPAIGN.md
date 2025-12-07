@@ -251,23 +251,23 @@ But here's the magic: **When your referrals refer others (Level 2, 3, and 4), yo
 
 **Here's the breakdown by tier:**
 
-**BRONZE TIER** - $39/month
-- Level 1: 10% = $3.90/month  
-- Level 2: 5% = $1.95/month  
-- Level 3: 5% = $1.95/month  
-- Level 4: 5% = $1.95/month  
+**BRONZE TIER** - $19/month
+- Level 1: 25% = $4.75/month  
+- Level 2: 5% = $0.95/month  
+- Level 3: 3% = $0.57/month  
+- Level 4: 2% = $0.38/month  
 
-**SILVER TIER** - $59/month (Most Popular)
-- Level 1: 20% = $11.80/month  
-- Level 2: 10% = $5.90/month  
-- Level 3: 10% = $5.90/month  
-- Level 4: 5% = $2.95/month  
+**SILVER TIER** - $49/month (Most Popular)
+- Level 1: 27% = $13.23/month  
+- Level 2: 10% = $4.90/month  
+- Level 3: 5% = $2.45/month  
+- Level 4: 3% = $1.47/month  
 
 **GOLD TIER** - $99/month
 - Level 1: 30% = $29.70/month  
-- Level 2: 20% = $19.80/month  
-- Level 3: 15% = $14.85/month  
-- Level 4: 10% = $9.90/month  
+- Level 2: 15% = $14.85/month  
+- Level 3: 10% = $9.90/month  
+- Level 4: 5% = $4.95/month  
 
 ---
 
