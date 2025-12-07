@@ -84,10 +84,10 @@ Here's exactly how it works:
 
 We offer 4 tiers (starting FREE!) so you can pick what fits your business:
 
-• **Affiliate (FREE)** - Start earning commissions immediately  
-• **Bronze ($39/mo)** - Get your first batch of weekly leads  
-• **Silver ($59/mo)** - Our most popular plan (BEST VALUE)  
-• **Gold ($99/mo)** - Maximum leads + highest commissions  
+• **Affiliate (FREE)** - Start earning instant USDC commissions immediately  
+• **Bronze ($19/mo)** - Get 100 weekly leads + instant USDC payouts  
+• **Silver ($49/mo)** - Get 250 weekly leads + our most popular plan (BEST VALUE)  
+• **Gold ($99/mo)** - Get 500 weekly leads + maximum commissions + instant USDC payouts  
 
 **STEP 2: Get Your Leads Delivered Weekly**
 
