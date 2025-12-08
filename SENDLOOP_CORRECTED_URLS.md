@@ -119,7 +119,7 @@ curl -X POST "https://smartlead-hub-2.preview.emergentagent.com/api/sso/initiate
   -H "Content-Type: application/json" \
   -d '{
     "target_app": "sendloop",
-    "redirect_url": "https://mailer-hub.preview.emergentagent.com/dashboard"
+    "redirect_url": "https://drip-campaign-hub.preview.emergentagent.com/dashboard"
   }' | python3 -m json.tool
 ```
 
@@ -128,7 +128,7 @@ curl -X POST "https://smartlead-hub-2.preview.emergentagent.com/api/sso/initiate
 {
   "sso_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "expires_at": "2025-12-07T20:00:00Z",
-  "redirect_url": "https://mailer-hub.preview.emergentagent.com/dashboard?sso_token=eyJ..."
+  "redirect_url": "https://drip-campaign-hub.preview.emergentagent.com/dashboard?sso_token=eyJ..."
 }
 ```
 

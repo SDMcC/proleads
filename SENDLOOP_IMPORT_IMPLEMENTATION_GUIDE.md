@@ -45,7 +45,7 @@ Your task is to:
 
 Users will be redirected to:
 ```
-https://mailer-hub.preview.emergentagent.com/import?user_id=USER_ID&file_id=FILE_ID&source=proleads&sso_token=SSO_TOKEN
+https://drip-campaign-hub.preview.emergentagent.com/import?user_id=USER_ID&file_id=FILE_ID&source=proleads&sso_token=SSO_TOKEN
 ```
 
 ### URL Parameters
@@ -59,7 +59,7 @@ https://mailer-hub.preview.emergentagent.com/import?user_id=USER_ID&file_id=FILE
 
 ### Example Complete URL
 ```
-https://mailer-hub.preview.emergentagent.com/import?user_id=550e8400-e29b-41d4-a716-446655440000&file_id=6ba7b810-9dad-11d1-80b4-00c04fd430c8&source=proleads&sso_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl9pZCI6IjEyMy00NTYiLCJ1c2VyX2lkIjoidXNlci0xMjMiLCJlbWFpbCI6InVzZXJAZXhhbXBsZS5jb20iLCJ1c2VybmFtZSI6ImpvaG5kb2UiLCJhZGRyZXNzIjoiMHhBQkMuLi4iLCJtZW1iZXJzaGlwX3RpZXIiOiJnb2xkIiwiZXhwIjoxNzA2MzU2ODAwfQ.xxxxx
+https://drip-campaign-hub.preview.emergentagent.com/import?user_id=550e8400-e29b-41d4-a716-446655440000&file_id=6ba7b810-9dad-11d1-80b4-00c04fd430c8&source=proleads&sso_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl9pZCI6IjEyMy00NTYiLCJ1c2VyX2lkIjoidXNlci0xMjMiLCJlbWFpbCI6InVzZXJAZXhhbXBsZS5jb20iLCJ1c2VybmFtZSI6ImpvaG5kb2UiLCJhZGRyZXNzIjoiMHhBQkMuLi4iLCJtZW1iZXJzaGlwX3RpZXIiOiJnb2xkIiwiZXhwIjoxNzA2MzU2ODAwfQ.xxxxx
 ```
 
 ---

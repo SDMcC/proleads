@@ -32,7 +32,7 @@ const userResponse = await axios.get(`${API_URL}/users/me`, {
 const userId = userResponse.data.user_id;
 
 // 2. Build redirect URL with file information
-const redirectUrl = `https://mailer-hub.preview.emergentagent.com/import?user_id=${userId}&file_id=${file.file_id}&source=proleads`;
+const redirectUrl = `https://drip-campaign-hub.preview.emergentagent.com/import?user_id=${userId}&file_id=${file.file_id}&source=proleads`;
 
 // 3. Initiate SSO with this redirect URL
 const response = await axios.post(
@@ -50,7 +50,7 @@ window.open(response.data.redirect_url, '_blank');
 
 **Resulting URL:**
 ```
-https://mailer-hub.preview.emergentagent.com/import?user_id=user-123&file_id=csv-456&source=proleads&sso_token=eyJ...
+https://drip-campaign-hub.preview.emergentagent.com/import?user_id=user-123&file_id=csv-456&source=proleads&sso_token=eyJ...
 ```
 
 ---
@@ -397,7 +397,7 @@ curl -X POST "https://smartlead-hub-2.preview.emergentagent.com/api/sso/initiate
   -H "Content-Type: application/json" \
   -d '{
     "target_app": "sendloop",
-    "redirect_url": "https://mailer-hub.preview.emergentagent.com/import?user_id=user-123&file_id=csv-456&source=proleads"
+    "redirect_url": "https://drip-campaign-hub.preview.emergentagent.com/import?user_id=user-123&file_id=csv-456&source=proleads"
   }'
 
 # 2. Extract SSO token from response

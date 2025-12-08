@@ -36,7 +36,7 @@ All AutoMailer integration features have been successfully implemented on the Pr
 
 **Features:**
 - ✅ Large "Open AutoMailer" button at top right
-- ✅ Opens AutoMailer in new tab (`https://mailer-hub.preview.emergentagent.com/dashboard`)
+- ✅ Opens AutoMailer in new tab (`https://drip-campaign-hub.preview.emergentagent.com/dashboard`)
 - ✅ Informative landing page with features overview
 - ✅ Quick start guide for users
 
@@ -119,7 +119,7 @@ All AutoMailer integration features have been successfully implemented on the Pr
 ## AutoMailer URLs
 
 **Preview Environment:**
-- Dashboard: `https://mailer-hub.preview.emergentagent.com/dashboard`
+- Dashboard: `https://drip-campaign-hub.preview.emergentagent.com/dashboard`
 
 **Integration Points:**
 - All "Export" buttons link to AutoMailer dashboard
