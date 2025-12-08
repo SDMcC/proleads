@@ -9241,7 +9241,7 @@ function LeadsTab() {
                   `${API_URL}/sso/initiate`,
                   {
                     target_app: 'sendloop',
-                    redirect_url: 'https://mailer-hub.preview.emergentagent.com/dashboard'
+                    redirect_url: 'https://drip-campaign-hub.preview.emergentagent.com/dashboard'
                   },
                   { headers: { 'Authorization': `Bearer ${token}` } }
                 );
