@@ -134,7 +134,7 @@ class DePayPaymentTester:
             "password": "TestPass123!"
         }
         
-        success, response = self.run_test("User Login", "POST", "users/login", 200, data)
+        success, response = self.run_test("User Login", "POST", "auth/login", 200, data)
         if success and response.get('token'):
             self.user_token = response.get('token')
             self.log(f"✅ User token obtained: {self.user_token[:20]}...", "SUCCESS")
