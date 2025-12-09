@@ -2565,24 +2565,31 @@ async def depay_callback(request: Request):
     Called by DePay when payment status changes (success/failed)
     """
     try:
+        logger.info("🟢 [DePay Webhook] ========== CALLBACK RECEIVED ==========")
+        
         # Get raw request body for signature verification
         body = await request.body()
+        logger.info(f"🟢 [DePay Webhook] Request body length: {len(body)} bytes")
         
         # Get signature from header
         signature = request.headers.get("x-signature")
+        logger.info(f"🟢 [DePay Webhook] Signature present: {signature is not None}")
         
         if not signature:
-            logger.warning("DePay callback: Missing x-signature header")
+            logger.warning("❌ [DePay Webhook] Missing x-signature header")
             raise HTTPException(status_code=401, detail="Missing signature header")
         
         # Verify DePay signature
+        logger.info(f"🟢 [DePay Webhook] Verifying signature...")
         if not verify_depay_signature(signature, body):
-            logger.error("DePay callback: Invalid signature")
+            logger.error("❌ [DePay Webhook] Invalid signature")
             raise HTTPException(status_code=401, detail="Invalid signature")
+        
+        logger.info(f"✅ [DePay Webhook] Signature verified successfully")
         
         # Parse callback payload
         payload = json.loads(body.decode('utf-8'))
-        logger.info(f"DePay callback received: {payload}")
+        logger.info(f"🟢 [DePay Webhook] Full payload: {json.dumps(payload, indent=2)}")
         
         # Parse callback data
         parsed_data = parse_depay_callback(payload)
