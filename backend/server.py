@@ -2756,10 +2756,11 @@ async def handle_payment_confirmed_depay(payment: dict, callback_data: dict):
             payment_id=payment_id
         )
         
-        logger.info(f"Payout results: {payout_results['status']}")
+        logger.info(f"🔵 [DePay] Payout results: {payout_results['status']}")
         
         # Update payment status to completed
-        await db.payments.update_one(
+        logger.info(f"🔵 [DePay] Updating payment status to 'completed'...")
+        final_payment_update = await db.payments.update_one(
             {"payment_id": str(payment_id)},
             {"$set": {
                 "status": "completed",
@@ -2767,6 +2768,7 @@ async def handle_payment_confirmed_depay(payment: dict, callback_data: dict):
                 "payout_results": payout_results
             }}
         )
+        logger.info(f"✅ [DePay] Final payment update result: matched={final_payment_update.matched_count}, modified={final_payment_update.modified_count}")
         
         # Send payment confirmation email to user
         if user and user_email:
