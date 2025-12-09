@@ -1917,17 +1917,27 @@ async def handle_payment_confirmed_paygate(payment: dict):
         user_email = user.get("email", "") if user else ""
         
         # Calculate commissions
-        logger.info(f"Calculating commissions for ${amount}")
-        commissions = await calculate_commissions(user_address, tier, float(amount))
+        logger.info(f"🔵 [DePay] Calculating commissions for ${amount}...")
+        try:
+            commissions = await calculate_commissions(user_address, tier, float(amount))
+            logger.info(f"✅ [DePay] Commissions calculated: {len(commissions)} commission(s)")
+        except Exception as comm_error:
+            logger.error(f"❌ [DePay] Commission calculation error: {str(comm_error)}")
+            commissions = []
         
         # Process instant payouts
-        logger.info(f"Initiating instant payouts for {len(commissions)} commissions")
-        payout_system = PayoutSystem(db)
-        payout_results = await payout_system.process_instant_payouts(
-            payment_amount=amount,
-            commissions=commissions,
-            payment_id=payment_id
-        )
+        logger.info(f"🔵 [DePay] Initiating instant payouts for {len(commissions)} commissions...")
+        try:
+            payout_system = PayoutSystem(db)
+            payout_results = await payout_system.process_instant_payouts(
+                payment_amount=amount,
+                commissions=commissions,
+                payment_id=payment_id
+            )
+            logger.info(f"✅ [DePay] Payouts processed successfully")
+        except Exception as payout_error:
+            logger.error(f"❌ [DePay] Payout processing error: {str(payout_error)}")
+            payout_results = {"status": "error", "error": str(payout_error)}
         
         logger.info(f"Payout results: {payout_results['status']}")
         
@@ -2744,17 +2754,27 @@ async def handle_payment_confirmed_depay(payment: dict, callback_data: dict):
         user_email = user.get("email", "") if user else ""
         
         # Calculate commissions
-        logger.info(f"Calculating commissions for ${amount}")
-        commissions = await calculate_commissions(user_address, tier, float(amount))
+        logger.info(f"🔵 [DePay] Calculating commissions for ${amount}...")
+        try:
+            commissions = await calculate_commissions(user_address, tier, float(amount))
+            logger.info(f"✅ [DePay] Commissions calculated: {len(commissions)} commission(s)")
+        except Exception as comm_error:
+            logger.error(f"❌ [DePay] Commission calculation error: {str(comm_error)}")
+            commissions = []
         
         # Process instant payouts
-        logger.info(f"Initiating instant payouts for {len(commissions)} commissions")
-        payout_system = PayoutSystem(db)
-        payout_results = await payout_system.process_instant_payouts(
-            payment_amount=amount,
-            commissions=commissions,
-            payment_id=payment_id
-        )
+        logger.info(f"🔵 [DePay] Initiating instant payouts for {len(commissions)} commissions...")
+        try:
+            payout_system = PayoutSystem(db)
+            payout_results = await payout_system.process_instant_payouts(
+                payment_amount=amount,
+                commissions=commissions,
+                payment_id=payment_id
+            )
+            logger.info(f"✅ [DePay] Payouts processed successfully")
+        except Exception as payout_error:
+            logger.error(f"❌ [DePay] Payout processing error: {str(payout_error)}")
+            payout_results = {"status": "error", "error": str(payout_error)}
         
         logger.info(f"🔵 [DePay] Payout results: {payout_results['status']}")
         
