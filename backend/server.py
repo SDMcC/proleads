@@ -2629,7 +2629,8 @@ async def depay_callback(request: Request):
         logger.info(f"🟢 [DePay Webhook] Processing DePay callback: payment_id={payment_id}, status={status}, amount={amount}")
         
         # Update payment record
-        await db.payments.update_one(
+        logger.info(f"🟢 [DePay Webhook] Updating payment record with callback data...")
+        update_result = await db.payments.update_one(
             {"payment_id": payment_id},
             {"$set": {
                 "status": status,
@@ -2639,13 +2640,17 @@ async def depay_callback(request: Request):
                 "updated_at": datetime.utcnow()
             }}
         )
+        logger.info(f"✅ [DePay Webhook] Payment record updated: matched={update_result.matched_count}, modified={update_result.modified_count}")
         
         # Process successful payments
         if status == "success":
-            logger.info(f"DePay payment successful: {payment_id} - {amount} USDC")
+            logger.info(f"✅ [DePay Webhook] Payment SUCCESSFUL: {payment_id} - {amount} USDC")
+            logger.info(f"🟢 [DePay Webhook] Triggering payment confirmation handler...")
             
             # Trigger payment processing (membership upgrade, commissions, payouts)
             await handle_payment_confirmed_depay(payment, parsed_data)
+            
+            logger.info(f"✅ [DePay Webhook] Payment confirmation handler completed successfully!")
         
         elif status == "failed":
             logger.warning(f"DePay payment failed: {payment_id}")
