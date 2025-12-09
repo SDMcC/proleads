@@ -2653,7 +2653,7 @@ async def depay_callback(request: Request):
             logger.info(f"✅ [DePay Webhook] Payment confirmation handler completed successfully!")
         
         elif status == "failed":
-            logger.warning(f"DePay payment failed: {payment_id}")
+            logger.warning(f"⚠️ [DePay Webhook] Payment FAILED: {payment_id}")
             
             # Create admin notification
             await create_admin_notification(
@@ -2663,12 +2663,16 @@ async def depay_callback(request: Request):
                 related_user=payment.get("user_address")
             )
         
+        logger.info(f"✅ [DePay Webhook] ========== CALLBACK PROCESSED SUCCESSFULLY ==========")
         return {"status": "ok"}
         
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"DePay callback error: {str(e)}")
+        logger.error(f"❌ [DePay Webhook] CRITICAL ERROR in callback processing: {str(e)}")
+        logger.error(f"❌ [DePay Webhook] Error type: {type(e).__name__}")
+        import traceback
+        logger.error(f"❌ [DePay Webhook] Traceback: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Callback error: {str(e)}")
 
 
