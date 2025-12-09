@@ -114,6 +114,11 @@ POLYGON_RPC_URL = os.getenv("POLYGON_RPC_URL", "https://polygon-rpc.com")
 DEPAY_INTEGRATION_ID = os.getenv("DEPAY_INTEGRATION_ID")
 DEPAY_PUBLIC_KEY = os.getenv("DEPAY_PUBLIC_KEY")
 
+# NowPayments Configuration (optional - legacy payment processor)
+NOWPAYMENTS_API_KEY = os.getenv("NOWPAYMENTS_API_KEY", "")
+NOWPAYMENTS_PUBLIC_KEY = os.getenv("NOWPAYMENTS_PUBLIC_KEY", "")
+NOWPAYMENTS_IPN_SECRET = os.getenv("NOWPAYMENTS_IPN_SECRET", "")
+
 # Admin Configuration
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin123")  # Change in production
