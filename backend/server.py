@@ -2592,33 +2592,41 @@ async def depay_callback(request: Request):
         logger.info(f"🟢 [DePay Webhook] Full payload: {json.dumps(payload, indent=2)}")
         
         # Parse callback data
+        logger.info(f"🟢 [DePay Webhook] Parsing callback data...")
         parsed_data = parse_depay_callback(payload)
         
         if not parsed_data:
-            logger.error("DePay callback: Failed to parse payload")
+            logger.error("❌ [DePay Webhook] Failed to parse payload")
             raise HTTPException(status_code=400, detail="Invalid callback payload")
+        
+        logger.info(f"🟢 [DePay Webhook] Parsed data: {json.dumps(parsed_data, default=str)}")
         
         payment_id = parsed_data.get("payment_id")
         status = parsed_data.get("status")
         amount = parsed_data.get("amount")
         transaction_hash = parsed_data.get("transaction_hash")
         
+        logger.info(f"🟢 [DePay Webhook] Extracted - payment_id: {payment_id}, status: {status}, amount: {amount}")
+        
         if not payment_id:
-            logger.error("DePay callback: Missing payment_id in payload")
+            logger.error("❌ [DePay Webhook] Missing payment_id in parsed data")
             raise HTTPException(status_code=400, detail="Missing payment_id")
         
         # Find payment in database
-        logger.info(f"Looking for payment in database: {payment_id}")
+        logger.info(f"🟢 [DePay Webhook] Searching for payment in database: {payment_id}")
         payment = await db.payments.find_one({"payment_id": payment_id})
         
         if not payment:
-            logger.error(f"DePay callback: Payment not found for ID: {payment_id}")
+            logger.error(f"❌ [DePay Webhook] Payment not found for ID: {payment_id}")
             # List recent payments for debugging
             recent = await db.payments.find().sort("created_at", -1).limit(5).to_list(length=5)
-            logger.error(f"Recent payments in DB: {[p.get('payment_id') for p in recent]}")
+            logger.error(f"❌ [DePay Webhook] Recent payments in DB: {[p.get('payment_id') for p in recent]}")
+            logger.error(f"❌ [DePay Webhook] This is a CRITICAL issue - payment record is missing!")
             return {"status": "payment not found"}
         
-        logger.info(f"Processing DePay callback: payment_id={payment_id}, status={status}, amount={amount}")
+        logger.info(f"✅ [DePay Webhook] Payment found: {payment.get('payment_id')} - Current status: {payment.get('status')}")
+        logger.info(f"🟢 [DePay Webhook] Payment details - User: {payment.get('user_address')}, Tier: {payment.get('tier')}, Amount: {payment.get('amount')}")
+        logger.info(f"🟢 [DePay Webhook] Processing DePay callback: payment_id={payment_id}, status={status}, amount={amount}")
         
         # Update payment record
         await db.payments.update_one(
