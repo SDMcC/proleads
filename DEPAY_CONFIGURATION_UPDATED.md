@@ -22,7 +22,7 @@ mQIDAQAB
 
 ### Configuration Endpoint
 ```
-https://smartlead-hub-2.preview.emergentagent.com/api/payments/depay/configuration
+https://payment-flow-70.preview.emergentagent.com/api/payments/depay/configuration
 ```
 
 ---
@@ -42,7 +42,7 @@ https://smartlead-hub-2.preview.emergentagent.com/api/payments/depay/configurati
 
 **Request:**
 ```bash
-curl -X POST "https://smartlead-hub-2.preview.emergentagent.com/api/payments/depay/configuration" \
+curl -X POST "https://payment-flow-70.preview.emergentagent.com/api/payments/depay/configuration" \
   -H "Content-Type: application/json" \
   -d '{
     "payment_id": "test-123",
@@ -115,7 +115,7 @@ DePayWidgets.Payment({
 
 ```bash
 # DePay Configuration
-DEPAY_INTEGRATION_ID=f2bfd96b-2ce7-4d74-93d6-6ec805750417
+DEPAY_INTEGRATION_ID=payment-flow-70
 DEPAY_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----..."
 OUR_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----..."
 
@@ -134,7 +134,7 @@ POLYGON_RPC_URL=https://polygon-rpc.com
 
 ### Manual Test Steps
 
-1. **Go to payment page:** https://smartlead-hub-2.preview.emergentagent.com/payment
+1. **Go to payment page:** https://payment-flow-70.preview.emergentagent.com/payment
 2. **Select a membership tier** (Bronze, Silver, or Gold)
 3. **Click "Pay with Crypto"**
 4. **DePay widget should load** (no more 404 errors!)
@@ -215,7 +215,7 @@ tail -f /var/log/supervisor/backend.*.log | grep -i depay
 
 **DePay Dashboard:** https://depay.com/dashboard  
 **Integration ID:** f2bfd96b-2ce7-4d74-93d6-6ec805750417  
-**Configuration Endpoint:** https://smartlead-hub-2.preview.emergentagent.com/api/payments/depay/configuration
+**Configuration Endpoint:** https://payment-flow-70.preview.emergentagent.com/api/payments/depay/configuration
 
 If payments still don't work after configuration:
 1. Check browser console for errors

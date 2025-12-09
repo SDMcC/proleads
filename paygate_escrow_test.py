@@ -66,7 +66,7 @@ def main():
     print('🚀 COMPREHENSIVE PAYGATE.TO & ESCROW MANAGEMENT TESTING')
     print('=' * 80)
 
-    backend_url = 'https://smartlead-hub-2.preview.emergentagent.com'
+    backend_url = 'https://payment-flow-70.preview.emergentagent.com'
     tester = PayGateEscrowTester(backend_url)
 
     # Get admin token

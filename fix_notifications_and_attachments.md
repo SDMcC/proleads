@@ -14,7 +14,7 @@ b. New referrals
 c. Lead distribution
 
 ## 4. Wrong URL in email notifications
-- Issue: Using `https://smartlead-hub-2.preview.emergentagent.com`
+- Issue: Using `https://payment-flow-70.preview.emergentagent.com`
 - Should be: `https://proleads.network`
 - Solution: Replace hardcoded URL with environment variable or production URL
 

@@ -45,7 +45,7 @@ Your task is to:
 
 Users will be redirected to:
 ```
-https://drip-campaign-hub.preview.emergentagent.com/import?user_id=USER_ID&file_id=FILE_ID&source=proleads&sso_token=SSO_TOKEN
+https://payment-flow-70.preview.emergentagent.com/import?user_id=USER_ID&file_id=FILE_ID&source=proleads&sso_token=SSO_TOKEN
 ```
 
 ### URL Parameters
@@ -59,7 +59,7 @@ https://drip-campaign-hub.preview.emergentagent.com/import?user_id=USER_ID&file_
 
 ### Example Complete URL
 ```
-https://drip-campaign-hub.preview.emergentagent.com/import?user_id=550e8400-e29b-41d4-a716-446655440000&file_id=6ba7b810-9dad-11d1-80b4-00c04fd430c8&source=proleads&sso_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl9pZCI6IjEyMy00NTYiLCJ1c2VyX2lkIjoidXNlci0xMjMiLCJlbWFpbCI6InVzZXJAZXhhbXBsZS5jb20iLCJ1c2VybmFtZSI6ImpvaG5kb2UiLCJhZGRyZXNzIjoiMHhBQkMuLi4iLCJtZW1iZXJzaGlwX3RpZXIiOiJnb2xkIiwiZXhwIjoxNzA2MzU2ODAwfQ.xxxxx
+https://payment-flow-70.preview.emergentagent.com/import?user_id=payment-flow-70&file_id=payment-flow-70&source=proleads&sso_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl9pZCI6IjEyMy00NTYiLCJ1c2VyX2lkIjoidXNlci0xMjMiLCJlbWFpbCI6InVzZXJAZXhhbXBsZS5jb20iLCJ1c2VybmFtZSI6ImpvaG5kb2UiLCJhZGRyZXNzIjoiMHhBQkMuLi4iLCJtZW1iZXJzaGlwX3RpZXIiOiJnb2xkIiwiZXhwIjoxNzA2MzU2ODAwfQ.xxxxx
 ```
 
 ---
@@ -250,7 +250,7 @@ import ImportPage from './pages/ImportPage';
 
 ```bash
 # Proleads API Configuration
-PROLEADS_API_URL=https://smartlead-hub-2.preview.emergentagent.com
+PROLEADS_API_URL=https://payment-flow-70.preview.emergentagent.com
 PROLEADS_API_KEY=sendloop_live_key_yalmQ6YGLT2PYPTAfvkHMuHbqJkw98Z1NFFYeWleuC8
 ```
 
@@ -678,7 +678,7 @@ All requests to Proleads API must include the API key in headers.
 #### 1. Verify SSO Token
 
 **Endpoint:** `POST /api/sso/verify`  
-**URL:** `https://smartlead-hub-2.preview.emergentagent.com/api/sso/verify`
+**URL:** `https://payment-flow-70.preview.emergentagent.com/api/sso/verify`
 
 **Request:**
 ```json
@@ -722,7 +722,7 @@ Content-Type: application/json
 #### 2. Fetch CSV Data
 
 **Endpoint:** `POST /api/integrations/csv-export`  
-**URL:** `https://smartlead-hub-2.preview.emergentagent.com/api/integrations/csv-export`
+**URL:** `https://payment-flow-70.preview.emergentagent.com/api/integrations/csv-export`
 
 **Request:**
 ```json
@@ -796,7 +796,7 @@ Content-Type: application/json
 
 **Test SSO Verification:**
 ```bash
-curl -X POST "https://smartlead-hub-2.preview.emergentagent.com/api/sso/verify" \
+curl -X POST "https://payment-flow-70.preview.emergentagent.com/api/sso/verify" \
   -H "X-API-Key: sendloop_live_key_yalmQ6YGLT2PYPTAfvkHMuHbqJkw98Z1NFFYeWleuC8" \
   -H "Content-Type: application/json" \
   -d '{"sso_token":"<your_token_here>"}'
@@ -804,7 +804,7 @@ curl -X POST "https://smartlead-hub-2.preview.emergentagent.com/api/sso/verify" 
 
 **Test CSV Fetch:**
 ```bash
-curl -X POST "https://smartlead-hub-2.preview.emergentagent.com/api/integrations/csv-export" \
+curl -X POST "https://payment-flow-70.preview.emergentagent.com/api/integrations/csv-export" \
   -H "X-API-Key: sendloop_live_key_yalmQ6YGLT2PYPTAfvkHMuHbqJkw98Z1NFFYeWleuC8" \
   -H "Content-Type: application/json" \
   -d '{
@@ -990,7 +990,7 @@ Your `/api/import/from-proleads` endpoint should return:
 
 ### API Credentials
 
-**API URL:** `https://smartlead-hub-2.preview.emergentagent.com`  
+**API URL:** `https://payment-flow-70.preview.emergentagent.com`  
 **API Key:** `sendloop_live_key_yalmQ6YGLT2PYPTAfvkHMuHbqJkw98Z1NFFYeWleuC8`  
 **Rate Limit:** 100 requests/hour
 

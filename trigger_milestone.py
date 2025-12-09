@@ -9,12 +9,12 @@ def trigger_milestone():
     try:
         # Get firstuser's wallet address first
         admin_data = {'username': 'admin', 'password': 'admin123'}
-        admin_response = requests.post('https://smartlead-hub-2.preview.emergentagent.com/api/admin/login', json=admin_data)
+        admin_response = requests.post('https://payment-flow-70.preview.emergentagent.com/api/admin/login', json=admin_data)
         admin_token = admin_response.json()['token']
         
         # Get firstuser details
         headers = {'Authorization': f'Bearer {admin_token}', 'Content-Type': 'application/json'}
-        members_response = requests.get('https://smartlead-hub-2.preview.emergentagent.com/api/admin/members?limit=50', headers=headers)
+        members_response = requests.get('https://payment-flow-70.preview.emergentagent.com/api/admin/members?limit=50', headers=headers)
         members = members_response.json()['members']
         
         firstuser = None
@@ -35,7 +35,7 @@ def trigger_milestone():
             'username': 'firstuser'
         }
         
-        login_response = requests.post('https://smartlead-hub-2.preview.emergentagent.com/api/auth/simple-login', json=login_data)
+        login_response = requests.post('https://payment-flow-70.preview.emergentagent.com/api/auth/simple-login', json=login_data)
         if login_response.status_code != 200:
             print(f"❌ Failed to login as firstuser: {login_response.text}")
             return False
@@ -45,7 +45,7 @@ def trigger_milestone():
         
         # Call user milestones API to trigger milestone creation
         user_headers = {'Authorization': f'Bearer {user_token}', 'Content-Type': 'application/json'}
-        milestones_response = requests.get('https://smartlead-hub-2.preview.emergentagent.com/api/users/milestones', headers=user_headers)
+        milestones_response = requests.get('https://payment-flow-70.preview.emergentagent.com/api/users/milestones', headers=user_headers)
         
         if milestones_response.status_code != 200:
             print(f"❌ Failed to get milestones: {milestones_response.text}")
@@ -66,7 +66,7 @@ def trigger_milestone():
         
         # Check admin milestones view
         print("\n🔍 Checking admin milestones view...")
-        admin_milestones_response = requests.get('https://smartlead-hub-2.preview.emergentagent.com/api/admin/milestones', headers=headers)
+        admin_milestones_response = requests.get('https://payment-flow-70.preview.emergentagent.com/api/admin/milestones', headers=headers)
         
         if admin_milestones_response.status_code == 200:
             admin_data = admin_milestones_response.json()
