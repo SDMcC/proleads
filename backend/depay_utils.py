@@ -87,11 +87,15 @@ def verify_depay_signature(signature: str, payload: bytes) -> bool:
             logger.error("DEPAY_PUBLIC_KEY not configured")
             return False
         
+        logger.info(f"🔍 Verifying signature with payload length: {len(payload)}")
+        logger.info(f"🔍 Signature length: {len(signature)}")
+        
         # Load public key (dotenv handles newline conversion automatically)
         public_key = serialization.load_pem_public_key(
             DEPAY_PUBLIC_KEY.encode('utf-8'),
             backend=default_backend()
         )
+        logger.info(f"✅ Public key loaded successfully")
         
         # Decode signature from base64 URL encoding
         # Replace URL-safe characters with standard base64 characters
@@ -101,9 +105,12 @@ def verify_depay_signature(signature: str, payload: bytes) -> bool:
         if padding_needed:
             signature_standard += '=' * (4 - padding_needed)
         
+        logger.info(f"🔍 Decoding signature (length after padding: {len(signature_standard)})")
         signature_bytes = base64.b64decode(signature_standard)
+        logger.info(f"✅ Signature decoded: {len(signature_bytes)} bytes")
         
         # Verify signature using RSA-PSS with SHA256 and salt length 64
+        logger.info(f"🔍 Verifying with RSA-PSS, salt_length=64, SHA256...")
         public_key.verify(
             signature_bytes,
             payload,
@@ -114,14 +121,18 @@ def verify_depay_signature(signature: str, payload: bytes) -> bool:
             hashes.SHA256()
         )
         
-        logger.info("DePay signature verification successful")
+        logger.info("✅ DePay signature verification successful!")
         return True
         
-    except InvalidSignature:
-        logger.error("DePay signature verification failed: Invalid signature")
+    except InvalidSignature as e:
+        logger.error(f"❌ DePay signature verification failed: Invalid signature")
+        logger.error(f"   This could mean: wrong public key, wrong data, or wrong signature algorithm")
         return False
     except Exception as e:
-        logger.error(f"DePay signature verification error: {str(e)}")
+        logger.error(f"❌ DePay signature verification error: {str(e)}")
+        logger.error(f"   Error type: {type(e).__name__}")
+        import traceback
+        logger.error(f"   Traceback: {traceback.format_exc()}")
         return False
 
 
