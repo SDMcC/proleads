@@ -2519,11 +2519,18 @@ async def depay_configuration(request: Request):
             # raise HTTPException(status_code=401, detail="Missing signature header")
         else:
             # Verify DePay signature
+            logger.info(f"🔍 Attempting signature verification...")
+            logger.info(f"🔍 Body length: {len(body)}")
+            logger.info(f"🔍 Body preview: {body[:200]}")
+            logger.info(f"🔍 Signature: {signature[:50]}...")
+            
             if not verify_depay_signature(signature, body):
-                logger.error("DePay configuration: Invalid signature")
+                logger.error("❌ DePay configuration: Invalid signature")
                 # TEMPORARILY allow even with invalid signature for testing
-                logger.warning("ALLOWING REQUEST WITH INVALID SIGNATURE FOR TESTING")
+                logger.warning("⚠️ ALLOWING REQUEST WITH INVALID SIGNATURE FOR TESTING")
                 # raise HTTPException(status_code=401, detail="Invalid signature")
+            else:
+                logger.info("✅ DePay configuration: Signature verified successfully!")
         
         # Parse request payload
         payload = json.loads(body.decode('utf-8'))
@@ -2598,11 +2605,17 @@ async def depay_callback(request: Request):
         else:
             # Verify DePay signature
             logger.info(f"🟢 [DePay Webhook] Verifying signature...")
+            logger.info(f"🔍 [DePay Webhook] Body length: {len(body)}")
+            logger.info(f"🔍 [DePay Webhook] Body preview: {body[:200]}")
+            logger.info(f"🔍 [DePay Webhook] Signature: {signature[:50]}...")
+            
             if not verify_depay_signature(signature, body):
                 logger.error("❌ [DePay Webhook] Invalid signature")
                 # TEMPORARILY allow even with invalid signature for testing
                 logger.warning("⚠️ [DePay Webhook] ALLOWING REQUEST WITH INVALID SIGNATURE FOR TESTING")
                 # raise HTTPException(status_code=401, detail="Invalid signature")
+            else:
+                logger.info("✅ [DePay Webhook] Signature verified successfully!")
         
         logger.info(f"✅ [DePay Webhook] Signature verified successfully")
         
