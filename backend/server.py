@@ -2663,10 +2663,15 @@ async def handle_payment_confirmed_depay(payment: dict, callback_data: dict):
         tier = payment["tier"]
         amount = Decimal(str(callback_data.get("amount", payment["amount"])))
         
-        logger.info(f"Processing confirmed DePay payment: {payment_id} for user {user_address}")
+        logger.info(f"🔵 [DePay] Starting payment confirmation handler")
+        logger.info(f"🔵 [DePay] Payment ID: {payment_id}")
+        logger.info(f"🔵 [DePay] User Address: {user_address}")
+        logger.info(f"🔵 [DePay] Tier: {tier}")
+        logger.info(f"🔵 [DePay] Amount: {amount}")
         
         # Update payment status to processing
-        await db.payments.update_one(
+        logger.info(f"🔵 [DePay] Updating payment status to 'processing'...")
+        payment_update_result = await db.payments.update_one(
             {"payment_id": str(payment_id)},
             {"$set": {
                 "status": "processing",
@@ -2674,23 +2679,40 @@ async def handle_payment_confirmed_depay(payment: dict, callback_data: dict):
                 "updated_at": datetime.utcnow()
             }}
         )
+        logger.info(f"🔵 [DePay] Payment update result: matched={payment_update_result.matched_count}, modified={payment_update_result.modified_count}")
         
         # Calculate subscription expiry (30 days/month for all paid tiers)
         subscription_expires_at = None
         if tier not in ["affiliate", "vip_affiliate"]:
             subscription_expires_at = datetime.utcnow() + timedelta(days=30)
+            logger.info(f"🔵 [DePay] Subscription expires at: {subscription_expires_at}")
         
         # Upgrade membership
         update_data = {"membership_tier": tier}
         if subscription_expires_at:
             update_data["subscription_expires_at"] = subscription_expires_at
         
-        await db.users.update_one(
+        logger.info(f"🔵 [DePay] Updating user membership with data: {update_data}")
+        logger.info(f"🔵 [DePay] Searching for user with address: {user_address}")
+        
+        # First check if user exists
+        existing_user = await db.users.find_one({"address": user_address})
+        if not existing_user:
+            logger.error(f"❌ [DePay] ERROR: User not found with address: {user_address}")
+            # List all users for debugging
+            all_users = await db.users.find({}, {"address": 1, "username": 1}).to_list(length=10)
+            logger.error(f"❌ [DePay] Available users in DB: {[u.get('address') for u in all_users]}")
+            raise Exception(f"User not found with address: {user_address}")
+        
+        logger.info(f"🔵 [DePay] User found: {existing_user.get('username')} ({existing_user.get('email')})")
+        
+        user_update_result = await db.users.update_one(
             {"address": user_address},
             {"$set": update_data}
         )
         
-        logger.info(f"Upgraded user {user_address} to {tier}")
+        logger.info(f"✅ [DePay] User update result: matched={user_update_result.matched_count}, modified={user_update_result.modified_count}")
+        logger.info(f"✅ [DePay] Successfully upgraded user {user_address} to {tier}")
         
         # Get user info for notifications
         user = await db.users.find_one({"address": user_address})
