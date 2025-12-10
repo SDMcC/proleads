@@ -3046,13 +3046,10 @@ function KYCStatsRow({ stats, user, onNavigateToKYC, subscriptionInfo, handleRen
               return <span className="text-green-400">Expires {subscriptionInfo.date}</span>;
             }
           }
-          // Show price if no expiry
-          if (tier === 'affiliate' || tier === 'vip_affiliate') return 'Free';
-          if (tier === 'test') return '$2/month';
-          if (tier === 'bronze') return '$20/month';
-          if (tier === 'silver') return '$50/month';
-          if (tier === 'gold') return '$100/month';
-          return 'Free';
+          // No expiry date and free tier
+          if (tier === 'affiliate' || tier === 'vip_affiliate') return 'Free Tier';
+          // Paid tier but no expiry date set
+          return <span className="text-gray-400">No active subscription</span>;
         })()}
         action={
           <div className="flex flex-col gap-2 mt-2 w-full">
