@@ -2354,6 +2354,59 @@ function Dashboard() {
     }
   };
 
+  const handleRenewSubscription = async (currentTier) => {
+    try {
+      console.log('Renewing subscription for tier:', currentTier);
+      
+      const token = localStorage.getItem('token');
+      
+      // Create renewal payment
+      const response = await axios.post(
+        `${API_URL}/payments/renew`,
+        { tier: currentTier },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      const paymentInfo = response.data;
+      console.log('Renewal payment created:', paymentInfo);
+      
+      // Open DePay widget
+      await window.DePayWidgets.Payment({
+        integration: paymentInfo.integration_id,
+        payload: {
+          payment_id: paymentInfo.payment_id,
+          tier: paymentInfo.tier,
+          user_address: paymentInfo.user_address
+        }
+      });
+      
+      // Start polling for completion
+      const pollInterval = setInterval(async () => {
+        try {
+          const statusResponse = await axios.get(`${API_URL}/payments/${paymentInfo.payment_id}`);
+          console.log('Renewal payment status:', statusResponse.data.status);
+          
+          if (statusResponse.data.status === 'completed') {
+            clearInterval(pollInterval);
+            console.log('Renewal completed! Refreshing...');
+            // Refresh dashboard stats to show new expiry
+            await fetchDashboardStats();
+            alert('Subscription renewed successfully!');
+          }
+        } catch (pollError) {
+          console.error('Status poll error:', pollError);
+        }
+      }, 3000);
+      
+      // Stop polling after 5 minutes
+      setTimeout(() => clearInterval(pollInterval), 300000);
+      
+    } catch (error) {
+      console.error('Renewal failed:', error);
+      alert('Failed to start renewal: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
   const clearNotification = async (notificationId) => {
     try {
       const token = localStorage.getItem('token');
