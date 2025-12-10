@@ -2940,6 +2940,70 @@ async def create_depay_payment(request: PaymentRequest, current_user: dict = Dep
         logger.error(f"DePay payment creation failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Payment creation failed: {str(e)}")
 
+@app.post("/api/payments/renew")
+async def renew_subscription(request: PaymentRequest, current_user: dict = Depends(get_current_user)):
+    """
+    Renew subscription - creates a payment that extends existing expiry by 30 days
+    """
+    logger.info(f"Subscription renewal requested for user: {current_user.get('username')}")
+    
+    # Get user's current subscription info
+    user = await db.users.find_one({"address": current_user["address"]})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    current_tier = user.get("membership_tier", "affiliate")
+    
+    # If no tier specified in request, use current tier for renewal
+    renewal_tier = request.tier if request.tier else current_tier
+    
+    tier_info = MEMBERSHIP_TIERS.get(renewal_tier)
+    if not tier_info:
+        raise HTTPException(status_code=400, detail="Invalid membership tier")
+    
+    if tier_info["price"] == 0:
+        raise HTTPException(status_code=400, detail="Free tiers cannot be renewed")
+    
+    try:
+        # Generate unique payment ID
+        payment_id = f"DEPAY-{uuid.uuid4().hex[:16].upper()}"
+        
+        # Store payment record with renewal flag
+        payment_doc = {
+            "payment_id": payment_id,
+            "user_address": current_user["address"],
+            "username": current_user.get("username", ""),
+            "email": current_user.get("email", ""),
+            "tier": renewal_tier,
+            "amount": tier_info["price"],
+            "currency": "USDC",
+            "status": "pending",
+            "created_at": datetime.utcnow(),
+            "payment_method": "depay",
+            "is_renewal": True,  # Mark as renewal
+            "current_expiry": user.get("subscription_expires_at")  # Store current expiry
+        }
+        
+        await db.payments.insert_one(payment_doc)
+        
+        logger.info(f"Renewal payment created: {payment_id} for tier {renewal_tier}")
+        
+        # Return payment info for widget initialization
+        return {
+            "payment_id": payment_id,
+            "integration_id": DEPAY_INTEGRATION_ID,
+            "amount": tier_info["price"],
+            "tier": renewal_tier,
+            "user_address": current_user["address"],
+            "username": current_user.get("username", ""),
+            "receiver": HOT_WALLET_ADDRESS,
+            "is_renewal": True
+        }
+        
+    except Exception as e:
+        logger.error(f"Renewal payment creation failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Renewal payment creation failed: {str(e)}")
+
 
 # Admin dashboard endpoints
 @app.get("/api/admin/dashboard/overview")
