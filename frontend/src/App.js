@@ -2988,7 +2988,7 @@ function AdminNotificationPanel({ bellButtonRef, notifications, onClose, onClear
 
 // Dashboard Tab Components
 // KYC Stats Row Component
-function KYCStatsRow({ stats, user, onNavigateToKYC, subscriptionInfo }) {
+function KYCStatsRow({ stats, user, onNavigateToKYC, subscriptionInfo, handleRenewSubscription }) {
   const [kycStatus, setKycStatus] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -3152,7 +3152,7 @@ function OverviewTab({ stats, user, onNavigateToKYC }) {
   return (
     <div>
       {/* Top Stats Cards Row */}
-      <KYCStatsRow stats={stats} user={user} onNavigateToKYC={onNavigateToKYC} subscriptionInfo={subscriptionInfo} />
+      <KYCStatsRow stats={stats} user={user} onNavigateToKYC={onNavigateToKYC} subscriptionInfo={subscriptionInfo} handleRenewSubscription={handleRenewSubscription} />
 
       {/* KYC Earnings Card - Full Width for Unverified Users */}
       <KYCEarningsCard user={user} onNavigateToKYC={onNavigateToKYC} />
