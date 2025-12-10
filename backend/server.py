@@ -933,6 +933,7 @@ async def get_profile(current_user: dict = Depends(get_current_user)):
         "email": current_user["email"],
         "membership_tier": current_user["membership_tier"],
         "referral_code": current_user["referral_code"],
+        "subscription_expires_at": current_user.get("subscription_expires_at"),
         "total_referrals": referral_count,
         "total_earnings": earnings,
         "referral_link": f"{APP_URL}/r/{current_user['referral_code']}"
