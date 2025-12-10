@@ -2680,6 +2680,12 @@ async def depay_callback(request: Request):
         # Process successful payments
         if status == "success":
             logger.info(f"✅ [DePay Webhook] Payment SUCCESSFUL: {payment_id} - {amount} USDC")
+            
+            # Check if already processed (idempotency check)
+            if payment.get("status") in ["completed", "processing"]:
+                logger.info(f"⚠️ [DePay Webhook] Payment already processed (status: {payment.get('status')}). Skipping to avoid duplicate processing.")
+                return {"status": "ok", "message": "already_processed"}
+            
             logger.info(f"🟢 [DePay Webhook] Triggering payment confirmation handler...")
             
             # Trigger payment processing (membership upgrade, commissions, payouts)
