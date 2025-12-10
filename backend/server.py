@@ -4635,8 +4635,12 @@ async def get_user_payments(
         # Build filter query
         filter_query = {"user_address": user_address}
         
+        # Only show completed or failed payments (exclude pending/processing)
         if status_filter:
             filter_query["status"] = status_filter
+        else:
+            # Default: only show completed or failed payments
+            filter_query["status"] = {"$in": ["completed", "failed"]}
             
         if tier_filter:
             filter_query["tier"] = tier_filter
@@ -4703,8 +4707,12 @@ async def export_user_payments_csv(
         # Build filter query
         filter_query = {"user_address": user_address}
         
+        # Only show completed or failed payments (exclude pending/processing)
         if status_filter:
             filter_query["status"] = status_filter
+        else:
+            # Default: only show completed or failed payments
+            filter_query["status"] = {"$in": ["completed", "failed"]}
             
         if tier_filter:
             filter_query["tier"] = tier_filter
