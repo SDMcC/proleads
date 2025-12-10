@@ -2705,7 +2705,7 @@ function Dashboard() {
           {activeTab === 'overview' && <OverviewTab stats={stats} user={user} onNavigateToKYC={() => {
             setActiveTab('account');
             setAccountSubTab('kyc');
-          }} />}
+          }} handleRenewSubscription={handleRenewSubscription} />}
           {activeTab === 'network' && <NetworkTreeTab />}
           {activeTab === 'affiliate-tools' && <AffiliateToolsTab user={user} />}
           {activeTab === 'earnings' && <EarningsTab />}
@@ -3116,7 +3116,7 @@ function KYCStatsRow({ stats, user, onNavigateToKYC, subscriptionInfo, handleRen
   );
 }
 
-function OverviewTab({ stats, user, onNavigateToKYC }) {
+function OverviewTab({ stats, user, onNavigateToKYC, handleRenewSubscription }) {
   const getShortenedReferralLink = () => {
     if (!user?.referral_code) return '';
     // Create a shortened version using referral code
