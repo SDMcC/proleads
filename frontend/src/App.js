@@ -3003,10 +3003,26 @@ function KYCStatsRow({ stats, user, onNavigateToKYC, subscriptionInfo }) {
         })()}
         action={
           <button
-            onClick={() => window.location.href = '/payment'}
+            onClick={() => {
+              const currentTier = user?.membership_tier;
+              // For paid tiers, show as renewal; for free tiers, show as upgrade
+              if (currentTier && currentTier !== 'affiliate' && currentTier !== 'vip_affiliate') {
+                // Paid tier - trigger renewal
+                handleRenewSubscription(currentTier);
+              } else {
+                // Free tier - go to payment page to upgrade
+                window.location.href = '/payment';
+              }
+            }}
             className="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-all duration-300"
           >
-            {subscriptionInfo?.isExpired ? 'Renew' : 'Upgrade'}
+            {(() => {
+              const currentTier = user?.membership_tier;
+              if (currentTier && currentTier !== 'affiliate' && currentTier !== 'vip_affiliate') {
+                return 'Renew';
+              }
+              return 'Upgrade';
+            })()}
           </button>
         }
       />
