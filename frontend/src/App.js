@@ -2389,8 +2389,9 @@ function Dashboard() {
           if (statusResponse.data.status === 'completed') {
             clearInterval(pollInterval);
             console.log('Renewal completed! Refreshing...');
-            // Refresh dashboard stats to show new expiry
+            // Refresh dashboard stats AND user profile to show new expiry
             await fetchDashboardStats();
+            await refreshUser(); // This updates the user object with new expiry date
             alert('Subscription renewed successfully!');
           }
         } catch (pollError) {
