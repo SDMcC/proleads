@@ -3055,28 +3055,34 @@ function KYCStatsRow({ stats, user, onNavigateToKYC, subscriptionInfo }) {
           return 'Free';
         })()}
         action={
-          <button
-            onClick={() => {
-              const currentTier = user?.membership_tier;
-              // For paid tiers, show as renewal; for free tiers, show as upgrade
-              if (currentTier && currentTier !== 'affiliate' && currentTier !== 'vip_affiliate') {
-                // Paid tier - trigger renewal
-                handleRenewSubscription(currentTier);
-              } else {
-                // Free tier - go to payment page to upgrade
-                window.location.href = '/payment';
-              }
-            }}
-            className="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-all duration-300"
-          >
+          <div className="flex flex-col gap-2 mt-2 w-full">
             {(() => {
               const currentTier = user?.membership_tier;
-              if (currentTier && currentTier !== 'affiliate' && currentTier !== 'vip_affiliate') {
-                return 'Renew';
-              }
-              return 'Upgrade';
+              const isPaidTier = currentTier && currentTier !== 'affiliate' && currentTier !== 'vip_affiliate';
+              
+              return (
+                <>
+                  {/* Always show Upgrade button */}
+                  <button
+                    onClick={() => window.location.href = '/payment'}
+                    className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-all duration-300"
+                  >
+                    {isPaidTier ? 'Change Tier' : 'Upgrade'}
+                  </button>
+                  
+                  {/* Show Renew button only for paid tiers */}
+                  {isPaidTier && (
+                    <button
+                      onClick={() => handleRenewSubscription(currentTier)}
+                      className="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition-all duration-300"
+                    >
+                      Renew
+                    </button>
+                  )}
+                </>
+              );
             })()}
-          </button>
+          </div>
         }
       />
 
