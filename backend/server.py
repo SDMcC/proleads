@@ -2739,8 +2739,29 @@ async def handle_payment_confirmed_depay(payment: dict, callback_data: dict):
         
         # Calculate subscription expiry (30 days/month for all paid tiers)
         subscription_expires_at = None
+        is_renewal = payment.get("is_renewal", False)
+        
         if tier not in ["affiliate", "vip_affiliate"]:
-            subscription_expires_at = datetime.utcnow() + timedelta(days=30)
+            if is_renewal:
+                # For renewals, extend from existing expiry date
+                current_expiry = payment.get("current_expiry")
+                if current_expiry:
+                    # If current expiry is in the future, add 30 days to it
+                    # If expired, add 30 days from now
+                    if current_expiry > datetime.utcnow():
+                        subscription_expires_at = current_expiry + timedelta(days=30)
+                        logger.info(f"🔵 [DePay] Renewal: Extending existing expiry by 30 days")
+                    else:
+                        subscription_expires_at = datetime.utcnow() + timedelta(days=30)
+                        logger.info(f"🔵 [DePay] Renewal: Expired subscription, starting fresh 30 days")
+                else:
+                    subscription_expires_at = datetime.utcnow() + timedelta(days=30)
+                    logger.info(f"🔵 [DePay] Renewal: No existing expiry, setting 30 days from now")
+            else:
+                # New subscription or upgrade
+                subscription_expires_at = datetime.utcnow() + timedelta(days=30)
+                logger.info(f"🔵 [DePay] New subscription: 30 days from now")
+            
             logger.info(f"🔵 [DePay] Subscription expires at: {subscription_expires_at}")
         
         # Upgrade membership
