@@ -6993,6 +6993,27 @@ function PaymentPage() {
         });
         
         try {
+          // Start polling for payment status
+          const pollInterval = setInterval(async () => {
+            try {
+              const statusResponse = await axios.get(`${API_URL}/payments/${paymentInfo.payment_id}`);
+              console.log('Payment status check:', statusResponse.data.status);
+              
+              if (statusResponse.data.status === 'completed') {
+                clearInterval(pollInterval);
+                console.log('Payment completed! Redirecting to dashboard...');
+                setTimeout(() => {
+                  window.location.href = '/dashboard';
+                }, 1000);
+              }
+            } catch (pollError) {
+              console.error('Status poll error:', pollError);
+            }
+          }, 3000); // Check every 3 seconds
+          
+          // Stop polling after 5 minutes (failsafe)
+          setTimeout(() => clearInterval(pollInterval), 300000);
+          
           await window.DePayWidgets.Payment({
             integration: paymentInfo.integration_id,
             payload: {
@@ -7001,19 +7022,17 @@ function PaymentPage() {
               user_address: paymentInfo.user_address
             },
             success: () => {
-              // Payment successful - redirect to dashboard
-              console.log('Payment successful! Redirecting to dashboard...');
-              setTimeout(() => {
-                window.location.href = '/dashboard';
-              }, 2000); // Wait 2 seconds to allow webhook processing
+              // Payment successful - polling will handle redirect
+              console.log('DePay widget success callback triggered');
             },
             error: (error) => {
               // Payment failed
+              clearInterval(pollInterval);
               console.error('Payment failed:', error);
               alert('Payment failed. Please try again.');
             },
             close: () => {
-              // Widget closed without payment
+              // Widget closed - keep polling in case payment completed
               console.log('Payment widget closed');
             }
           });
