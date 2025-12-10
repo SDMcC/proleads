@@ -4292,13 +4292,9 @@ function PaymentHistoryTab() {
                   onChange={(e) => setStatusFilter(e.target.value)}
                   className="w-full px-3 py-2 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-400"
                 >
-                  <option value="">All Status</option>
-                  <option value="waiting">Waiting</option>
-                  <option value="confirming">Confirming</option>
-                  <option value="confirmed">Confirmed</option>
-                  <option value="partially_paid">Partially Paid</option>
+                  <option value="">All</option>
+                  <option value="completed">Completed</option>
                   <option value="failed">Failed</option>
-                  <option value="refunded">Refunded</option>
                   <option value="expired">Expired</option>
                 </select>
               </div>
