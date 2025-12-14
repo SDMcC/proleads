@@ -3540,8 +3540,12 @@ async def get_all_payments(
         if tier_filter:
             filter_query["tier"] = tier_filter
             
+        # Only show completed or failed payments (exclude pending/processing unless specifically filtered)
         if status_filter:
             filter_query["status"] = status_filter
+        else:
+            # Default: only show completed or failed payments
+            filter_query["status"] = {"$in": ["completed", "failed"]}
             
         if date_from:
             date_from_obj = datetime.fromisoformat(date_from.replace("Z", "+00:00"))
