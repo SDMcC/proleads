@@ -8602,10 +8602,10 @@ function AdminDashboard() {
                           </span>
                         </td>
                         <td className="py-3">
-                          <span className={`px-2 py-1 rounded text-xs ${
-                            payment.status === 'confirmed' || payment.status === 'finished' ? 'bg-green-600 text-green-100' :
-                            payment.status === 'waiting' || payment.status === 'confirming' ? 'bg-yellow-600 text-yellow-100' :
-                            payment.status === 'failed' || payment.status === 'expired' ? 'bg-red-600 text-red-100' :
+                          <span className={`px-2 py-1 rounded text-xs uppercase font-medium ${
+                            payment.status === 'completed' || payment.status === 'success' ? 'bg-green-600 text-green-100' :
+                            payment.status === 'pending' || payment.status === 'processing' ? 'bg-yellow-600 text-yellow-100' :
+                            payment.status === 'failed' ? 'bg-red-600 text-red-100' :
                             'bg-gray-600 text-gray-100'
                           }`}>
                             {payment.status}
