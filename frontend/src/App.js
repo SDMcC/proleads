@@ -2296,12 +2296,13 @@ function Dashboard() {
     fetchNotifications();
     checkKYCStatus();
     
-    // Auto-refresh notifications every 30 seconds
-    const notificationInterval = setInterval(() => {
+    // Auto-refresh notifications and stats every 30 seconds
+    const refreshInterval = setInterval(() => {
       fetchNotifications();
+      fetchDashboardStats(); // Also refresh stats to catch commission updates
     }, 30000);
     
-    return () => clearInterval(notificationInterval);
+    return () => clearInterval(refreshInterval);
   }, []);
 
   const checkKYCStatus = async () => {
