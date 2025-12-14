@@ -8503,16 +8503,12 @@ function AdminDashboard() {
                         onChange={(e) => setPaymentStatusFilter(e.target.value)}
                         className="w-full px-3 py-2 bg-black bg-opacity-30 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-red-400"
                       >
-                        <option value="">All Status</option>
-                        <option value="waiting">Waiting</option>
-                        <option value="confirming">Confirming</option>
-                        <option value="confirmed">Confirmed</option>
-                        <option value="sending">Sending</option>
-                        <option value="partially_paid">Partially Paid</option>
-                        <option value="finished">Finished</option>
+                        <option value="">All</option>
+                        <option value="completed">Completed</option>
+                        <option value="success">Success</option>
                         <option value="failed">Failed</option>
-                        <option value="refunded">Refunded</option>
-                        <option value="expired">Expired</option>
+                        <option value="pending">Pending</option>
+                        <option value="processing">Processing</option>
                       </select>
                     </div>
                   </div>
