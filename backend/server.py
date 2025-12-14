@@ -8148,9 +8148,9 @@ async def get_recent_tickets(limit: int = 10, admin: dict = Depends(get_admin_us
 async def get_analytics_summary(admin: dict = Depends(get_admin_user)):
     """Get analytics summary metrics"""
     try:
-        # Total Income (all confirmed payments)
+        # Total Income (all completed payments)
         total_income_result = await db.payments.aggregate([
-            {"$match": {"status": "confirmed"}},
+            {"$match": {"status": "completed"}},
             {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
         ]).to_list(1)
         total_income = total_income_result[0]["total"] if total_income_result else 0
