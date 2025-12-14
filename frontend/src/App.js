@@ -1464,9 +1464,6 @@ function LandingPage() {
                     <p className="text-white text-sm font-medium drop-shadow-md">
                       🎉 You're joining through <strong>{referrerInfo.referrer_username}</strong>'s network!
                     </p>
-                    <p className="text-gray-100 text-xs mt-1 drop-shadow-sm">
-                      Tier: {getTierDisplayName(referrerInfo.referrer_tier)}
-                    </p>
                   </div>
                 )}
                 
@@ -2131,9 +2128,6 @@ function RegisterPage() {
               <div className="mt-4 p-4 bg-primary bg-opacity-10 dark:bg-primary dark:bg-opacity-20 rounded-lg border border-primary border-opacity-30">
                 <p className="text-primary dark:text-white text-sm font-medium">
                   🎉 You're joining through <strong>{referrerInfo.referrer_username}</strong>'s network!
-                </p>
-                <p className="text-body-color dark:text-body-color-dark text-xs mt-1">
-                  Tier: {referrerInfo.referrer_tier.toUpperCase()}
                 </p>
               </div>
             )}
