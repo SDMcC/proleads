@@ -3052,9 +3052,9 @@ async def get_admin_dashboard_overview(admin: dict = Depends(get_admin_user)):
             {"$group": {"_id": "$status", "count": {"$sum": 1}, "total_amount": {"$sum": "$amount"}}}
         ]).to_list(None)
         
-        # Get total revenue
+        # Get total revenue (from completed payments)
         total_revenue = await db.payments.aggregate([
-            {"$match": {"status": "confirmed"}},
+            {"$match": {"status": "completed"}},
             {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
         ]).to_list(1)
         
