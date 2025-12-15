@@ -1572,19 +1572,10 @@ function PaymentSuccess() {
               className="px-6 py-3 bg-transparent border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-gray-900 transition-all duration-300"
             >
               Back to Home
-// ========================================
-// ADMIN COMPONENTS - Now imported from:
-// - AdminProtectedRoute: components/admin/
-// - AdminLoginPage: pages/admin/
-// - AdminDashboard: pages/admin/
-// - All Admin Tabs: components/admin/tabs/
-// ========================================
-                </p>
-              </div>
-            )}
+            </button>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
