@@ -1382,15 +1382,6 @@ function Dashboard() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-8 text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-        <p className="text-gray-300 mt-4">Loading KYC status...</p>
-      </div>
-    );
-  }
-
   const getStatusBadge = () => {
     switch (kycStatus?.kyc_status) {
       case 'verified':
