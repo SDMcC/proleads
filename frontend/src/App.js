@@ -402,14 +402,11 @@ function LoginModal({ onClose }) {
 // Enhanced Membership Tiers Component
 // EnhancedMembershipTiers Component - Now imported from components/landing/EnhancedMembershipTiers.js
 
-// FAQ Section Component
-// FAQSection Component - Now imported from components/landing/FAQSection.js
+// FAQ Section Component - Now imported from components/landing/FAQSection.js
 
 // Footer Component - Now imported from components/landing/Footer.js
 
-// Affiliates Page Component
-function AffiliatesPage() {
-  const { isDark, toggleDarkMode } = require('./DarkModeContext').useDarkMode();
+// Affiliates Page Component - Now imported from pages/AffiliatesPage.js
   
   return (
     <div className={`min-h-screen transition-colors duration-300 ${isDark ? 'dark bg-dark' : 'bg-white'}`}>
