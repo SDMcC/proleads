@@ -284,7 +284,4 @@ function RegisterPage() {
   );
 }
 
-// Dashboard Component
-function Dashboard() {
-
 export default RegisterPage;
