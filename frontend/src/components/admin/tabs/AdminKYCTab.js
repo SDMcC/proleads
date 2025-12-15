@@ -6,11 +6,21 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 // Helper component to display KYC document images
 const KYCDocumentImage = ({ filename, alt }) => {
   if (!filename) return null;
+  
+  // Images are stored on FTP server
+  const imageUrl = filename.startsWith('http') 
+    ? filename 
+    : `https://files.proleads.network/uploads/kyc_documents/${filename}`;
+  
   return (
     <img 
-      src={`${BACKEND_URL}/api/users/kyc/document/${filename}`} 
+      src={imageUrl} 
       alt={alt}
       className="w-full rounded-lg"
+      onError={(e) => {
+        e.target.onerror = null;
+        e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23ddd" width="100" height="100"/%3E%3Ctext fill="%23999" x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3EImage not found%3C/text%3E%3C/svg%3E';
+      }}
     />
   );
 };
