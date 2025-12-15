@@ -1168,18 +1168,19 @@ function AdminDashboard() {
                             >
                               View
                             </button>
-                            <button
-                              onClick={() => handleEditMember(member)}
-                              className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded transition-all duration-300"
-                            >
-                              Edit
-                            </button>
-                            {!member.suspended && (
+                            {!member.suspended ? (
                               <button
                                 onClick={() => suspendMember(member.id)}
                                 className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded transition-all duration-300"
                               >
                                 Suspend
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => unsuspendMember(member.id)}
+                                className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded transition-all duration-300"
+                              >
+                                Unsuspend
                               </button>
                             )}
                           </div>
