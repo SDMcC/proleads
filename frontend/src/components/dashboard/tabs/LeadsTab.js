@@ -1705,5 +1705,17 @@ function AdminTicketsTab({
               <option value="">All Types</option>
               <option value="admin">Admin Tickets</option>
               <option value="sponsor">Sponsor Messages</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Placeholder for tickets list */}
+      <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+        <p className="text-gray-300">Ticket list will be displayed here</p>
+      </div>
+    </div>
+  );
+}
 
 export default LeadsTab;
