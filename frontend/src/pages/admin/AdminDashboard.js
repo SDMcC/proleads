@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Home, FileSpreadsheet, Settings, BarChart, Shield, MessageCircle, Award, Users, DollarSign } from 'lucide-react';
+import { Home, FileSpreadsheet, Settings, BarChart, Shield, MessageCircle, Award, Users, DollarSign, Bell, Zap, Key, Link } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API_URL = `${BACKEND_URL}/api`;
