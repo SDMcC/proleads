@@ -6,7 +6,7 @@ import { getTierBadgeClass, getTierDisplayName } from '../../utils/helpers';
 import AnalyticsTab from '../../components/admin/tabs/AnalyticsTab';
 import AdminMilestonesTab from '../../components/admin/tabs/AdminMilestonesTab';
 import AdminKYCTab from '../../components/admin/tabs/AdminKYCTab';
-import LeadsManagementTab from '../../components/dashboard/tabs/LeadsTab';
+import LeadsManagementTab from '../../components/admin/tabs/LeadsManagementTab';
 import IntegrationsTab from '../../components/admin/tabs/IntegrationsTab';
 import ConfigurationTab from '../../components/admin/tabs/ConfigurationTab';
 import AdminTicketsTab from '../../components/admin/tabs/AdminTicketsTab';
