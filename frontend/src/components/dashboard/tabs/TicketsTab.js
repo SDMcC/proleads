@@ -120,16 +120,18 @@ function TicketsTab() {
   };
 
   const createTicket = async () => {
-    try {
-      if (!createForm.subject.trim() || !createForm.message.trim()) {
+    if (!createForm.subject.trim() || !createForm.message.trim()) {
         alert('Please fill in all required fields');
         return;
-      }
-
+    }
+    
+    if (loading) return; // Prevent double submission
+    
+    try {
+      setLoading(true);
       const token = localStorage.getItem('token');
       const formData = new FormData();
       
-      // Add form data
       formData.append('contact_type', createForm.contact_type);
       formData.append('category', createForm.category);
       formData.append('priority', createForm.priority);
@@ -144,7 +146,7 @@ function TicketsTab() {
         formData.append('attachment_ids', JSON.stringify(attachments.map(a => a.id)));
       }
 
-      await axios.post(
+      const response = await axios.post(
         `${API_URL}/tickets/create`,
         formData,
         { 
@@ -155,9 +157,7 @@ function TicketsTab() {
         }
       );
 
-      alert('Ticket created successfully!');
-      
-      // Reset form
+      // Reset form first
       setCreateForm({
         contact_type: 'admin',
         recipient_address: '',
@@ -168,13 +168,26 @@ function TicketsTab() {
       });
       setAttachments([]);
       setActiveView('list');
-      fetchTickets();
+      
+      // Fetch tickets without alert on failure
+      try {
+        await fetchTickets();
+      } catch (fetchError) {
+        console.error('Failed to refresh tickets:', fetchError);
+        // Don't show alert here, tickets will refresh on next interaction
+      }
+      
+      // Show success alert last
+      alert('Ticket created successfully!');
+      
     } catch (error) {
       console.error('Failed to create ticket:', error);
       console.error('Error response:', error.response?.data);
       console.error('Error status:', error.response?.status);
       const errorMsg = error.response?.data?.detail || 'Failed to create ticket. Please try again.';
       alert(errorMsg);
+    } finally {
+      setLoading(false);
     }
   };
 
