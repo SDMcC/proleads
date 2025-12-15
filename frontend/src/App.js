@@ -267,20 +267,7 @@ function ReferralRedirect() {
         <p className="text-gray-200 text-sm mt-2">Using referral code: {code}</p>
       </div>
     </div>
-  );
-}
-
-// Protected Route Component
-function ProtectedRoute({ children }) {
-  const { user, loading } = useAuth();
-  
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
+// ProtectedRoute Component - Now imported from components/auth/ProtectedRoute.js
   
   return user ? children : <Navigate to="/" />;
 }
