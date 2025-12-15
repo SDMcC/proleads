@@ -140,6 +140,9 @@ user_problem_statement: |
   
   **Current Testing Phase:**
   COMPLETED: PayGate.to payment system and escrow management endpoints tested and verified working
+  
+  **NEW TESTING REQUEST:**
+  SSO Integration Flow Testing for Sendloop integration - Test "Open Sendloop" from Autoresponder Tab and "Import Leads" from Lead Files section
 
 backend:
   - task: "Admin Authentication System"
