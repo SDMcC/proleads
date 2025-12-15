@@ -1990,20 +1990,15 @@ function AdminDashboard() {
         )}
       </div>
 
-      {/* Member Details/Edit Modal */}
+      {/* Member Details Modal */}
       {showMemberModal && (
         <MemberModal
           member={selectedMember}
-          editingMember={editingMember}
           onClose={() => {
             setShowMemberModal(false);
             setSelectedMember(null);
-            setEditingMember(null);
           }}
-          onUpdate={updateMember}
-          onSuspend={suspendMember}
-          onUnsuspend={unsuspendMember}
-          onEdit={handleEditMember}
+          onSave={(updatedMember) => updateMember(updatedMember.id, { membership_tier: updatedMember.membership_tier })}
         />
       )}
       </div>
