@@ -267,6 +267,9 @@ function ReferralRedirect() {
         <p className="text-gray-200 text-sm mt-2">Using referral code: {code}</p>
       </div>
     </div>
+  );
+}
+
 // ProtectedRoute Component - Now imported from components/auth/ProtectedRoute.js
 
 // LoginModal Component - Now imported from components/auth/LoginModal.js
