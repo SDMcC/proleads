@@ -88,6 +88,11 @@ import AccountSettingsTab from './components/dashboard/tabs/AccountSettingsTab';
 import ReferralsTab from './components/dashboard/tabs/ReferralsTab';
 import AutoresponderTab from './components/dashboard/tabs/AutoresponderTab';
 import TicketsTab from './components/dashboard/tabs/TicketsTab';
+import NotificationPanel from './components/dashboard/NotificationPanel';
+import AccountTab from './components/dashboard/tabs/AccountTab';
+import NotificationSettingsTab from './components/dashboard/tabs/NotificationSettingsTab';
+import KYCVerificationTab from './components/dashboard/tabs/KYCVerificationTab';
+import LeadsTab from './components/dashboard/tabs/LeadsTab';
 
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
