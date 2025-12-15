@@ -14,6 +14,84 @@ import AdminTicketsTab from '../../components/admin/tabs/AdminTicketsTab';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API_URL = `${BACKEND_URL}/api`;
 
+// Helper Components
+const AdminStatCard = ({ icon, title, value, subtitle }) => (
+  <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+    <div className="flex items-center justify-between mb-4">
+      {icon}
+    </div>
+    <h3 className="text-gray-400 text-sm font-medium mb-1">{title}</h3>
+    <p className="text-3xl font-bold text-white mb-1">{value}</p>
+    <p className="text-gray-400 text-xs">{subtitle}</p>
+  </div>
+);
+
+const RecentMembersCard = () => (
+  <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+    <h4 className="text-lg font-bold text-white mb-4">Recent Members</h4>
+    <p className="text-gray-400">View in Members tab</p>
+  </div>
+);
+
+const RecentPaymentsCard = () => (
+  <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+    <h4 className="text-lg font-bold text-white mb-4">Recent Payments</h4>
+    <p className="text-gray-400">View in Payments tab</p>
+  </div>
+);
+
+const RecentMilestonesCard = () => (
+  <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+    <h4 className="text-lg font-bold text-white mb-4">Recent Milestones</h4>
+    <p className="text-gray-400">View in Milestones tab</p>
+  </div>
+);
+
+const RecentTicketsCard = () => (
+  <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
+    <h4 className="text-lg font-bold text-white mb-4">Recent Tickets</h4>
+    <p className="text-gray-400">View in Tickets tab</p>
+  </div>
+);
+
+const AdminNotificationPanel = ({ notifications }) => (
+  <div className="absolute right-0 top-16 w-80 bg-gray-800 rounded-lg shadow-xl p-4 z-50">
+    <h3 className="text-white font-bold mb-2">Notifications</h3>
+    {notifications?.length > 0 ? (
+      notifications.map((notif, idx) => (
+        <div key={idx} className="text-gray-300 text-sm py-2 border-b border-gray-700">
+          {notif.message}
+        </div>
+      ))
+    ) : (
+      <p className="text-gray-400">No notifications</p>
+    )}
+  </div>
+);
+
+const MemberModal = ({ member, onClose, onSave }) => (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
+    <div className="bg-gray-900 rounded-xl p-6 max-w-md w-full">
+      <h3 className="text-xl font-bold text-white mb-4">Member Details</h3>
+      <p className="text-gray-400 mb-4">Username: {member?.username}</p>
+      <div className="flex space-x-4">
+        <button
+          onClick={onClose}
+          className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg"
+        >
+          Close
+        </button>
+        <button
+          onClick={onSave}
+          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+        >
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
 function AdminDashboard() {
   const [stats, setStats] = useState(null);
   const [members, setMembers] = useState([]);
