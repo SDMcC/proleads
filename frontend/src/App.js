@@ -1277,6 +1277,64 @@ function Dashboard() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// Payment Page Component
+function PaymentPage() {
+  const [selectedTier, setSelectedTier] = useState('silver');
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [paymentStep, setPaymentStep] = useState(1);
+  const [paymentData, setPaymentData] = useState(null);
+  
+  const tiers = {
+    free: {
+      name: 'Free',
+      price: 0,
+      commissions: []
+    },
+    silver: {
+      name: 'Silver',
+      price: 49,
+      commissions: ['10%', '5%', '3%', '2%', '1%']
+    },
+    gold: {
+      name: 'Gold',
+      price: 149,
+      commissions: ['15%', '10%', '5%', '3%', '2%', '1%']
+    },
+    platinum: {
+      name: 'Platinum',
+      price: 499,
+      commissions: ['20%', '15%', '10%', '5%', '3%', '2%', '1%']
+    }
+  };
+
+  const handleStartPayment = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(
+        `${API_URL}/payments/create`,
+        { tier: selectedTier },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      setPaymentData(response.data);
+      setShowPaymentModal(true);
+    } catch (error) {
+      console.error('Payment creation failed:', error);
+      alert('Payment creation failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreatePayment = async () => {
+    // Payment logic handled in modal
+  };
 
   const currentTier = tiers[selectedTier];
 
