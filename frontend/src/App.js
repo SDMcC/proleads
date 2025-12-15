@@ -72,6 +72,9 @@ import EnhancedMembershipTiers from './components/landing/EnhancedMembershipTier
 import AffiliatesPage from './pages/AffiliatesPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import TermsPage from './pages/TermsPage';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import LoginModal from './components/auth/LoginModal';
+import RegisterPage from './pages/RegisterPage';
 
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
