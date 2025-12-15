@@ -26,31 +26,95 @@ const AdminStatCard = ({ icon, title, value, subtitle }) => (
   </div>
 );
 
-const RecentMembersCard = () => (
+const RecentMembersCard = ({ stats }) => (
   <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
-    <h4 className="text-lg font-bold text-white mb-4">Recent Members</h4>
-    <p className="text-gray-400">View in Members tab</p>
+    <h4 className="text-lg font-bold text-white mb-4 flex items-center">
+      <Users className="h-5 w-5 mr-2 text-blue-400" />
+      Recent Members
+    </h4>
+    <div className="space-y-2">
+      <div className="flex justify-between text-sm">
+        <span className="text-gray-400">Total Members:</span>
+        <span className="text-white font-medium">{stats?.members?.total || 0}</span>
+      </div>
+      <div className="flex justify-between text-sm">
+        <span className="text-gray-400">This Month:</span>
+        <span className="text-green-400 font-medium">+{stats?.members?.recent_30_days || 0}</span>
+      </div>
+      <div className="flex justify-between text-sm">
+        <span className="text-gray-400">Today:</span>
+        <span className="text-blue-400 font-medium">+{stats?.members?.today || 0}</span>
+      </div>
+    </div>
   </div>
 );
 
-const RecentPaymentsCard = () => (
+const RecentPaymentsCard = ({ stats }) => (
   <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
-    <h4 className="text-lg font-bold text-white mb-4">Recent Payments</h4>
-    <p className="text-gray-400">View in Payments tab</p>
+    <h4 className="text-lg font-bold text-white mb-4 flex items-center">
+      <DollarSign className="h-5 w-5 mr-2 text-green-400" />
+      Recent Payments
+    </h4>
+    <div className="space-y-2">
+      <div className="flex justify-between text-sm">
+        <span className="text-gray-400">Total Revenue:</span>
+        <span className="text-white font-medium">${stats?.payments?.total_revenue?.toFixed(2) || '0.00'}</span>
+      </div>
+      <div className="flex justify-between text-sm">
+        <span className="text-gray-400">This Month:</span>
+        <span className="text-green-400 font-medium">{stats?.payments?.recent_30_days || 0} payments</span>
+      </div>
+      <div className="flex justify-between text-sm">
+        <span className="text-gray-400">Pending:</span>
+        <span className="text-yellow-400 font-medium">{stats?.payments?.pending || 0}</span>
+      </div>
+    </div>
   </div>
 );
 
-const RecentMilestonesCard = () => (
+const RecentMilestonesCard = ({ stats }) => (
   <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
-    <h4 className="text-lg font-bold text-white mb-4">Recent Milestones</h4>
-    <p className="text-gray-400">View in Milestones tab</p>
+    <h4 className="text-lg font-bold text-white mb-4 flex items-center">
+      <Award className="h-5 w-5 mr-2 text-yellow-400" />
+      Recent Milestones
+    </h4>
+    <div className="space-y-2">
+      <div className="flex justify-between text-sm">
+        <span className="text-gray-400">Total Achieved:</span>
+        <span className="text-white font-medium">{stats?.milestones?.total_achieved || 0}</span>
+      </div>
+      <div className="flex justify-between text-sm">
+        <span className="text-gray-400">This Month:</span>
+        <span className="text-green-400 font-medium">+{stats?.milestones?.recent_30_days || 0}</span>
+      </div>
+      <div className="flex justify-between text-sm">
+        <span className="text-gray-400">Total Rewards:</span>
+        <span className="text-yellow-400 font-medium">${stats?.milestones?.total_rewards?.toFixed(2) || '0.00'}</span>
+      </div>
+    </div>
   </div>
 );
 
-const RecentTicketsCard = () => (
+const RecentTicketsCard = ({ stats }) => (
   <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6">
-    <h4 className="text-lg font-bold text-white mb-4">Recent Tickets</h4>
-    <p className="text-gray-400">View in Tickets tab</p>
+    <h4 className="text-lg font-bold text-white mb-4 flex items-center">
+      <MessageCircle className="h-5 w-5 mr-2 text-purple-400" />
+      Recent Tickets
+    </h4>
+    <div className="space-y-2">
+      <div className="flex justify-between text-sm">
+        <span className="text-gray-400">Total Tickets:</span>
+        <span className="text-white font-medium">{stats?.tickets?.total || 0}</span>
+      </div>
+      <div className="flex justify-between text-sm">
+        <span className="text-gray-400">Open:</span>
+        <span className="text-yellow-400 font-medium">{stats?.tickets?.open || 0}</span>
+      </div>
+      <div className="flex justify-between text-sm">
+        <span className="text-gray-400">Resolved:</span>
+        <span className="text-green-400 font-medium">{stats?.tickets?.closed || 0}</span>
+      </div>
+    </div>
   </div>
 );
 
