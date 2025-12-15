@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Upload, Download, FileSpreadsheet, Filter, Search, ChevronLeft, ChevronRight, Mail } from 'lucide-react';
+import { Upload, Download, FileSpreadsheet, Filter, Search, ChevronLeft, ChevronRight, Mail, ExternalLink, FileText, ArrowLeft, PaperClip, Send } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API_URL = `${BACKEND_URL}/api`;
