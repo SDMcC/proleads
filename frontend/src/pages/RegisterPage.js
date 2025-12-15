@@ -9,7 +9,7 @@ const API_URL = `${BACKEND_URL}/api`;
 
 function RegisterPage() {
   const { login } = useAuth();
-  const { isDark } = require('./DarkModeContext').useDarkMode();
+  const { isDark } = useDarkMode();
   const [formData, setFormData] = useState({
     username: '',
     email: '',
