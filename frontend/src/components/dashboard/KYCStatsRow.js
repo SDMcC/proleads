@@ -10,7 +10,7 @@ const API_URL = `${BACKEND_URL}/api`;
 // StatCard component
 function StatCard({ icon, title, value, subtitle, bgColor, action }) {
   return (
-    <div className={`${bgColor} backdrop-blur-sm rounded-xl p-6 flex items-center justify-between`}>
+    <div className={`${bgColor} backdrop-blur-sm rounded-xl p-6 flex items-center justify-between border border-white border-opacity-10`}>
       <div>
         <div className="flex items-center space-x-2 mb-2">
           {icon}
