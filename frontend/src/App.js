@@ -69,6 +69,9 @@ import TierCard from './components/landing/TierCard';
 import CommissionStructure from './components/landing/CommissionStructure';
 import MembershipTiers from './components/landing/MembershipTiers';
 import EnhancedMembershipTiers from './components/landing/EnhancedMembershipTiers';
+import AffiliatesPage from './pages/AffiliatesPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import TermsPage from './pages/TermsPage';
 
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
