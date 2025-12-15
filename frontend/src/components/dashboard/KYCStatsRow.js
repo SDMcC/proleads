@@ -1,5 +1,28 @@
-import React from 'react';
-import { Users, DollarSign, TrendingUp, Award } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { Users, DollarSign, TrendingUp, Award, Shield, CheckCircle, Copy } from 'lucide-react';
+import { getTierDisplayName } from '../../utils/helpers';
+import KYCEarningsCard from './KYCEarningsCard';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API_URL = `${BACKEND_URL}/api`;
+
+// StatCard component
+function StatCard({ icon, title, value, subtitle, bgColor, action }) {
+  return (
+    <div className={`${bgColor} backdrop-blur-sm rounded-xl p-6 flex items-center justify-between`}>
+      <div>
+        <div className="flex items-center space-x-2 mb-2">
+          {icon}
+          <h3 className="text-sm font-medium text-gray-300">{title}</h3>
+        </div>
+        <p className="text-3xl font-bold text-white">{value}</p>
+        {subtitle && <p className="text-sm text-gray-300 mt-1">{subtitle}</p>}
+        {action && <div className="mt-3">{action}</div>}
+      </div>
+    </div>
+  );
+}
 
 function KYCStatsRow({ stats, user, onNavigateToKYC, subscriptionInfo, handleRenewSubscription }) {
   const [kycStatus, setKycStatus] = useState(null);
