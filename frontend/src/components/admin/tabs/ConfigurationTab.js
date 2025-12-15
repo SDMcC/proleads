@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Settings } from 'lucide-react';
+import { Settings, RefreshCcw, CheckCircle, AlertTriangle, X } from 'lucide-react';
+import { getTierBadgeClass, getTierDisplayName } from '../../../utils/helpers';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API_URL = `${BACKEND_URL}/api`;
