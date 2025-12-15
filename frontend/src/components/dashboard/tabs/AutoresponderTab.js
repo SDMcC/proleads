@@ -1,6 +1,6 @@
 import React from 'react';
 import axios from 'axios';
-import { Mail, ExternalLink } from 'lucide-react';
+import { Mail, ExternalLink, CheckCircle } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API_URL = `${BACKEND_URL}/api`;

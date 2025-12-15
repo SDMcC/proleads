@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { MessageCircle, Send, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { MessageCircle, Send, Clock, CheckCircle, AlertCircle, ArrowLeft, Paperclip, X, Circle, Plus, Eye, Fuel } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API_URL = `${BACKEND_URL}/api`;
