@@ -67,6 +67,8 @@ import Footer from './components/landing/Footer';
 import LoginButton from './components/shared/LoginButton';
 import TierCard from './components/landing/TierCard';
 import CommissionStructure from './components/landing/CommissionStructure';
+import MembershipTiers from './components/landing/MembershipTiers';
+import EnhancedMembershipTiers from './components/landing/EnhancedMembershipTiers';
 
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
