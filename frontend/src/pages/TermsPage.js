@@ -1,4 +1,5 @@
 import React from 'react';
+import Footer from '../components/landing/Footer';
 
 function TermsPage() {
   return (
