@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Home, FileSpreadsheet, Settings, BarChart, Shield, MessageCircle, Award, Users, DollarSign, Bell, Zap, Key, Link } from 'lucide-react';
+import { Home, FileSpreadsheet, Settings, BarChart, Shield, MessageCircle, Award, Users, DollarSign, Bell, Zap, Key, Link, BarChart3, TrendingUp, Activity, AlertCircle, FileText, Gift, Download, ChevronLeft, ChevronRight } from 'lucide-react';
+import { getTierBadgeClass, getTierDisplayName } from '../../utils/helpers';
+import AnalyticsTab from '../../components/admin/tabs/AnalyticsTab';
+import AdminMilestonesTab from '../../components/admin/tabs/AdminMilestonesTab';
+import AdminKYCTab from '../../components/admin/tabs/AdminKYCTab';
+import LeadsManagementTab from '../../components/dashboard/tabs/LeadsTab';
+import IntegrationsTab from '../../components/admin/tabs/IntegrationsTab';
+import ConfigurationTab from '../../components/admin/tabs/ConfigurationTab';
+import AdminTicketsTab from '../../components/admin/tabs/AdminTicketsTab';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API_URL = `${BACKEND_URL}/api`;
