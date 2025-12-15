@@ -5084,7 +5084,7 @@ function AutoresponderTab() {
         `${API_URL}/sso/initiate`,
         {
           target_app: 'sendloop',
-          redirect_url: 'https://marketer-auth-bridge.preview.emergentagent.com/dashboard'
+          redirect_url: 'https://drip-campaign-hub.preview.emergentagent.com/dashboard'
         },
         { headers: { 'Authorization': `Bearer ${token}` } }
       );
@@ -9320,7 +9320,7 @@ function LeadsTab() {
                   `${API_URL}/sso/initiate`,
                   {
                     target_app: 'sendloop',
-                    redirect_url: 'https://marketer-auth-bridge.preview.emergentagent.com/dashboard'
+                    redirect_url: 'https://drip-campaign-hub.preview.emergentagent.com/dashboard'
                   },
                   { headers: { 'Authorization': `Bearer ${token}` } }
                 );
@@ -9441,7 +9441,7 @@ function LeadsTab() {
                                 const userId = userResponse.data.user_id;
                                 
                                 // Initiate SSO with file information in redirect URL
-                                const redirectUrl = `https://marketer-auth-bridge.preview.emergentagent.com/import?user_id=${userId}&file_id=${file.file_id}&source=proleads`;
+                                const redirectUrl = `https://drip-campaign-hub.preview.emergentagent.com/import?user_id=${userId}&file_id=${file.file_id}&source=proleads`;
                                 
                                 const response = await axios.post(
                                   `${API_URL}/sso/initiate`,
