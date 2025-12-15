@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { MessageCircle, Search, Filter, ArrowLeft, Send, Eye } from 'lucide-react';
+import { MessageCircle, Search, Filter, ArrowLeft, Send, Eye, Paperclip, Mail, X } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API_URL = `${BACKEND_URL}/api`;

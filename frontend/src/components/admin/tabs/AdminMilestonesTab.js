@@ -1,5 +1,5 @@
-import React from 'react';
-import { Award } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { Award, Download, Eye, ChevronLeft, ChevronRight, X } from 'lucide-react';
 
 function AdminMilestonesTab({ 
   milestones, 
