@@ -1,6 +1,20 @@
 import React from 'react';
 import { Shield, Eye, CheckCircle, XCircle } from 'lucide-react';
 
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+
+// Helper component to display KYC document images
+const KYCDocumentImage = ({ filename, alt }) => {
+  if (!filename) return null;
+  return (
+    <img 
+      src={`${BACKEND_URL}/api/users/kyc/document/${filename}`} 
+      alt={alt}
+      className="w-full rounded-lg"
+    />
+  );
+};
+
 function AdminKYCTab({ submissions, page, setPage, totalPages, statusFilter, setStatusFilter, selectedKYC, setSelectedKYC, showModal, setShowModal, onApprove, onReject, rejectionReason, setRejectionReason }) {
   return (
     <div>
