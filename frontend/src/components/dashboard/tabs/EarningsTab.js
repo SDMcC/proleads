@@ -1,10 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { DollarSign, Users, TrendingUp, ChevronLeft, ChevronRight } from 'lucide-react';
+import { DollarSign, Users, TrendingUp, ChevronLeft, ChevronRight, FileText } from 'lucide-react';
 import { getTierDisplayName } from '../../../utils/helpers';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API_URL = `${BACKEND_URL}/api`;
+
+// Utility function to get tier badge colors
+const getTierBadgeClass = (tier) => {
+  switch (tier) {
+    case 'gold':
+      return 'bg-yellow-600 text-yellow-100';
+    case 'silver':
+      return 'bg-gray-600 text-gray-100';
+    case 'bronze':
+      return 'bg-orange-600 text-orange-100';
+    default:
+      return 'bg-blue-600 text-blue-100';
+  }
+};
 
 function EarningsTab() {
   const [earnings, setEarnings] = useState([]);
