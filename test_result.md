@@ -1076,9 +1076,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Lead Distribution Enhancement 1 - Duplicate Detection"
-    - "Lead Distribution Enhancement 2 - Email Verification"
-    - "Lead Distribution Enhancement 3 - Scheduled Distributions"
+    - "SSO Integration Flow Testing - Sendloop Integration"
   stuck_tasks: []
   test_all: false
   test_priority: "sequential"
