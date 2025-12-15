@@ -994,10 +994,10 @@ function AdminDashboard() {
             <div>
               <h3 className="text-2xl font-bold text-white mb-6">Recent Activity</h3>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <RecentMembersCard />
-                <RecentPaymentsCard />
-                <RecentMilestonesCard />
-                <RecentTicketsCard />
+                <RecentMembersCard stats={stats} />
+                <RecentPaymentsCard stats={stats} />
+                <RecentMilestonesCard stats={stats} />
+                <RecentTicketsCard stats={stats} />
               </div>
             </div>
           </div>
