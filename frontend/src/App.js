@@ -83,6 +83,11 @@ import NetworkTreeTab from './components/dashboard/tabs/NetworkTreeTab';
 import AffiliateToolsTab from './components/dashboard/tabs/AffiliateToolsTab';
 import EarningsTab from './components/dashboard/tabs/EarningsTab';
 import PaymentHistoryTab from './components/dashboard/tabs/PaymentHistoryTab';
+import MilestonesTab from './components/dashboard/tabs/MilestonesTab';
+import AccountSettingsTab from './components/dashboard/tabs/AccountSettingsTab';
+import ReferralsTab from './components/dashboard/tabs/ReferralsTab';
+import AutoresponderTab from './components/dashboard/tabs/AutoresponderTab';
+import TicketsTab from './components/dashboard/tabs/TicketsTab';
 
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
