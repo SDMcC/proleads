@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Home, FileSpreadsheet, Settings, BarChart, Shield, MessageCircle, Award, Users, DollarSign, Bell, Zap, Key, Link, BarChart3, TrendingUp, Activity, AlertCircle, FileText, Gift, Download, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Home, FileSpreadsheet, Settings, BarChart, Shield, MessageCircle, Award, Users, DollarSign, Bell, Zap, Key, Link, BarChart3, TrendingUp, Activity, AlertCircle, FileText, Gift, Download, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { getTierBadgeClass, getTierDisplayName } from '../../utils/helpers';
 import AnalyticsTab from '../../components/admin/tabs/AnalyticsTab';
 import AdminMilestonesTab from '../../components/admin/tabs/AdminMilestonesTab';
