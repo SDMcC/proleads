@@ -32,7 +32,7 @@ function AccountTab({ user, accountSubTab, setAccountSubTab }) {
       </div>
 
       {/* Account Sub-tab Content */}
-      {accountSubTab === 'settings' && <AccountSettingsOnlyTab user={user} />}
+      {accountSubTab === 'settings' && <AccountSettingsTab user={user} />}
       {accountSubTab === 'notifications' && <NotificationSettingsTab user={user} />}
       {accountSubTab === 'kyc' && <KYCVerificationTab user={user} />}
       {accountSubTab === 'cancel' && <CancelAccountTab />}
