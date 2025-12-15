@@ -1,5 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { AlertCircle, CheckCircle } from 'lucide-react';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API_URL = `${BACKEND_URL}/api`;
 
 function KYCEarningsCard({ user, onNavigateToKYC }) {
   const [kycStatus, setKycStatus] = useState(null);
