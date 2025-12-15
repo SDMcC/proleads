@@ -1,5 +1,8 @@
 import React from 'react';
 import { User, Settings, Bell, Shield, UserX } from 'lucide-react';
+import AccountSettingsTab from './AccountSettingsTab';
+import NotificationSettingsTab from './NotificationSettingsTab';
+import KYCVerificationTab from './KYCVerificationTab';
 
 function AccountTab({ user, accountSubTab, setAccountSubTab }) {
   return (
