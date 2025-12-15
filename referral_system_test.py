@@ -532,7 +532,7 @@ class ReferralSystemTester:
 def main():
     """Main test execution"""
     # Use the backend URL from environment
-    base_url = "https://payment-flow-70.preview.emergentagent.com"
+    base_url = "https://marketer-auth-bridge.preview.emergentagent.com"
     
     print("🚀 Starting Referral System Fix Verification")
     print(f"🌐 Testing against: {base_url}")

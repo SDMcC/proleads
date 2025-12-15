@@ -384,7 +384,7 @@ Bob Johnson,bob@test.com,789 Pine Rd"""
             return False
 
 if __name__ == "__main__":
-    backend_url = "https://payment-flow-70.preview.emergentagent.com"
+    backend_url = "https://marketer-auth-bridge.preview.emergentagent.com"
     tester = LeadDistributionEnhancementsTester(backend_url)
     
     success = tester.run_all_tests()

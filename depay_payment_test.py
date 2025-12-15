@@ -553,7 +553,7 @@ def main():
     if len(sys.argv) > 1:
         base_url = sys.argv[1]
     else:
-        base_url = "https://payment-flow-70.preview.emergentagent.com"
+        base_url = "https://marketer-auth-bridge.preview.emergentagent.com"
     
     print(f"🚀 DePay Payment Flow Tester")
     print(f"🌐 Backend URL: {base_url}")

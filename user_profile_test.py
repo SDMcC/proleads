@@ -243,7 +243,7 @@ class UserProfileTester:
         return all_passed
 
 def main():
-    backend_url = "https://payment-flow-70.preview.emergentagent.com"
+    backend_url = "https://marketer-auth-bridge.preview.emergentagent.com"
     
     print("🚀 User Profile and Registration System Test")
     print("=" * 50)

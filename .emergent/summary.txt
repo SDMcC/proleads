@@ -1,468 +1,34 @@
 <analysis>An analysis of the user's request and the agent's actions has been done. Here is the summary:
 
 **original_problem_statement:**
-The user has reported several issues after a test payment was processed:
-1.  The payment page does not redirect back to the user's dashboard after the payment is completed.
-2.  The payment status remains Pending on both the user's Payment History page and the Admin Payments page.
-3.  The test user's membership tier was not updated after the purchase. They are still shown as a Bronze member instead of the purchased tier.
-4.  The subscription expiration date is not being displayed on the user's dashboard.
-5.  A Renew button should be added to allow users to renew their subscription.
-6.  A cron job or similar mechanism is needed to send out subscription reminder emails.
+The user initially reported that the DePay payment workflow was broken. Key issues included payments getting stuck in a Pending state, user membership tiers not being upgraded, the subscription expiry date not showing, and the page not redirecting after a successful payment. The user also requested several enhancements, including a Renew button, an Upgrade button, refined payment history pages, and fixes for admin revenue reporting. The final reported issue is a broken Single Sign-On (SSO) flow with the external Sendloop application.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The Proleads Network is a full-stack affiliate marketing platform with a React frontend and FastAPI backend. It features a tiered membership system, automated lead distribution, and an admin dashboard. It is integrated with an external application called Sendloop for Single Sign-On (SSO) and CSV lead exports. Payments are handled via the DePay service. A background scheduler is in place to handle lead distribution and has been recently updated to include subscription reminders.
+The Proleads Network is a full-stack affiliate marketing platform with a React frontend and a FastAPI backend using MongoDB. It features a tiered membership system, affiliate commissions, and admin dashboards. It is integrated with an external application called Sendloop for Single Sign-On (SSO) and lead importing. The payment system is integrated with DePay for cryptocurrency transactions. The core payment and subscription logic is now functional after a series of complex fixes.
 
 **Last working item**:
-- **Last item agent was working on**: The agent began investigating a critical bug in the payment finalization workflow. After a user successfully completes a payment with DePay, the backend webhook is failing to: 1) update the payment status from Pending to Completed, 2) upgrade the user's membership tier, and 3) set the new subscription expiry date. Consequently, the frontend does not redirect the user back to their dashboard, and the UI does not reflect the successful purchase. The agent had just started examining the webhook handler code in .
+- **Last item agent was working on**: The agent was investigating a critical bug in the Single Sign-On (SSO) flow. When a user clicks Open Sendloop or attempts to import leads, the application redirects back to the Proleads dashboard instead of the external Sendloop application. The agent has identified that the frontend code is using a hardcoded, incorrect  when calling the SSO initiation endpoint.
 - **Status**: IN PROGRESS
 - **Agent Testing Done**: N
-- **Which testing method agent to use?**: both
+- **Which testing method agent to use?**: frontend testing agent
 - **User Testing Done**: Y
 
 **All Pending/In progress Issue list**:
-- **Issue 1**: DePay post-payment logic is broken (P0)
-- **Issue 2**: Subscription expiry date is not displayed on the user dashboard (P1)
-- **Issue 3**: User is not redirected after a successful payment (P1)
+- **Issue 1**: SSO redirects back to Proleads instead of Sendloop (P0)
 
 **Issues Detail**:
-- **Issue 1**: DePay post-payment logic is broken
-    - **Description**: The core issue is that after a successful DePay payment, the backend webhook () fails to update the database. This prevents the user's membership from being activated, and the payment record remains stuck in a Pending state.
-    - **Attempted fixes**: The agent has only reviewed the relevant backend code ( in ) but has not yet attempted a fix.
+- **Issue 1**: SSO redirects back to Proleads instead of Sendloop
+    - **Description**: The frontend code in  (specifically within the  component) calls the  endpoint with a hardcoded  that points to the Proleads application itself, causing a redirect loop.
+    - **Attempted fixes**: The agent correctly identified the problem area in the code and found the correct Sendloop URL () in the  documentation file. The agent has not yet implemented the fix.
     - **Next debug checklist**:
-        1.  Examine the backend logs (==> /var/log/supervisor/backend.err.log <==
-INFO:server:Successfully allocated 100 leads to bronzetest1
-INFO:email_service:Stored notification for artmachina1@gmail.com: 📋 100 New Leads Distributed to Your Account
-INFO:email_service:Email sent to artmachina1@gmail.com: 📋 100 New Leads Distributed to Your Account
-INFO:server:Processing bronzetest2 (bronze tier): needs 100 leads
-INFO:server:Successfully allocated 100 leads to bronzetest2
-INFO:email_service:Stored notification for bronzetest2@example.com: 📋 100 New Leads Distributed to Your Account
-ERROR:email_service:Failed to send email to bronzetest2@example.com: [SMTPRecipientRefused(550, 'The mail server could not deliver mail to bronzetest2@example.com.  The\naccount or domain may not exist, they may be blacklisted, or missing the\nproper dns entries.', 'bronzetest2@example.com')]
-INFO:server:Processing testuser1 (bronze tier): needs 100 leads
-INFO:server:Successfully allocated 100 leads to testuser1
-INFO:email_service:Stored notification for testuser1'@domain.com: 📋 100 New Leads Distributed to Your Account
-INFO:email_service:Email sent to testuser1'@domain.com: 📋 100 New Leads Distributed to Your Account
-INFO:server:Processing silvertest1 (silver tier): needs 250 leads
-INFO:server:Successfully allocated 250 leads to silvertest1
-INFO:email_service:Stored notification for silvertest1@example.com: 📋 250 New Leads Distributed to Your Account
-ERROR:email_service:Failed to send email to silvertest1@example.com: [SMTPRecipientRefused(550, 'The mail server could not deliver mail to silvertest1@example.com.  The\naccount or domain may not exist, they may be blacklisted, or missing the\nproper dns entries.', 'silvertest1@example.com')]
-INFO:server:Processing silvertest2 (silver tier): needs 250 leads
-INFO:server:Successfully allocated 250 leads to silvertest2
-INFO:email_service:Stored notification for silvertest2@example.com: 📋 250 New Leads Distributed to Your Account
-ERROR:email_service:Failed to send email to silvertest2@example.com: [SMTPRecipientRefused(550, 'The mail server could not deliver mail to silvertest2@example.com.  The\naccount or domain may not exist, they may be blacklisted, or missing the\nproper dns entries.', 'silvertest2@example.com')]
-INFO:server:SSO token generated for user testuser1 -> sendloop
-INFO:email_service:Stored notification for support@members.proleads.network: 📊 Lead Distribution COMPLETED - 4863 leads
-INFO:server:SSO token verified for user testuser1
-INFO:email_service:Email sent to support@members.proleads.network: 📊 Lead Distribution COMPLETED - 4863 leads
-INFO:server:Lead distribution completed: 800 assignments made
-INFO:server:SSO token generated for user testuser1 -> sendloop
-INFO:server:SSO token verified for user testuser1
-INFO:server:CSV export successful: user=payment-flow-70, file=payment-flow-70, lines=101
-INFO:     Will watch for changes in these directories: ['/app/backend']
-INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     Started reloader process [34] using WatchFiles
-INFO:     Started server process [78]
-INFO:     Waiting for application startup.
-ERROR:server:Failed to save system config: name 'NOWPAYMENTS_API_KEY' is not defined
-INFO:server:Initialized system configuration with defaults
-INFO:scheduler:Distribution scheduler task started
-INFO:scheduler:Starting distribution scheduler...
-INFO:server:Integration database indexes created successfully
-INFO:     Application startup complete.
-INFO:server:SSO token generated for user testuser1 -> sendloop
-INFO:server:SSO token verified for user testuser1
-INFO:server:SSO token verified for user testuser1
-INFO:server:CSV export successful: user=payment-flow-70, file=payment-flow-70, lines=101
-INFO:server:CSV export successful: user=payment-flow-70, file=payment-flow-70, lines=101
-INFO:server:SSO token generated for user testuser1 -> sendloop
-INFO:server:SSO token verified for user testuser1
-INFO:server:SSO token verified for user testuser1
-INFO:server:CSV export successful: user=payment-flow-70, file=payment-flow-70, lines=101
-INFO:server:CSV export successful: user=payment-flow-70, file=payment-flow-70, lines=101
-INFO:server:SSO token generated for user testuser1 -> sendloop
-INFO:server:SSO token verified for user testuser1
-INFO:server:SSO token generated for user testuser1 -> sendloop
-INFO:server:SSO token verified for user testuser1
-INFO:server:SSO token generated for user testuser1 -> sendloop
-INFO:server:SSO token verified for user testuser1
-INFO:server:SSO token generated for user testuser1 -> sendloop
-INFO:server:SSO token verified for user testuser1
-INFO:server:SSO token verified for user testuser1
-INFO:     Will watch for changes in these directories: ['/app/backend']
-INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     Started reloader process [28] using WatchFiles
-INFO:     Started server process [78]
-INFO:     Waiting for application startup.
-ERROR:server:Failed to save system config: name 'NOWPAYMENTS_API_KEY' is not defined
-INFO:server:Initialized system configuration with defaults
-INFO:scheduler:Distribution scheduler task started
-INFO:scheduler:Starting distribution scheduler...
-INFO:server:Integration database indexes created successfully
-INFO:     Application startup complete.
-INFO:     Will watch for changes in these directories: ['/app/backend']
-INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     Started reloader process [34] using WatchFiles
-INFO:     Started server process [72]
-INFO:     Waiting for application startup.
-ERROR:server:Failed to save system config: name 'NOWPAYMENTS_API_KEY' is not defined
-INFO:server:Initialized system configuration with defaults
-INFO:scheduler:Distribution scheduler task started
-INFO:scheduler:Starting distribution scheduler...
-INFO:server:Integration database indexes created successfully
-INFO:     Application startup complete.
-INFO:server:SSO token generated for user testuser1 -> sendloop
-INFO:server:SSO token verified for user testuser1
-INFO:server:SSO token generated for user testuser1 -> sendloop
-INFO:server:SSO token verified for user testuser1
-INFO:server:SSO token generated for user testuser1 -> sendloop
-INFO:server:SSO token verified for user testuser1
-INFO:server:SSO token generated for user testuser1 -> sendloop
-INFO:server:SSO token verified for user testuser1
-INFO:server:SSO token generated for user testuser1 -> sendloop
-INFO:server:SSO token verified for user testuser1
-INFO:server:SSO token generated for user testuser1 -> sendloop
-INFO:server:SSO token verified for user testuser1
-INFO:server:SSO token verified for user testuser1
-INFO:server:SSO token generated for user testuser1 -> sendloop
-INFO:server:SSO token verified for user testuser1
-INFO:server:SSO token verified for user testuser1
-INFO:server:SSO token generated for user testuser1 -> sendloop
-INFO:server:SSO token generated for user testuser1 -> sendloop
-INFO:server:SSO token generated for user testuser1 -> sendloop
-INFO:server:SSO token generated for user testuser1 -> sendloop
-ERROR:server:Failed to verify SSO token: module 'jose.jwt' has no attribute 'InvalidTokenError'
-INFO:server:SSO token generated for user testuser1 -> sendloop
-INFO:server:SSO token verified for user testuser1
-INFO:server:SSO token generated for user testuser1 -> sendloop
-INFO:server:SSO token verified for user testuser1
-INFO:     Will watch for changes in these directories: ['/app/backend']
-INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     Started reloader process [28] using WatchFiles
-INFO:     Started server process [77]
-INFO:     Waiting for application startup.
-ERROR:server:Failed to save system config: name 'NOWPAYMENTS_API_KEY' is not defined
-INFO:server:Initialized system configuration with defaults
-INFO:scheduler:Distribution scheduler task started
-INFO:scheduler:Starting distribution scheduler...
-INFO:server:Integration database indexes created successfully
-INFO:     Application startup complete.
-INFO:server:DePay payment request received: tier=test
-INFO:server:DePay payment record created: DEPAY-1A57010F72E54223
-INFO:server:DePay payment request received: tier=test
-INFO:server:DePay payment record created: DEPAY-7D87FDB23F0B41BE
-INFO:server:DePay payment request received: tier=test
-INFO:server:DePay payment record created: DEPAY-71CCD74AFBA3470A
-WARNING:  WatchFiles detected changes in 'scheduler.py'. Reloading...
-INFO:     Shutting down
-INFO:     Waiting for application shutdown.
-INFO:     Application shutdown complete.
-INFO:     Finished server process [77]
-INFO:     Started server process [321]
-INFO:     Waiting for application startup.
-ERROR:server:Failed to save system config: name 'NOWPAYMENTS_API_KEY' is not defined
-INFO:server:Initialized system configuration with defaults
-INFO:scheduler:Distribution scheduler task started
-INFO:scheduler:Starting distribution scheduler...
-INFO:server:Integration database indexes created successfully
-INFO:     Application startup complete.
-INFO:scheduler:Running subscription reminder check...
-INFO:scheduler:Checking for subscription reminders...
-INFO:     Shutting down
-INFO:     Waiting for application shutdown.
-INFO:     Application shutdown complete.
-INFO:     Finished server process [321]
-INFO:     Stopping reloader process [28]
-INFO:     Will watch for changes in these directories: ['/app/backend']
-INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     Started reloader process [340] using WatchFiles
-INFO:     Started server process [342]
-INFO:     Waiting for application startup.
-ERROR:server:Failed to save system config: name 'NOWPAYMENTS_API_KEY' is not defined
-INFO:server:Initialized system configuration with defaults
-INFO:scheduler:Distribution scheduler task started
-INFO:scheduler:Starting distribution scheduler...
-INFO:server:Integration database indexes created successfully
-INFO:     Application startup complete.
-INFO:scheduler:Running subscription reminder check...
-INFO:scheduler:Checking for subscription reminders...
-INFO:     Shutting down
-INFO:     Waiting for application shutdown.
-INFO:     Application shutdown complete.
-INFO:     Finished server process [342]
-INFO:     Stopping reloader process [340]
-INFO:     Will watch for changes in these directories: ['/app/backend']
-INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     Started reloader process [571] using WatchFiles
-INFO:     Started server process [573]
-INFO:     Waiting for application startup.
-ERROR:server:Failed to save system config: name 'NOWPAYMENTS_API_KEY' is not defined
-INFO:server:Initialized system configuration with defaults
-INFO:scheduler:Distribution scheduler task started
-INFO:scheduler:Starting distribution scheduler...
-INFO:server:Integration database indexes created successfully
-INFO:     Application startup complete.
-INFO:scheduler:Running subscription reminder check...
-INFO:scheduler:Checking for subscription reminders...
-INFO:server:DePay configuration called - Body length: 101, Headers: {'host': 'smartlead-hub-2.preview.emergentagent.com', 'user-agent': 'curl/7.88.1', 'content-length': '101', 'accept': '*/*', 'content-type': 'application/json', 'via': '1.1 google', 'x-cloud-trace-context': '1e6afd803df8f4c95f415f655bf1dd9c/14608226047186090883', 'x-forwarded-for': '35.184.53.215,34.107.197.154, 35.191.136.17', 'x-forwarded-proto': 'https', 'accept-encoding': 'gzip'}
-WARNING:server:DePay configuration: Missing x-signature header
-WARNING:server:ALLOWING REQUEST WITHOUT SIGNATURE FOR TESTING
-INFO:server:DePay configuration request: {'payment_id': 'test-123', 'tier': 'silver', 'user_address': '0x1234567890123456789012345678901234567890'}
-INFO:depay_utils:Created DePay configuration: 50 USDC to 0xe68BecFfF9eae92bFcf3ba745563C5be2EB81460
-INFO:depay_utils:Response signed successfully
-INFO:server:DePay configuration created for payment test-123: 50 USDC
-INFO:server:DePay payment request received: tier=test
-INFO:server:DePay payment record created: DEPAY-6720B334C86341FD
-INFO:server:DePay configuration called - Body length: 113, Headers: {'host': 'smartlead-hub-2.preview.emergentagent.com', 'user-agent': 'DHC (2.4.0; Integrate) [https://github.com/DePayFi/dhc]', 'content-length': '113', 'accept': 'application/json,application/vnd.api+json', 'accept-charset': 'utf-8', 'content-type': 'application/json; charset=utf-8', 'via': '1.1 google', 'x-cloud-trace-context': '746056168996428d1ff5a85237aaa372/1556010624336434831', 'x-forwarded-for': '18.153.62.116,34.107.197.154, 35.191.126.147', 'x-forwarded-proto': 'https', 'x-signature': 'QA8mJ1Va8laF1WXhajywjLmIMNErMfLr5D1RFE1ZRR6ltvKxeN8c5DiB0XaloYbTcN8n35JizzD_-M19hcSO2rvTHQTTaKJdZSRxRzUivaCTAKiBtvt7JC3Dq1ypG1afy2vudOJ9I8EK91hv2W4iEi4nUIX6c6Gnw7DIukaAEiJg4Wiz32OJqiT7YbaGUF4feklGCPjEJJATD-2otRPfJHHjtLNjWp5BPDOtp1XWpYVNEdIj5z_SULPhp1ieWBVTeL_tJjK9KYaldMEorVEFO-4uI4zudamKlNkseL8wcDBNaO8nOx-evzAmTMVibWSGyKKFWv17p1Nmbdd91HOwdg==', 'accept-encoding': 'gzip'}
-INFO:depay_utils:DePay signature verification successful
-INFO:server:DePay configuration request: {'payment_id': 'DEPAY-6720B334C86341FD', 'tier': 'test', 'user_address': '0x1234567890123456789012345678901234567890'}
-INFO:depay_utils:Created DePay configuration: 2 USDC to 0xe68BecFfF9eae92bFcf3ba745563C5be2EB81460
-INFO:depay_utils:Response signed successfully
-INFO:server:DePay configuration created for payment DEPAY-6720B334C86341FD: 2 USDC
-INFO:     Will watch for changes in these directories: ['/app/backend']
-INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     Started reloader process [28] using WatchFiles
-INFO:     Started server process [70]
-INFO:     Waiting for application startup.
-ERROR:server:Failed to save system config: name 'NOWPAYMENTS_API_KEY' is not defined
-INFO:server:Initialized system configuration with defaults
-INFO:scheduler:Distribution scheduler task started
-INFO:scheduler:Starting distribution scheduler...
-INFO:server:Integration database indexes created successfully
-INFO:     Application startup complete.
-INFO:scheduler:Running subscription reminder check...
-INFO:scheduler:Checking for subscription reminders...
-
-==> /var/log/supervisor/backend.out.log <==
-INFO:     10.64.162.77:60240 - "GET /api/users/profile HTTP/1.1" 401 Unauthorized
-INFO:     10.64.128.62:36926 - "GET /api/membership/tiers HTTP/1.1" 200 OK
-INFO:     10.64.162.77:46666 - "GET /api/membership/tiers HTTP/1.1" 200 OK
-INFO:     10.64.128.62:56442 - "GET /api/membership/tiers HTTP/1.1" 200 OK
-INFO:     10.64.162.106:40636 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     10.64.128.5:49724 - "GET /api/users/profile HTTP/1.1" 200 OK
-INFO:     10.64.162.106:40636 - "GET /api/users/profile HTTP/1.1" 200 OK
-INFO:     10.64.128.9:56614 - "GET /api/users/profile HTTP/1.1" 200 OK
-INFO:     10.64.128.5:49724 - "GET /api/dashboard/stats HTTP/1.1" 200 OK
-INFO:     10.64.128.62:58474 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.128.9:56614 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.128.62:58474 - "GET /api/dashboard/stats HTTP/1.1" 200 OK
-INFO:     10.64.162.77:32934 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.162.77:32922 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.162.77:32922 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.162.106:40636 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.128.9:56614 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.128.5:49724 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.128.62:47924 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.147:59088 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.156.94:55734 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.145:41344 - "GET /api/users/payments?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.145:41344 - "GET /api/users/payments?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.147:42414 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.201.147:42414 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.201.145:41344 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.201.178:50094 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.201.145:54574 - "GET /api/users/profile HTTP/1.1" 200 OK
-INFO:     10.64.201.145:54574 - "GET /api/users/profile HTTP/1.1" 200 OK
-INFO:     10.64.201.147:42422 - "GET /api/membership/tiers HTTP/1.1" 200 OK
-INFO:     10.64.201.145:54574 - "GET /api/membership/tiers HTTP/1.1" 200 OK
-INFO:     10.64.156.94:40238 - "POST /api/payments/create-depay HTTP/1.1" 200 OK
-INFO:     10.64.162.106:45556 - "POST /api/payments/create-depay HTTP/1.1" 200 OK
-INFO:     10.64.128.5:37038 - "POST /api/payments/create-depay HTTP/1.1" 200 OK
-INFO:     10.64.128.5:41668 - "GET /api/membership/tiers HTTP/1.1" 200 OK
-INFO:     10.64.162.77:34686 - "GET /api/membership/tiers HTTP/1.1" 200 OK
-INFO:     10.64.162.106:34402 - "GET /api/users/profile HTTP/1.1" 200 OK
-INFO:     10.64.128.9:34000 - "GET /api/users/profile HTTP/1.1" 200 OK
-INFO:     10.64.162.77:44728 - "GET /api/users/profile HTTP/1.1" 200 OK
-INFO:     10.64.128.62:39200 - "GET /api/users/profile HTTP/1.1" 200 OK
-INFO:     10.64.128.9:43796 - "GET /api/dashboard/stats HTTP/1.1" 200 OK
-INFO:     10.64.162.106:57308 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.128.62:39200 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.128.5:57034 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.128.62:39200 - "GET /api/dashboard/stats HTTP/1.1" 200 OK
-INFO:     10.64.128.9:43796 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.128.9:43796 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.128.62:39200 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.162.106:57308 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.162.77:44728 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.156.94:51062 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.145:35864 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.147:58286 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.145:47852 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.178:60914 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.147:33340 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.147:41930 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.147:55568 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.178:57438 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.147:37404 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.145:42814 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.145:37380 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.128.5:44272 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.128.9:46680 - "GET /api/users/profile HTTP/1.1" 200 OK
-INFO:     10.64.162.77:48174 - "GET /api/users/profile HTTP/1.1" 200 OK
-INFO:     10.64.128.62:58932 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.162.106:59960 - "GET /api/dashboard/stats HTTP/1.1" 200 OK
-INFO:     10.64.162.106:59954 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.162.77:48174 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.162.106:59954 - "GET /api/dashboard/stats HTTP/1.1" 200 OK
-INFO:     10.64.128.5:41894 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.128.5:41894 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.128.9:46680 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.162.77:48174 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.128.62:58932 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.162.77:38366 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.162.106:39676 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.147:50880 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.147:50880 - "POST /api/payments/depay/configuration HTTP/1.1" 200 OK
-INFO:     10.64.201.145:37744 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.145:55886 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.147:45364 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.128.9:37410 - "GET /api/users/profile HTTP/1.1" 200 OK
-INFO:     10.64.162.106:41372 - "GET /api/users/profile HTTP/1.1" 200 OK
-INFO:     10.64.128.62:40804 - "GET /api/membership/tiers HTTP/1.1" 200 OK
-INFO:     10.64.162.106:41372 - "GET /api/membership/tiers HTTP/1.1" 200 OK
-INFO:     10.64.162.77:41284 - "POST /api/payments/create-depay HTTP/1.1" 200 OK
-INFO:     10.64.201.145:55648 - "POST /api/payments/depay/configuration HTTP/1.1" 200 OK
-INFO:     10.64.201.147:38086 - "GET /api/users/profile HTTP/1.1" 200 OK
-INFO:     10.64.201.145:45862 - "GET /api/users/profile HTTP/1.1" 200 OK
-INFO:     10.64.201.147:38086 - "GET /api/dashboard/stats HTTP/1.1" 200 OK
-INFO:     10.64.201.147:38086 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.178:52358 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.201.145:45862 - "GET /api/dashboard/stats HTTP/1.1" 200 OK
-INFO:     10.64.201.178:52358 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.147:38086 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.201.178:52358 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.201.145:45862 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.201.145:45862 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.201.147:38086 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.201.145:41782 - "GET /api/users/payments?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.145:41782 - "GET /api/users/payments?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.145:33836 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.178:51326 - "GET /api/users/payments?status_filter=confirmed&page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.178:51342 - "GET /api/users/payments?status_filter=confirming&page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.145:41630 - "GET /api/users/payments?status_filter=failed&page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.145:41630 - "GET /api/users/payments?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.145:41630 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.147:55512 - "GET /api/users/payments?status_filter=waiting&page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.147:55512 - "GET /api/users/payments?status_filter=confirming&page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.147:55512 - "GET /api/users/payments?status_filter=failed&page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.178:39690 - "GET /api/users/payments?status_filter=refunded&page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.147:55512 - "GET /api/users/payments?status_filter=expired&page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.147:55310 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.128.9:35178 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.162.106:43802 - "GET /api/users/profile HTTP/1.1" 200 OK
-INFO:     10.64.128.9:55258 - "GET /api/users/profile HTTP/1.1" 200 OK
-INFO:     10.64.128.62:60392 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.128.5:52820 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.162.77:50884 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.162.77:50878 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.128.5:52820 - "GET /api/dashboard/stats HTTP/1.1" 200 OK
-INFO:     10.64.128.9:55258 - "GET /api/dashboard/stats HTTP/1.1" 200 OK
-INFO:     10.64.162.106:43802 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.162.77:50878 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.128.9:55258 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.162.106:43802 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.162.106:43802 - "GET /api/users/payments?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.162.77:50878 - "GET /api/users/payments?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.162.106:46290 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.162.77:41242 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.147:52796 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.145:42726 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.145:58550 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.128.9:46918 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.147:40706 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.178:41468 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.147:33032 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.178:50360 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.156.94:51476 - "POST /api/admin/login HTTP/1.1" 200 OK
-INFO:     10.64.156.79:50426 - "GET /api/admin/notifications HTTP/1.1" 200 OK
-INFO:     10.64.156.79:50426 - "GET /api/admin/notifications HTTP/1.1" 200 OK
-INFO:     10.64.156.94:51476 - "GET /api/admin/dashboard/overview HTTP/1.1" 200 OK
-INFO:     10.64.156.79:50418 - "GET /api/admin/dashboard/overview HTTP/1.1" 200 OK
-INFO:     10.64.156.79:50418 - "GET /api/admin/recent/payments?limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.156.94:51476 - "GET /api/admin/recent/members?limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.156.94:51476 - "GET /api/admin/recent/milestones?limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.156.94:51476 - "GET /api/admin/recent/members?limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.156.79:50418 - "GET /api/admin/recent/tickets?limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.156.79:50418 - "GET /api/admin/recent/payments?limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.156.94:51476 - "GET /api/admin/recent/milestones?limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.156.79:50418 - "GET /api/admin/recent/tickets?limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.156.79:35992 - "GET /api/admin/payments?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.156.94:32848 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.156.94:38670 - "GET /api/admin/notifications HTTP/1.1" 200 OK
-INFO:     10.64.156.79:57844 - "GET /api/admin/escrow?status_filter=pending_review&page=1&limit=50 HTTP/1.1" 200 OK
-INFO:     10.64.156.94:38676 - "GET /api/admin/commissions?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.156.79:57844 - "GET /api/admin/payments?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.156.79:57862 - "GET /api/admin/notifications HTTP/1.1" 200 OK
-INFO:     10.64.201.145:52734 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.156.79:55190 - "GET /api/admin/notifications HTTP/1.1" 200 OK
-INFO:     10.64.201.178:43752 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.162.106:48064 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.162.106:48064 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.128.5:51424 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.128.62:46342 - "GET /api/users/kyc/status HTTP/1.1" 200 OK
-INFO:     10.64.156.79:36416 - "GET /api/admin/notifications HTTP/1.1" 200 OK
-INFO:     10.64.156.94:56210 - "GET /api/admin/members?sort_by=created_at&sort_direction=desc&page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.201.178:36688 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.156.94:50282 - "GET /api/admin/payments?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.156.79:47952 - "GET /api/admin/notifications HTTP/1.1" 200 OK
-INFO:     10.64.201.147:43120 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.156.79:38990 - "GET /api/admin/notifications HTTP/1.1" 200 OK
-INFO:     10.64.156.94:52272 - "GET /api/admin/notifications HTTP/1.1" 200 OK
-INFO:     10.64.201.178:57626 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.156.79:58298 - "GET /api/admin/notifications HTTP/1.1" 200 OK
-INFO:     10.64.156.94:41486 - "GET /api/admin/notifications HTTP/1.1" 200 OK
-INFO:     10.64.201.147:44956 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.156.79:36924 - "GET /api/admin/notifications HTTP/1.1" 200 OK
-INFO:     10.64.201.145:55786 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.156.94:38072 - "GET /api/admin/notifications HTTP/1.1" 200 OK
-INFO:     10.64.156.94:54036 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.156.94:41664 - "GET /api/admin/notifications HTTP/1.1" 200 OK
-INFO:     10.64.201.178:41560 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.156.94:53328 - "GET /api/admin/notifications HTTP/1.1" 200 OK
-INFO:     10.64.156.94:52042 - "GET /api/admin/notifications HTTP/1.1" 200 OK
-INFO:     10.64.201.145:49170 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.156.79:60436 - "GET /api/admin/notifications HTTP/1.1" 200 OK
-INFO:     10.64.156.79:50586 - "GET /api/admin/notifications HTTP/1.1" 200 OK
-INFO:     10.64.201.147:34834 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.156.79:36594 - "GET /api/admin/notifications HTTP/1.1" 200 OK
-INFO:     10.64.156.79:59570 - "GET /api/admin/notifications HTTP/1.1" 200 OK
-INFO:     10.64.201.145:55726 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.156.94:60424 - "GET /api/admin/notifications HTTP/1.1" 200 OK
-INFO:     10.64.156.94:59426 - "GET /api/admin/notifications HTTP/1.1" 200 OK
-INFO:     10.64.201.145:44656 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.156.94:55864 - "GET /api/admin/notifications HTTP/1.1" 200 OK
-INFO:     10.64.156.94:44280 - "GET /api/admin/notifications HTTP/1.1" 200 OK
-INFO:     10.64.201.145:39366 - "GET /api/users/notifications?page=1&limit=10 HTTP/1.1" 200 OK
-INFO:     10.64.156.94:38358 - "GET /api/admin/notifications HTTP/1.1" 200 OK) for errors occurring when the DePay webhook is called.
-        2.  Add detailed logging within the  function in  to trace the incoming , the  object fetched from the database, and the results of the  and  operations.
-        3.  Manually inspect the  and  collections in the MongoDB database after a test payment to verify their state.
-    - **Why fix this issue and what will be achieved with the fix?**: This is a critical business-blocking bug. Fixing it will enable the core functionality of the application: allowing users to purchase subscriptions and have their accounts updated automatically.
+        1.  Locate the  and any similar functions in .
+        2.  Replace the hardcoded Proleads URL in the  parameter with the correct Sendloop URL.
+        3.  Test both the Open Sendloop and Import Leads functionalities to ensure they redirect correctly.
+    - **Why fix this issue and what will be achieved with the fix?**: This is a critical bug blocking all integration with the Sendloop application, which is a core part of the user's workflow for managing drip campaigns and leads.
     - **Status**: IN PROGRESS
-    - **Is recurring issue?**: N
-    - **Should Test frontend/backend/both after fix?**: both
-    - **Blocked on other issue**: None
-
-- **Issue 2**: Subscription expiry date is not displayed on the user dashboard
-    - **Description**: Although the user's subscription tier is not being updated (due to Issue 1), the user also noted that no subscription date is showing on their dashboard at all, even for their existing (pre-purchase) tier.
-    - **Attempted fixes**: None.
-    - **Next debug checklist**:
-        1.  After fixing Issue 1, verify that the  field is correctly set in the  collection for the user.
-        2.  Review the  component in  to ensure the  prop is being correctly passed and rendered. Check the logic that calculates and formats the expiry date.
-    - **Why fix this issue and what will be achieved with the fix?**: This provides essential information to the user about their account status and encourages renewals.
-    - **Status**: NOT STARTED
-    - **Is recurring issue?**: N
-    - **Should Test frontend/backend/both after fix?**: frontend
-    - **Blocked on other issue**: Issue 1: DePay post-payment logic is broken
-
-- **Issue 3**: User is not redirected after a successful payment
-    - **Description**: The DePay payment widget should redirect the user back to their dashboard upon a successful transaction, but it currently does not.
-    - **Attempted fixes**: None.
-    - **Next debug checklist**:
-        1.  Review the frontend code in  where the DePay payment is initiated ( function).
-        2.  Ensure that the  callback for the DePay widget is correctly implemented and configured to trigger a  change or use React Router for navigation.
-    - **Why fix this issue and what will be achieved with the fix?**: Improves user experience by providing clear feedback that the payment was successful and returning them to the application.
-    - **Status**: NOT STARTED
-    - **Is recurring issue?**: N
+    - **Is recurring issue?**: Y
     - **Should Test frontend/backend/both after fix?**: frontend
     - **Blocked on other issue**: None
 
@@ -470,23 +36,28 @@ INFO:     10.64.156.94:38358 - "GET /api/admin/notifications HTTP/1.1" 200 OK) f
 None
 
 **Upcoming and Future Tasks**
-- **Upcoming Tasks**:
-    - **Task 1 (P1)**: Add a Renew button to the user's dashboard to allow them to initiate a new payment for their current subscription tier. This will involve adding a button to the  card in .
+- **Future Tasks**:
+    - **Task 1 (P1)**: Refactor the monolithic  file. The file is over 10,000 lines long and contains the entire application's UI logic, making it difficult to maintain. It should be broken down into a proper component structure (e.g., , , ).
+    - **Task 2 (P2)**: Replace dashboard polling with WebSockets. The user and admin dashboards currently poll for updates every 30 seconds. This should be replaced with a more efficient, real-time WebSocket implementation for notifications and statistics updates.
 
 **Completed work in this session**
 - **List of all completed tasks with file and method name**:
-    - SSO & CSV Export integration with Sendloop implemented (, ).
-    - Admin UI for API Key management created ().
-    - Renamed AutoMailer to Sendloop in UI and documentation.
-    - Created a 6-email marketing drip campaign ().
-    - Implemented a background cron job for subscription reminders ().
-    - Corrected the DePay payment configuration ID ().
-    - Updated all SSO redirect URLs to point to the new Sendloop instance.
+    - **Fixed DePay Payment Workflow**: Resolved a complex series of issues preventing payments from completing. This involved correcting keys in , adding idempotency to the webhook handler ( in ) to prevent duplicate processing, and guiding the user to configure DePay's dashboard correctly.
+    - **Implemented Post-Payment Redirect**: Added a polling mechanism to the  component in  to check for payment completion and automatically redirect the user to their dashboard.
+    - **Added Subscription Expiry Display**: Fixed the  endpoint in  to return the  date, allowing it to be displayed on the user's dashboard.
+    - **Implemented Subscription Renew/Upgrade**: Added a  endpoint and updated the  card in  to include Renew and Change Tier buttons, passing the handler functions down through props to fix scope issues.
+    - **Refined Payment History Pages**: Updated the  and  endpoints in  to exclude pending payments by default, and synchronized the status filter dropdowns in .
+    - **Fixed Admin Revenue Reporting**: Corrected the database query in the  and  endpoints in  to use the correct completed status, fixing the /bin/bash revenue reports.
+    - **Enabled Real-time UI Updates**: Modified the frontend to automatically refresh the user's profile after a renewal and added a 30-second polling interval to the dashboard to reflect new commissions.
+    - **Simplified Referral Message**: Removed the member tier information from the affiliate referral message on the registration page in .
 
 - **Recently completed**:
-    - DePay configuration updated with the correct Integration ID. (DONE)
-    - Background scheduler for subscription reminders implemented. (DONE)
-    - All SSO URLs updated for the new Sendloop instance. (DONE)
+    - Admin Payments page refined to only show completed/failed payments. (DONE)
+    - Affiliate referral link message simplified. (DONE)
+    - Admin dashboard revenue calculations fixed. (DONE)
+    - User dashboard stats now poll for updates every 30 seconds. (DONE)
+    - Idempotency added to payment webhook to prevent multiple admin emails. (DONE)
+    - Subscription expiry date now refreshes in the UI after renewal without a page reload. (DONE)
 
 **Earlier issues found/mentioned but not fixed**
 None
@@ -498,89 +69,76 @@ None
 
 
 **Key Technical Concepts**
-- **Backend**: FastAPI, Motor (async MongoDB driver), Pydantic,  for hashing, PyJWT.
+- **Backend**: FastAPI, Motor (async MongoDB driver), Pydantic, , PyJWT.
 - **Frontend**: React (monolithic ), Hooks (, ), Axios, Tailwind CSS.
 - **Database**: MongoDB.
-- **Scheduling**: A custom background scheduler implemented with .
-- **Payments**: DePay integration for cryptocurrency payments.
-- **External APIs**: Integration with Sendloop (SSO, CSV export) and Rapid Email Verifier.
-- **DevOps**: Managing dependencies with  and , using  for process management.
-- **Security**: JWT for user authentication, API Keys for server-to-server communication.
+- **Payments**: DePay integration (dynamic configuration and webhooks).
+- **External APIs**: Sendloop (SSO & Data Export).
+- **Security**: JWT for authentication, RSA-PSS for signing/verifying DePay API communication.
 
 **key DB schema**
 -   **users**: 
 -   **payments**: 
--   **api_keys**: 
 -   **sso_tokens**: 
--   **scheduler_logs**: 
 
 **changes in tech stack**
 None
 
 **All files of reference**
-- ****: The core FastAPI application. Contains all API endpoints, including the recently added SSO, API key management, and the broken DePay payment callback logic.
-- ****: The monolithic React frontend. Contains all UI components, including the admin dashboard, user dashboard, and payment initiation logic.
-- ****: Contains environment variables, including the , , and the updated .
-- ****: Contains the background task runner, which was recently updated to include a  task.
+-   ****: The core FastAPI application. Contains all API endpoints, including SSO logic, DePay payment handlers, and dashboard statistics.
+-   ****: The monolithic React frontend. Contains all UI components and logic, including the SSO initiation calls that need to be fixed.
+-   ****: Contains environment variables, including the , , and .
+-   ****: A key document that contains the correct URL for the Sendloop application.
 
-**Areas that need refactoring**
-- The  file is extremely large (over 10,000 lines) and contains dozens of components. It desperately needs to be broken down into a proper component structure (e.g., , , ) to improve maintainability.
+**Areas that need refactoring**:
+-   The  file is over 10,000 lines and desperately needs to be broken down into a proper component-based architecture for maintainability.
+-   The periodic 30-second polling on the dashboard for statistics updates is inefficient and should be replaced with a real-time solution like WebSockets.
 
 **key api endpoints**
--   : Webhook endpoint for DePay to confirm payments. **This is the source of the current critical bug.**
--   : Initiates a payment process.
--   : Generates an SSO token for integrating with Sendloop.
--   : Verifies an SSO token from Sendloop.
--   : Creates an API key for integrations.
--   : Returns the currently authenticated user's ID.
+-   : Initiates the SSO flow. The frontend is calling this with an incorrect .
+-   : Webhook endpoint for DePay to confirm payments. This is now working correctly.
+-   : Endpoint for DePay to fetch dynamic payment configurations. This is now working correctly.
+-   : A new endpoint to handle subscription renewals.
+-   : Returns authenticated user data for the frontend, including subscription status.
 
 **Critical Info for New Agent**
-The immediate and highest priority is to fix the broken payment finalization flow. The investigation should start at the  endpoint and its helper function  in . The root cause is likely an error within this function that prevents it from updating the  and  collections in MongoDB after a successful transaction. Check the backend logs carefully for errors during the webhook call.
+The immediate priority is fixing the SSO integration. The correct Sendloop URL is , which was found in the  file. You must find the SSO initiation calls within  (inside the  component) and replace the incorrect hardcoded  with this correct URL. After fixing the SSO flow, all primary objectives from the user will have been addressed, and you should focus on the future refactoring tasks.
 
 **documents created in this job**
-- /app/SSO_CSV_INTEGRATION_PLAN.md
-- /app/AUTOMAILER_INTEGRATION_SETUP.md
-- /app/AUTOMAILER_INTEGRATION_SUMMARY.md
-- /app/HOW_TO_GENERATE_API_KEY.md
-- /app/SENDLOOP_SSO_INTEGRATION.md
-- /app/SENDLOOP_CORRECTED_URLS.md
-- /app/CSV_EXPORT_TO_SENDLOOP_FLOW.md
-- /app/SENDLOOP_IMPORT_IMPLEMENTATION_GUIDE.md
-- /app/PROLEADS_EMAIL_DRIP_CAMPAIGN.md
-- /app/SENDLOOP_URL_UPDATE_REQUIRED.md
-- /app/SUBSCRIPTION_SYSTEM_FIXES.md
-- /app/DEPAY_CONFIGURATION_UPDATED.md
+- /app/DEPAY_PAYMENT_FIX_SUMMARY.md
+- /app/PAYMENT_SYSTEM_STATUS.md
+- /app/DEPAY_INTEGRATION_VERIFICATION.md
+- /app/DEPAY_ISSUE_RESOLUTION.md
+- /app/WEBHOOK_FIX_COMPLETE.md
+- /app/ENABLE_DEPAY_SIGNATURES.md
+- /app/DEPAY_KEY_PAIRS_EXPLAINED.md
+- /app/KEYS_CONFIGURED_CORRECTLY.md
 
 **Last 10 User Messages and any pending user messages**
-1.  **Request**: Create a 6-email drip campaign promoting Proleads. (Completed)
-2.  **Request**: Update the drip campaign with new pricing, commission, and USDC payout details. (Completed)
-3.  **Request**: Update the SSO redirect URL to a new Sendloop instance. (Completed)
-4.  **Bug Report**: Invalid SSO token error after the URL update. (Resolved, was a config issue on Sendloop's side)
-5.  **Bug Report**: SSO fixed, but now there are payment and subscription issues. (In Progress)
-6.  **Information**: Provided the correct DePay configuration and public key. (Completed)
-7.  **Bug Report**: Test payment was successful, but the follow-up logic failed: no redirect, status stuck on Pending, tier not updated, and no expiry date shown. (Current highest priority issue)
-8.  **Clarification**: A message about View Contacts was intended for the Sendloop team and should be ignored. (Acknowledged)
-9.  **Request**: Awaiting user's next message. (None)
-10. **Request**: Generate the summary. (Done)
+1.  **Request**: Refine Admin Payments page to hide Pending payments and clean up status filters. (Completed)
+2.  **Request**: Remove tier information from the affiliate referral link message. (Completed)
+3.  **Bug Report**: SSO flow is broken; it redirects back to Proleads instead of Sendloop. (In Progress)
+4.  **Information**: Provided a document showing the correct Sendloop redirect URL. (Acknowledged, agent is about to act on it)
+5.  **Request**: Generate summary. (Done)
 
 **Project Health Check:**
-- **Broken**: The core payment finalization workflow is non-functional. Users can pay, but their subscriptions are not activated.
+- **Broken**: The SSO integration with the external Sendloop application is non-functional.
 - **Mocked**: None.
 
 **3rd Party Integrations**
-- **DePay** (Payments) — requires User API Key/Configuration ID.
+- **DePay** (Payments) — requires User API Key/Configuration.
 - **Rapid Email Verifier** (Email Validation) — requires User API Key.
 - **Sendloop** (External Application SSO & Data Export) — integration is custom-built via API.
 
 **Testing status**
-- **Testing agent used after significant changes**: YES
+- **Testing agent used after significant changes**: NO
 - **Troubleshoot agent used after agent stuck in loop**: NO
-- **Test files created**: None.
-- **Known regressions**: The payment completion logic is broken.
+- **Test files created**: None
+- **Known regressions**: The SSO functionality, which previously worked, is now broken due to a hardcoded URL.
 
 **Credentials to test flow:**
 - Admin credentials:  / .
-- User accounts need to be created through the signup flow on the frontend.
+- User accounts can be created through the signup flow.
 
 **What agent forgot to execute**
-- The request to add a Renew button for subscriptions (from message #327) was acknowledged but not implemented. The agent focused on fixing the DePay configuration and implementing the reminder cron job instead.</analysis>
+- The agent has not yet implemented the fix for the broken SSO flow, despite having all the necessary information.</analysis>

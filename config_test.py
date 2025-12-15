@@ -463,7 +463,7 @@ class AdminConfigTester:
 
 if __name__ == "__main__":
     # Get backend URL from environment or use default
-    backend_url = "https://payment-flow-70.preview.emergentagent.com"
+    backend_url = "https://marketer-auth-bridge.preview.emergentagent.com"
     
     # Create tester instance
     tester = AdminConfigTester(backend_url)

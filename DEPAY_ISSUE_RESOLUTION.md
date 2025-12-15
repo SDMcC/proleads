@@ -10,7 +10,7 @@ User `testuser1` tried to make a DePay payment and encountered JavaScript error:
 ```
 ERROR
 Script error.
-    at handleError (https://payment-flow-70.preview.emergentagent.com/static/js/bundle.js:119453:58)
+    at handleError (https://marketer-auth-bridge.preview.emergentagent.com/static/js/bundle.js:119453:58)
 ```
 
 ---
@@ -47,7 +47,7 @@ DEPAY_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMI
 
 **After:**
 ```env
-DEPAY_INTEGRATION_ID=f2bfd96b-2ce7-4d74-93d6-6ec805750417
+DEPAY_INTEGRATION_ID=marketer-auth-bridge
 DEPAY_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwk0Ikb8jYeE/essXT/nD..."
 ```
 
@@ -61,7 +61,7 @@ DEPAY_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMI
 
 ### Configuration Endpoint Test ✅
 ```bash
-$ curl -X POST https://payment-flow-70.preview.emergentagent.com/api/payments/depay/configuration \
+$ curl -X POST https://marketer-auth-bridge.preview.emergentagent.com/api/payments/depay/configuration \
   -H "Content-Type: application/json" \
   -d '{"payment_id": "TEST-NEW", "tier": "bronze", "user_address": "0x1234567890123456789012345678901234567890"}'
 
@@ -158,7 +158,7 @@ paytest_1765314860: test tier ✅ UPGRADED
 tail -f /var/log/supervisor/backend.err.log | grep -E "\[DePay"
 
 # Check frontend for errors
-# (open browser console at: https://payment-flow-70.preview.emergentagent.com)
+# (open browser console at: https://marketer-auth-bridge.preview.emergentagent.com)
 
 # Check payment status
 python3 << 'EOF'

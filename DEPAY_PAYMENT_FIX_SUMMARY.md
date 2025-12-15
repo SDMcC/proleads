@@ -114,7 +114,7 @@ This will show all DePay-related log messages in real-time.
 
 ### Step 2: Create a Test User
 
-1. Navigate to: https://payment-flow-70.preview.emergentagent.com
+1. Navigate to: https://marketer-auth-bridge.preview.emergentagent.com
 2. Click "Sign Up"
 3. Fill in the registration form
 4. Use a test wallet address (can be any valid Ethereum address format)
@@ -209,7 +209,7 @@ After payment completion, check:
 **Action:**
 - Verify `DEPAY_INTEGRATION_ID` in `/app/backend/.env` matches DePay dashboard
 - Check DePay dashboard for webhook configuration
-- Verify webhook URL: `https://payment-flow-70.preview.emergentagent.com/api/payments/depay/callback`
+- Verify webhook URL: `https://marketer-auth-bridge.preview.emergentagent.com/api/payments/depay/callback`
 
 ### Scenario 2: Payment Not Found in Database
 
