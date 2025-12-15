@@ -134,143 +134,175 @@ const AdminNotificationPanel = ({ notifications }) => (
 );
 
 const MemberModal = ({ member, onClose, onSave }) => {
-  const [editedTier, setEditedTier] = React.useState(member?.membership_tier);
+  const [editedTier, setEditedTier] = React.useState(member?.member?.membership_tier);
   
   React.useEffect(() => {
-    setEditedTier(member?.membership_tier);
+    setEditedTier(member?.member?.membership_tier);
   }, [member]);
 
   const handleSave = () => {
-    if (editedTier !== member.membership_tier) {
-      onSave({ ...member, membership_tier: editedTier });
+    if (editedTier !== member?.member?.membership_tier) {
+      onSave({ ...member.member, membership_tier: editedTier });
     } else {
       onClose();
     }
   };
 
-  if (!member) return null;
+  if (!member || !member.member) return null;
+
+  const memberData = member.member;
+  const stats = member.stats || {};
+  const sponsor = member.sponsor;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">
-      <div className="bg-gray-900 rounded-xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-2xl font-bold text-white">Member Details</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-white">
+      <div className="bg-gray-900 rounded-xl p-8 max-w-5xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-8">
+          <h3 className="text-3xl font-bold text-white">Member Details</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
             <X className="h-6 w-6" />
           </button>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          {/* Left Column */}
-          <div className="space-y-4">
-            <div>
-              <label className="block text-gray-400 text-sm mb-1">Username</label>
-              <p className="text-white font-medium text-lg">{member.username}</p>
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Left Column - Member Information */}
+          <div>
+            <h4 className="text-xl font-bold text-white mb-4">Member Information</h4>
+            <div className="space-y-4">
+              {/* Tier with dropdown */}
+              <div>
+                <label className="block text-gray-400 text-sm mb-2">Tier:</label>
+                <select
+                  value={editedTier}
+                  onChange={(e) => setEditedTier(e.target.value)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold uppercase focus:outline-none focus:ring-2 focus:ring-blue-400"
+                >
+                  <option value="affiliate">AFFILIATE</option>
+                  <option value="bronze">BRONZE</option>
+                  <option value="silver">SILVER</option>
+                  <option value="gold">GOLD</option>
+                  <option value="test">TEST</option>
+                  <option value="vip_affiliate">VIP AFFILIATE</option>
+                </select>
+                {editedTier !== memberData.membership_tier && (
+                  <p className="text-yellow-400 text-xs mt-1">* Click Save Changes to update tier</p>
+                )}
+              </div>
 
-            <div>
-              <label className="block text-gray-400 text-sm mb-1">Email Address</label>
-              <p className="text-white font-medium">{member.email}</p>
-            </div>
+              <div>
+                <span className="text-gray-400 text-sm">Username: </span>
+                <span className="text-white font-medium">{memberData.username}</span>
+              </div>
 
-            <div>
-              <label className="block text-gray-400 text-sm mb-1">User ID</label>
-              <p className="text-white font-mono text-sm">{member.id}</p>
-            </div>
+              <div>
+                <span className="text-gray-400 text-sm">Email: </span>
+                <span className="text-white font-medium">{memberData.email}</span>
+              </div>
 
-            <div>
-              <label className="block text-gray-400 text-sm mb-1">Wallet Address</label>
-              <p className="text-white font-mono text-xs break-all">{member.wallet_address || 'N/A'}</p>
-            </div>
+              <div>
+                <span className="text-gray-400 text-sm">Sponsor: </span>
+                <span className="text-white font-medium">{sponsor?.username || 'N/A'}</span>
+              </div>
 
-            <div>
-              <label className="block text-gray-400 text-sm mb-1">Referral Code</label>
-              <p className="text-white font-medium">{member.referral_code || 'N/A'}</p>
-            </div>
+              <div>
+                <span className="text-gray-400 text-sm">Joined: </span>
+                <span className="text-white font-medium">
+                  {memberData.created_at ? new Date(memberData.created_at).toLocaleDateString('en-US', {
+                    month: '2-digit',
+                    day: '2-digit', 
+                    year: 'numeric'
+                  }) : 'N/A'}
+                </span>
+              </div>
 
-            <div>
-              <label className="block text-gray-400 text-sm mb-1">Referred By</label>
-              <p className="text-white font-medium">{member.referred_by || 'Direct Signup'}</p>
+              <div>
+                <span className="text-gray-400 text-sm">Subscription Expires: </span>
+                <span className="text-white font-medium">
+                  {memberData.subscription_expires_at ? 
+                    new Date(memberData.subscription_expires_at).toLocaleDateString('en-US', {
+                      month: '2-digit',
+                      day: '2-digit',
+                      year: 'numeric'
+                    }) : 'N/A'}
+                </span>
+              </div>
+
+              <div>
+                <span className="text-gray-400 text-sm block mb-1">Wallet:</span>
+                <span className="text-white font-mono text-xs break-all">{memberData.wallet_address}</span>
+              </div>
+
+              <div>
+                <span className="text-gray-400 text-sm">Status: </span>
+                <span className={`inline-block px-3 py-1 rounded text-sm font-medium ${
+                  memberData.suspended ? 'bg-red-600 text-white' : 'bg-green-600 text-white'
+                }`}>
+                  {memberData.suspended ? 'Suspended' : 'Active'}
+                </span>
+              </div>
+
+              <div>
+                <span className="text-gray-400 text-sm">KYC Status: </span>
+                <span className={`inline-block px-3 py-1 rounded text-sm font-medium uppercase ${
+                  memberData.kyc_status === 'verified' ? 'bg-green-600 text-white' : 
+                  memberData.kyc_status === 'pending' ? 'bg-yellow-600 text-white' :
+                  'bg-gray-600 text-white'
+                }`}>
+                  {memberData.kyc_status || 'UNVERIFIED'}
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* Right Column */}
-          <div className="space-y-4">
-            <div>
-              <label className="block text-gray-400 text-sm mb-2">Membership Tier</label>
-              <select
-                value={editedTier}
-                onChange={(e) => setEditedTier(e.target.value)}
-                className="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-red-400"
-              >
-                <option value="affiliate">Affiliate</option>
-                <option value="bronze">Bronze</option>
-                <option value="silver">Silver</option>
-                <option value="gold">Gold</option>
-                <option value="test">Test</option>
-                <option value="vip_affiliate">VIP Affiliate</option>
-              </select>
-              {editedTier !== member.membership_tier && (
-                <p className="text-yellow-400 text-xs mt-1">* Tier will be updated when you save</p>
-              )}
-            </div>
+          {/* Right Column - Statistics */}
+          <div>
+            <h4 className="text-xl font-bold text-white mb-4">Statistics</h4>
+            <div className="space-y-4">
+              <div>
+                <span className="text-gray-400 text-sm">Total Referrals: </span>
+                <span className="text-white font-medium text-lg">{stats.total_referrals || 0}</span>
+              </div>
 
-            <div>
-              <label className="block text-gray-400 text-sm mb-1">Total Referrals</label>
-              <p className="text-white font-medium text-lg">{member.total_referrals || 0}</p>
-            </div>
+              <div>
+                <span className="text-gray-400 text-sm">Total Earnings: </span>
+                <span className="text-white font-medium text-lg">${stats.total_earnings?.toFixed(2) || '0.00'}</span>
+              </div>
 
-            <div>
-              <label className="block text-gray-400 text-sm mb-1">Total Earnings</label>
-              <p className="text-green-400 font-bold text-xl">${member.total_earnings?.toFixed(2) || '0.00'}</p>
-            </div>
-
-            <div>
-              <label className="block text-gray-400 text-sm mb-1">Member Since</label>
-              <p className="text-white font-medium">
-                {member.created_at ? new Date(member.created_at).toLocaleDateString('en-US', { 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                }) : 'N/A'}
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-gray-400 text-sm mb-1">Subscription Expires</label>
-              <p className="text-white font-medium">
-                {member.subscription_expires_at ? 
-                  new Date(member.subscription_expires_at).toLocaleDateString('en-US', { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  }) : 'N/A'}
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-gray-400 text-sm mb-1">Account Status</label>
-              <span className={`inline-block px-3 py-1 rounded text-sm font-medium ${
-                member.suspended ? 'bg-red-600 text-white' : 'bg-green-600 text-white'
-              }`}>
-                {member.suspended ? 'Suspended' : 'Active'}
-              </span>
+              <div>
+                <span className="text-gray-400 text-sm">Total Payments: </span>
+                <span className="text-white font-medium text-lg">{stats.total_payments || 0}</span>
+              </div>
             </div>
           </div>
         </div>
         
-        <div className="flex gap-4 pt-4 border-t border-gray-700">
+        <div className="flex gap-4 pt-6 mt-6 border-t border-gray-700">
+          {editedTier !== memberData.membership_tier && (
+            <button
+              onClick={handleSave}
+              className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium"
+            >
+              Save Changes
+            </button>
+          )}
+          {memberData.suspended ? (
+            <button
+              className="px-8 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium"
+            >
+              Unsuspend Member
+            </button>
+          ) : (
+            <button
+              className="px-8 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium"
+            >
+              Suspend Member
+            </button>
+          )}
           <button
             onClick={onClose}
-            className="flex-1 px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors font-medium"
+            className="px-8 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors font-medium ml-auto"
           >
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            className="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium"
-          >
-            {editedTier !== member.membership_tier ? 'Save Changes' : 'Close'}
+            Close
           </button>
         </div>
       </div>
