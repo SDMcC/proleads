@@ -93,6 +93,16 @@ import AccountTab from './components/dashboard/tabs/AccountTab';
 import NotificationSettingsTab from './components/dashboard/tabs/NotificationSettingsTab';
 import KYCVerificationTab from './components/dashboard/tabs/KYCVerificationTab';
 import LeadsTab from './components/dashboard/tabs/LeadsTab';
+import AdminProtectedRoute from './components/admin/AdminProtectedRoute';
+import AdminLoginPage from './pages/admin/AdminLoginPage';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import LeadsManagementTab from './components/admin/tabs/LeadsManagementTab';
+import AdminTicketsTab from './components/admin/tabs/AdminTicketsTab';
+import IntegrationsTab from './components/admin/tabs/IntegrationsTab';
+import ConfigurationTab from './components/admin/tabs/ConfigurationTab';
+import AdminMilestonesTab from './components/admin/tabs/AdminMilestonesTab';
+import AnalyticsTab from './components/admin/tabs/AnalyticsTab';
+import AdminKYCTab from './components/admin/tabs/AdminKYCTab';
 
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
