@@ -604,5 +604,6 @@ function LandingPage() {
       <Footer />
     </div>
   );
+}
 
 export default TermsPage;

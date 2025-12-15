@@ -1,9 +1,10 @@
 import React from 'react';
 import { Sun, Moon, Users, ExternalLink, DollarSign, CheckCircle, Zap, TrendingUp, Award, Target, Activity } from 'lucide-react';
 import Footer from '../components/landing/Footer';
+import { useDarkMode } from '../DarkModeContext';
 
 function AffiliatesPage() {
-  const { isDark, toggleDarkMode } = require('./DarkModeContext').useDarkMode();
+  const { isDark, toggleDarkMode } = useDarkMode();
   
   return (
     <div className={`min-h-screen transition-colors duration-300 ${isDark ? 'dark bg-dark' : 'bg-white'}`}>
