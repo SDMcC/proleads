@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Settings } from 'lucide-react';
+import { User, Settings, Bell, Shield, UserX } from 'lucide-react';
 
 function AccountTab({ user, accountSubTab, setAccountSubTab }) {
   return (
