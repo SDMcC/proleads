@@ -268,9 +268,6 @@ function ReferralRedirect() {
       </div>
     </div>
 // ProtectedRoute Component - Now imported from components/auth/ProtectedRoute.js
-  
-  return user ? children : <Navigate to="/" />;
-}
 
 // LoginModal Component - Now imported from components/auth/LoginModal.js
 // EnhancedMembershipTiers Component - Now imported from components/landing/EnhancedMembershipTiers.js
