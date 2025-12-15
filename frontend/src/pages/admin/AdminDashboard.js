@@ -69,28 +69,104 @@ const AdminNotificationPanel = ({ notifications }) => (
   </div>
 );
 
-const MemberModal = ({ member, onClose, onSave }) => (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
-    <div className="bg-gray-900 rounded-xl p-6 max-w-md w-full">
-      <h3 className="text-xl font-bold text-white mb-4">Member Details</h3>
-      <p className="text-gray-400 mb-4">Username: {member?.username}</p>
-      <div className="flex space-x-4">
-        <button
-          onClick={onClose}
-          className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg"
-        >
-          Close
-        </button>
-        <button
-          onClick={onSave}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
-        >
-          Save
-        </button>
+const MemberModal = ({ member, onClose, onSave }) => {
+  const [editedMember, setEditedMember] = React.useState(member);
+  
+  React.useEffect(() => {
+    setEditedMember(member);
+  }, [member]);
+
+  const handleSave = () => {
+    onSave(editedMember);
+  };
+
+  if (!member) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
+      <div className="bg-gray-900 rounded-xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <h3 className="text-2xl font-bold text-white mb-6">Member Details</h3>
+        
+        <div className="space-y-4 mb-6">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-gray-400 text-sm mb-1">Username</label>
+              <p className="text-white font-medium">{member.username}</p>
+            </div>
+            <div>
+              <label className="block text-gray-400 text-sm mb-1">Email</label>
+              <p className="text-white font-medium">{member.email}</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-gray-400 text-sm mb-1">User ID</label>
+              <p className="text-white font-medium">{member.user_id}</p>
+            </div>
+            <div>
+              <label className="block text-gray-400 text-sm mb-1">Wallet Address</label>
+              <p className="text-white font-medium text-xs break-all">{member.address || 'N/A'}</p>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-gray-400 text-sm mb-2">Membership Tier</label>
+            <select
+              value={editedMember?.membership_tier || member.membership_tier}
+              onChange={(e) => setEditedMember({...editedMember, membership_tier: e.target.value})}
+              className="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white"
+            >
+              <option value="affiliate">Affiliate</option>
+              <option value="silver">Silver</option>
+              <option value="gold">Gold</option>
+              <option value="platinum">Platinum</option>
+              <option value="test">Test</option>
+              <option value="vip_affiliate">VIP Affiliate</option>
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-gray-400 text-sm mb-1">Total Earnings</label>
+              <p className="text-white font-medium">${member.total_earnings?.toFixed(2) || '0.00'}</p>
+            </div>
+            <div>
+              <label className="block text-gray-400 text-sm mb-1">Referral Code</label>
+              <p className="text-white font-medium">{member.referral_code || 'N/A'}</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-gray-400 text-sm mb-1">Created At</label>
+              <p className="text-white font-medium">{member.created_at ? new Date(member.created_at).toLocaleDateString() : 'N/A'}</p>
+            </div>
+            <div>
+              <label className="block text-gray-400 text-sm mb-1">Subscription Expires</label>
+              <p className="text-white font-medium">{member.subscription_expires_at ? new Date(member.subscription_expires_at).toLocaleDateString() : 'N/A'}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex space-x-4">
+          <button
+            onClick={onClose}
+            className="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+          >
+            Close
+          </button>
+          <button
+            onClick={handleSave}
+            className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+          >
+            Save Changes
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 function AdminDashboard() {
   const [stats, setStats] = useState(null);
