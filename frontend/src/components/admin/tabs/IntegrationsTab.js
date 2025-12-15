@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Settings, Plus, RefreshCcw } from 'lucide-react';
+import { Settings, Plus, RefreshCcw, Key, Link, RotateCw, Trash2, CheckCircle, Copy } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API_URL = `${BACKEND_URL}/api`;
