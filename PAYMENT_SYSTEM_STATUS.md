@@ -111,7 +111,7 @@ I've added comprehensive logging to both payment processors:
 - **Likelihood**: Medium
 - **Cause**: If user configured DePay direct integration, webhook might not be set up
 - **Solution**: Configure DePay webhook URL in DePay dashboard
-- **Required Webhook URL**: `https://marketer-auth-bridge.preview.emergentagent.com/api/payments/depay/callback`
+- **Required Webhook URL**: `https://proleads-refactor.preview.emergentagent.com/api/payments/depay/callback`
 
 #### Scenario D: Network/Firewall Issue
 - **Likelihood**: Low
@@ -206,7 +206,7 @@ If you want to use DePay's direct integration instead of PayGate.to:
 ### Configuration:
 1. In DePay dashboard, set webhook URL to:
    ```
-   https://marketer-auth-bridge.preview.emergentagent.com/api/payments/depay/callback
+   https://proleads-refactor.preview.emergentagent.com/api/payments/depay/callback
    ```
 
 2. Ensure these environment variables are set in `/app/backend/.env`:
@@ -218,7 +218,7 @@ If you want to use DePay's direct integration instead of PayGate.to:
 
 3. Test the webhook endpoint:
    ```bash
-   curl -X POST https://marketer-auth-bridge.preview.emergentagent.com/api/payments/depay/callback \
+   curl -X POST https://proleads-refactor.preview.emergentagent.com/api/payments/depay/callback \
      -H "Content-Type: application/json" \
      -d '{"test": "data"}'
    ```

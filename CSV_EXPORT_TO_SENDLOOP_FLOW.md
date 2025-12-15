@@ -32,7 +32,7 @@ const userResponse = await axios.get(`${API_URL}/users/me`, {
 const userId = userResponse.data.user_id;
 
 // 2. Build redirect URL with file information
-const redirectUrl = `https://marketer-auth-bridge.preview.emergentagent.com/import?user_id=${userId}&file_id=${file.file_id}&source=proleads`;
+const redirectUrl = `https://proleads-refactor.preview.emergentagent.com/import?user_id=${userId}&file_id=${file.file_id}&source=proleads`;
 
 // 3. Initiate SSO with this redirect URL
 const response = await axios.post(
@@ -50,7 +50,7 @@ window.open(response.data.redirect_url, '_blank');
 
 **Resulting URL:**
 ```
-https://marketer-auth-bridge.preview.emergentagent.com/import?user_id=user-123&file_id=csv-456&source=proleads&sso_token=eyJ...
+https://proleads-refactor.preview.emergentagent.com/import?user_id=user-123&file_id=csv-456&source=proleads&sso_token=eyJ...
 ```
 
 ---
@@ -70,7 +70,7 @@ const source = urlParams.get('source');
 
 2. **Verify SSO token and log user in:**
 ```javascript
-const response = await fetch('https://marketer-auth-bridge.preview.emergentagent.com/api/sso/verify', {
+const response = await fetch('https://proleads-refactor.preview.emergentagent.com/api/sso/verify', {
   method: 'POST',
   headers: {
     'X-API-Key': 'sendloop_live_key_yalmQ6YGLT2PYPTAfvkHMuHbqJkw98Z1NFFYeWleuC8',
@@ -89,7 +89,7 @@ if (valid) {
 
 3. **Fetch CSV data from Proleads:**
 ```javascript
-const csvResponse = await fetch('https://marketer-auth-bridge.preview.emergentagent.com/api/integrations/csv-export', {
+const csvResponse = await fetch('https://proleads-refactor.preview.emergentagent.com/api/integrations/csv-export', {
   method: 'POST',
   headers: {
     'X-API-Key': 'sendloop_live_key_yalmQ6YGLT2PYPTAfvkHMuHbqJkw98Z1NFFYeWleuC8',
@@ -392,25 +392,25 @@ async def import_leads_to_sendloop(user_id, csv_content, metadata):
 ```bash
 # 1. Generate SSO token with file info
 USER_TOKEN="<user_jwt_token>"
-curl -X POST "https://marketer-auth-bridge.preview.emergentagent.com/api/sso/initiate" \
+curl -X POST "https://proleads-refactor.preview.emergentagent.com/api/sso/initiate" \
   -H "Authorization: Bearer $USER_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "target_app": "sendloop",
-    "redirect_url": "https://marketer-auth-bridge.preview.emergentagent.com/import?user_id=user-123&file_id=csv-456&source=proleads"
+    "redirect_url": "https://proleads-refactor.preview.emergentagent.com/import?user_id=user-123&file_id=csv-456&source=proleads"
   }'
 
 # 2. Extract SSO token from response
 SSO_TOKEN="<token_from_step_1>"
 
 # 3. Verify token (what Sendloop does)
-curl -X POST "https://marketer-auth-bridge.preview.emergentagent.com/api/sso/verify" \
+curl -X POST "https://proleads-refactor.preview.emergentagent.com/api/sso/verify" \
   -H "X-API-Key: sendloop_live_key_yalmQ6YGLT2PYPTAfvkHMuHbqJkw98Z1NFFYeWleuC8" \
   -H "Content-Type: application/json" \
   -d "{\"sso_token\":\"$SSO_TOKEN\"}"
 
 # 4. Fetch CSV (what Sendloop does)
-curl -X POST "https://marketer-auth-bridge.preview.emergentagent.com/api/integrations/csv-export" \
+curl -X POST "https://proleads-refactor.preview.emergentagent.com/api/integrations/csv-export" \
   -H "X-API-Key: sendloop_live_key_yalmQ6YGLT2PYPTAfvkHMuHbqJkw98Z1NFFYeWleuC8" \
   -H "Content-Type: application/json" \
   -d '{

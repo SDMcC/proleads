@@ -382,7 +382,7 @@ class SSOCSVIntegrationTester:
 
 if __name__ == "__main__":
     # Get backend URL from environment or use default
-    backend_url = os.getenv("REACT_APP_BACKEND_URL", "https://marketer-auth-bridge.preview.emergentagent.com")
+    backend_url = os.getenv("REACT_APP_BACKEND_URL", "https://proleads-refactor.preview.emergentagent.com")
     
     # Initialize tester
     tester = SSOCSVIntegrationTester(backend_url)

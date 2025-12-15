@@ -37,7 +37,7 @@ onClick={async () => {
     `${API_URL}/sso/initiate`,
     {
       target_app: 'sendloop',
-      redirect_url: 'https://marketer-auth-bridge.preview.emergentagent.com/dashboard'
+      redirect_url: 'https://proleads-refactor.preview.emergentagent.com/dashboard'
     },
     { headers: { 'Authorization': `Bearer ${token}` } }
   );
@@ -55,7 +55,7 @@ onClick={async () => {
 ```json
 {
   "target_app": "sendloop",
-  "redirect_url": "https://marketer-auth-bridge.preview.emergentagent.com/dashboard"
+  "redirect_url": "https://proleads-refactor.preview.emergentagent.com/dashboard"
 }
 ```
 
@@ -64,7 +64,7 @@ onClick={async () => {
 {
   "sso_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "expires_at": "2025-01-27T10:45:00Z",
-  "redirect_url": "https://marketer-auth-bridge.preview.emergentagent.com/dashboard?sso_token=eyJ..."
+  "redirect_url": "https://proleads-refactor.preview.emergentagent.com/dashboard?sso_token=eyJ..."
 }
 ```
 
@@ -114,7 +114,7 @@ onClick={async () => {
 
 When a user is redirected from Proleads, Sendloop receives:
 ```
-https://marketer-auth-bridge.preview.emergentagent.com/dashboard?sso_token=eyJ...
+https://proleads-refactor.preview.emergentagent.com/dashboard?sso_token=eyJ...
 ```
 
 ### Step 2: Extract and Verify Token
@@ -271,7 +271,7 @@ fetch('https://proleads.network/api/sso/initiate', {
   },
   body: JSON.stringify({
     target_app: 'sendloop',
-    redirect_url: 'https://marketer-auth-bridge.preview.emergentagent.com/dashboard'
+    redirect_url: 'https://proleads-refactor.preview.emergentagent.com/dashboard'
   })
 }).then(r => r.json()).then(console.log);
 ```
@@ -322,7 +322,7 @@ https://sendloop.yourdomain.com
 
 **Preview URL:**
 ```
-https://marketer-auth-bridge.preview.emergentagent.com/dashboard
+https://proleads-refactor.preview.emergentagent.com/dashboard
 ```
 
 ---

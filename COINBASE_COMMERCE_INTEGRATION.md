@@ -18,7 +18,7 @@
 
 3. **New Webhook Handler**
    - Endpoint: `POST /api/webhooks/coinbase-commerce`
-   - Webhook URL configured: `https://marketer-auth-bridge.preview.emergentagent.com/api/webhooks/coinbase-commerce`
+   - Webhook URL configured: `https://proleads-refactor.preview.emergentagent.com/api/webhooks/coinbase-commerce`
    - HMAC-SHA256 signature verification for security
    - Handles events:
      - `charge:pending` - Payment initiated
@@ -87,7 +87,7 @@ COINBASE_COMMERCE_WEBHOOK_SECRET=affnet-dashboard-1
 ### Webhook Configuration
 **Preview Environment:**
 ```
-URL: https://marketer-auth-bridge.preview.emergentagent.com/api/webhooks/coinbase-commerce
+URL: https://proleads-refactor.preview.emergentagent.com/api/webhooks/coinbase-commerce
 Secret: 51a55e1b-f898-4f35-b622-0f39055db775
 ```
 

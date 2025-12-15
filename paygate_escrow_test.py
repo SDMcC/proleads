@@ -66,7 +66,7 @@ def main():
     print('🚀 COMPREHENSIVE PAYGATE.TO & ESCROW MANAGEMENT TESTING')
     print('=' * 80)
 
-    backend_url = 'https://marketer-auth-bridge.preview.emergentagent.com'
+    backend_url = 'https://proleads-refactor.preview.emergentagent.com'
     tester = PayGateEscrowTester(backend_url)
 
     # Get admin token

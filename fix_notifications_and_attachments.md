@@ -14,7 +14,7 @@ b. New referrals
 c. Lead distribution
 
 ## 4. Wrong URL in email notifications
-- Issue: Using `https://marketer-auth-bridge.preview.emergentagent.com`
+- Issue: Using `https://proleads-refactor.preview.emergentagent.com`
 - Should be: `https://proleads.network`
 - Solution: Replace hardcoded URL with environment variable or production URL
 
