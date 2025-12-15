@@ -1267,65 +1267,16 @@ function Dashboard() {
                 <Shield className="h-5 w-5" />
                 <span>Complete KYC Now</span>
               </button>
-function RecentPayments() {
-          // Start polling for payment status
-          const pollInterval = setInterval(async () => {
-            try {
-              const statusResponse = await axios.get(`${API_URL}/payments/${paymentInfo.payment_id}`);
-              console.log('Payment status check:', statusResponse.data.status);
-              
-              if (statusResponse.data.status === 'completed') {
-                clearInterval(pollInterval);
-                console.log('Payment completed! Redirecting to dashboard...');
-                setTimeout(() => {
-                  window.location.href = '/dashboard';
-                }, 1000);
-              }
-            } catch (pollError) {
-              console.error('Status poll error:', pollError);
-            }
-          }, 3000); // Check every 3 seconds
-          
-          // Stop polling after 5 minutes (failsafe)
-          setTimeout(() => clearInterval(pollInterval), 300000);
-          
-          await window.DePayWidgets.Payment({
-            integration: paymentInfo.integration_id,
-            payload: {
-              payment_id: paymentInfo.payment_id,
-              tier: paymentInfo.tier,
-              user_address: paymentInfo.user_address
-            },
-            success: () => {
-              // Payment successful - polling will handle redirect
-              console.log('DePay widget success callback triggered');
-            },
-            error: (error) => {
-              // Payment failed
-              clearInterval(pollInterval);
-              console.error('Payment failed:', error);
-              alert('Payment failed. Please try again.');
-            },
-            close: () => {
-              // Widget closed - keep polling in case payment completed
-              console.log('Payment widget closed');
-            }
-          });
-          
-          console.log('DePay widget opened successfully for payment:', paymentInfo.payment_id);
-        } catch (widgetError) {
-          console.error('DePay widget error:', widgetError);
-          alert('Payment widget error: ' + widgetError.message);
-        }
-      }
-    } catch (error) {
-      console.error('Payment creation failed:', error);
-      alert('Payment creation failed. Please try again.');
-      setShowPaymentModal(false);
-    } finally {
-      setLoading(false);
-    }
-  };
+              <button
+                onClick={() => setShowKYCModal(false)}
+                className="w-full px-6 py-3 bg-transparent border-2 border-gray-500 hover:border-gray-400 text-gray-300 hover:text-white rounded-lg font-bold transition-all duration-300"
+              >
+                I'll Do This Later
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
   const currentTier = tiers[selectedTier];
 
