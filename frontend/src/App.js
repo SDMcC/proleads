@@ -75,6 +75,14 @@ import TermsPage from './pages/TermsPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import LoginModal from './components/auth/LoginModal';
 import RegisterPage from './pages/RegisterPage';
+import { getTierDisplayName } from './utils/helpers';
+import KYCStatsRow from './components/dashboard/KYCStatsRow';
+import KYCEarningsCard from './components/dashboard/KYCEarningsCard';
+import OverviewTab from './components/dashboard/tabs/OverviewTab';
+import NetworkTreeTab from './components/dashboard/tabs/NetworkTreeTab';
+import AffiliateToolsTab from './components/dashboard/tabs/AffiliateToolsTab';
+import EarningsTab from './components/dashboard/tabs/EarningsTab';
+import PaymentHistoryTab from './components/dashboard/tabs/PaymentHistoryTab';
 
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
