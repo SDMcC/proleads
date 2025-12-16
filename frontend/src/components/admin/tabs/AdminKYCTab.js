@@ -7,20 +7,19 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const KYCDocumentImage = ({ filename, alt }) => {
   if (!filename) return null;
   
-  // Images are stored on FTP server at: https://files.proleads.network/uploads/kyc_documents/
-  // Filename is just the file name (e.g., "0x123_id_document_abc123.jpg")
+  // Images are actually stored at: https://files.proleads.network/uploads/files.proleads.network/uploads/kyc_documents/
+  // This is due to FTP upload directory structure
   let imageUrl;
   
   if (filename.startsWith('http')) {
     // Already a full URL
     imageUrl = filename;
-  } else if (filename.includes('kyc_documents/')) {
-    // Filename includes path, just add base URL
-    imageUrl = `https://files.proleads.network/uploads/${filename}`;
   } else {
-    // Just filename, add full path
-    imageUrl = `https://files.proleads.network/uploads/kyc_documents/${filename}`;
+    // Just filename, add the actual FTP path where images are stored
+    imageUrl = `https://files.proleads.network/uploads/files.proleads.network/uploads/kyc_documents/${filename}`;
   }
+  
+  console.log('Loading KYC image from:', imageUrl);
   
   return (
     <img 
