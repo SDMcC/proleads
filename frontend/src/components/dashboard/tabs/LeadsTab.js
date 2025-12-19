@@ -222,10 +222,9 @@ function LeadsTab() {
                                 const userResponse = await axios.get(`${API_URL}/users/me`, {
                                   headers: { 'Authorization': `Bearer ${token}` }
                                 });
-                                const userId = userResponse.data.user_id;
-                                
                                 // Initiate SSO with file information in redirect URL
-                                const redirectUrl = `https://drip-campaign-hub.preview.emergentagent.com/import?user_id=${userId}&file_id=${file.file_id}&source=proleads`;
+                                // The backend will append sso_token automatically
+                                const redirectUrl = `https://drip-campaign-hub.preview.emergentagent.com/import?file_id=${file.file_id}`;
                                 
                                 const response = await axios.post(
                                   `${API_URL}/sso/initiate`,
