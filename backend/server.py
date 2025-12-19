@@ -8428,10 +8428,15 @@ async def sso_initiate(
             "used_at": None
         })
         
-        # Build redirect URL
-        redirect_url = f"{request.redirect_url}?sso_token={sso_token}"
+        # Build redirect URL with sso_token first
         if "?" in request.redirect_url:
-            redirect_url = f"{request.redirect_url}&sso_token={sso_token}"
+            # Split base URL and existing query params
+            base_url, existing_params = request.redirect_url.split("?", 1)
+            # Put sso_token first, then existing params
+            redirect_url = f"{base_url}?sso_token={sso_token}&{existing_params}"
+        else:
+            # No existing params, just add sso_token
+            redirect_url = f"{request.redirect_url}?sso_token={sso_token}"
         
         logger.info(f"SSO token generated for user {current_user['username']} -> {request.target_app}")
         
