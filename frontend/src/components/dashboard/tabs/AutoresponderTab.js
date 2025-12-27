@@ -14,7 +14,7 @@ function AutoresponderTab() {
         `${API_URL}/sso/initiate`,
         {
           target_app: 'sendloop',
-          redirect_url: 'https://sendloop-bugs.preview.emergentagent.com/dashboard'
+          redirect_url: 'https://marketing-hub-162.preview.emergentagent.com/dashboard'
         },
         { headers: { 'Authorization': `Bearer ${token}` } }
       );

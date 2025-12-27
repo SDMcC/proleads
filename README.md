@@ -333,8 +333,8 @@ The platform integrates with Sendloop for email marketing via SSO:
 - Users are automatically logged into Sendloop
 
 **Endpoints:**
-- Dashboard: `https://sendloop-bugs.preview.emergentagent.com/dashboard?sso_token=<TOKEN>`
-- CSV Import: `https://sendloop-bugs.preview.emergentagent.com/import?sso_token=<TOKEN>&file_id=<FILE_ID>`
+- Dashboard: `https://marketing-hub-162.preview.emergentagent.com/dashboard?sso_token=<TOKEN>`
+- CSV Import: `https://marketing-hub-162.preview.emergentagent.com/import?sso_token=<TOKEN>&file_id=<FILE_ID>`
 
 See `SENDLOOP_URL_UPDATE_AFTER_FORK.md` for detailed SSO configuration.
 

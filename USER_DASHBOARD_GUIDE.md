@@ -106,7 +106,7 @@ The Proleads user dashboard is a comprehensive control center where members mana
 
 **Integration:**
 - Clicking "Export to Sendloop" initiates SSO and redirects to Sendloop with file_id
-- URL format: `https://sendloop-bugs.preview.emergentagent.com/import?sso_token=<TOKEN>&file_id=<FILE_ID>`
+- URL format: `https://marketing-hub-162.preview.emergentagent.com/import?sso_token=<TOKEN>&file_id=<FILE_ID>`
 
 ---
 
@@ -469,7 +469,7 @@ This section contains 3 sub-tabs accessible via expandable menu:
 
 **Technical:**
 - Clicking button calls `/api/sso/initiate`
-- Redirects to: `https://sendloop-bugs.preview.emergentagent.com/dashboard?sso_token=<TOKEN>`
+- Redirects to: `https://marketing-hub-162.preview.emergentagent.com/dashboard?sso_token=<TOKEN>`
 - Auto-login on Sendloop side
 
 ---

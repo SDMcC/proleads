@@ -463,7 +463,7 @@ class AdminConfigTester:
 
 if __name__ == "__main__":
     # Get backend URL from environment or use default
-    backend_url = "https://proleads-refactor.preview.emergentagent.com"
+    backend_url = "https://marketing-hub-162.preview.emergentagent.com"
     
     # Create tester instance
     tester = AdminConfigTester(backend_url)

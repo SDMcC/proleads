@@ -53,7 +53,7 @@ The Proleads Network uses **DePay** as the ONLY payment processor. Here's how it
 ## DePay Endpoints Configuration
 
 ### 1. Configuration Endpoint (Dynamic Payment Setup)
-**URL**: `https://proleads-refactor.preview.emergentagent.com/api/payments/depay/configuration`
+**URL**: `https://marketing-hub-162.preview.emergentagent.com/api/payments/depay/configuration`
 **Method**: POST
 **Called By**: DePay widget during payment initialization
 
@@ -90,7 +90,7 @@ The Proleads Network uses **DePay** as the ONLY payment processor. Here's how it
 **Status**: ✅ **VERIFIED WORKING**
 ```bash
 # Test result:
-$ curl -X POST https://proleads-refactor.preview.emergentagent.com/api/payments/depay/configuration \
+$ curl -X POST https://marketing-hub-162.preview.emergentagent.com/api/payments/depay/configuration \
   -H "Content-Type: application/json" \
   -d '{"payment_id": "test-123", "tier": "test", "user_address": "0x1234567890123456789012345678901234567890"}'
 
@@ -98,7 +98,7 @@ Response: {"accept":[{"blockchain":"polygon","amount":2,"token":"0x3c499c542cEF5
 ```
 
 ### 2. Callback Endpoint (Payment Confirmation Webhook)
-**URL**: `https://proleads-refactor.preview.emergentagent.com/api/payments/depay/callback`
+**URL**: `https://marketing-hub-162.preview.emergentagent.com/api/payments/depay/callback`
 **Method**: POST
 **Called By**: DePay after successful payment
 
@@ -144,13 +144,13 @@ Response: {"accept":[{"blockchain":"polygon","amount":2,"token":"0x3c499c542cEF5
 
 1. **Configuration Endpoint**:
    ```
-   https://proleads-refactor.preview.emergentagent.com/api/payments/depay/configuration
+   https://marketing-hub-162.preview.emergentagent.com/api/payments/depay/configuration
    ```
    ⚠️ Note: You provided URL with `//api` (double slash) - make sure it's single slash `/api` in DePay dashboard
 
 2. **Callback Endpoint** (Webhook):
    ```
-   https://proleads-refactor.preview.emergentagent.com/api/payments/depay/callback
+   https://marketing-hub-162.preview.emergentagent.com/api/payments/depay/callback
    ```
 
 3. **Integration ID**: 
@@ -236,7 +236,7 @@ tail -f /var/log/supervisor/backend.err.log | grep -E "\[DePay"
 **Status**: PASSED
 
 ```bash
-curl -X POST https://proleads-refactor.preview.emergentagent.com/api/payments/depay/configuration \
+curl -X POST https://marketing-hub-162.preview.emergentagent.com/api/payments/depay/configuration \
   -H "Content-Type: application/json" \
   -d '{
     "payment_id": "TEST-12345",
@@ -252,7 +252,7 @@ curl -X POST https://proleads-refactor.preview.emergentagent.com/api/payments/de
 **Status**: SECURED
 
 ```bash
-curl -X POST https://proleads-refactor.preview.emergentagent.com/api/payments/depay/callback \
+curl -X POST https://marketing-hub-162.preview.emergentagent.com/api/payments/depay/callback \
   -H "Content-Type: application/json" \
   -d '{"test": "data"}'
 ```
@@ -264,7 +264,7 @@ curl -X POST https://proleads-refactor.preview.emergentagent.com/api/payments/de
 **Status**: NEEDS USER TESTING
 
 **Steps**:
-1. Navigate to https://proleads-refactor.preview.emergentagent.com
+1. Navigate to https://marketing-hub-162.preview.emergentagent.com
 2. Sign up new user
 3. Go to payment page
 4. Select "Test" tier ($2)
@@ -431,7 +431,7 @@ EOF
 ### 4. Check Network Connectivity
 ```bash
 # Test if DePay can reach callback endpoint
-curl -X POST https://proleads-refactor.preview.emergentagent.com/api/payments/depay/callback \
+curl -X POST https://marketing-hub-162.preview.emergentagent.com/api/payments/depay/callback \
   -H "Content-Type: application/json" \
   -d '{"test": "connectivity"}' \
   -v

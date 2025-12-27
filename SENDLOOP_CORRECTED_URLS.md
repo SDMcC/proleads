@@ -18,7 +18,7 @@ https://proleads.network/api/sso/verify
 
 **Preview Environment:**
 ```
-https://proleads-refactor.preview.emergentagent.com/api/sso/verify
+https://marketing-hub-162.preview.emergentagent.com/api/sso/verify
 ```
 
 **Production Environment:** (Update when deployed)
@@ -48,7 +48,7 @@ sendloop_live_key_yalmQ6YGLT2PYPTAfvkHMuHbqJkw98Z1NFFYeWleuC8
 ## Verified Working Test
 
 ```bash
-curl -X POST "https://proleads-refactor.preview.emergentagent.com/api/sso/verify" \
+curl -X POST "https://marketing-hub-162.preview.emergentagent.com/api/sso/verify" \
   -H "X-API-Key: sendloop_live_key_yalmQ6YGLT2PYPTAfvkHMuHbqJkw98Z1NFFYeWleuC8" \
   -H "Content-Type: application/json" \
   -d '{"sso_token":"test"}'
@@ -76,7 +76,7 @@ curl -X POST "https://proleads-refactor.preview.emergentagent.com/api/sso/verify
 PROLEADS_API_URL=https://proleads.network
 
 # ✅ NEW (CORRECT)
-PROLEADS_API_URL=https://proleads-refactor.preview.emergentagent.com
+PROLEADS_API_URL=https://marketing-hub-162.preview.emergentagent.com
 
 # Updated API Key
 PROLEADS_API_KEY=sendloop_live_key_yalmQ6YGLT2PYPTAfvkHMuHbqJkw98Z1NFFYeWleuC8
@@ -97,7 +97,7 @@ class ProleadsIntegration:
         # self.api_url = "https://proleads.network"
         
         # ✅ NEW
-        self.api_url = os.environ.get("PROLEADS_API_URL", "https://proleads-refactor.preview.emergentagent.com")
+        self.api_url = os.environ.get("PROLEADS_API_URL", "https://marketing-hub-162.preview.emergentagent.com")
         self.api_key = os.environ.get("PROLEADS_API_KEY")
 ```
 
@@ -109,17 +109,17 @@ class ProleadsIntegration:
 
 ```bash
 # Login as a test user first
-USER_TOKEN=$(curl -s "https://proleads-refactor.preview.emergentagent.com/api/auth/login" \
+USER_TOKEN=$(curl -s "https://marketing-hub-162.preview.emergentagent.com/api/auth/login" \
   -H "Content-Type: application/json" \
   -d '{"email":"testuser@example.com","password":"password"}' | grep -o '"token":"[^"]*"' | cut -d'"' -f4)
 
 # Generate SSO token
-curl -X POST "https://proleads-refactor.preview.emergentagent.com/api/sso/initiate" \
+curl -X POST "https://marketing-hub-162.preview.emergentagent.com/api/sso/initiate" \
   -H "Authorization: Bearer $USER_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "target_app": "sendloop",
-    "redirect_url": "https://proleads-refactor.preview.emergentagent.com/dashboard"
+    "redirect_url": "https://marketing-hub-162.preview.emergentagent.com/dashboard"
   }' | python3 -m json.tool
 ```
 
@@ -128,7 +128,7 @@ curl -X POST "https://proleads-refactor.preview.emergentagent.com/api/sso/initia
 {
   "sso_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "expires_at": "2025-12-07T20:00:00Z",
-  "redirect_url": "https://proleads-refactor.preview.emergentagent.com/dashboard?sso_token=eyJ..."
+  "redirect_url": "https://marketing-hub-162.preview.emergentagent.com/dashboard?sso_token=eyJ..."
 }
 ```
 
@@ -137,7 +137,7 @@ curl -X POST "https://proleads-refactor.preview.emergentagent.com/api/sso/initia
 ```bash
 SSO_TOKEN="<token_from_step_1>"
 
-curl -X POST "https://proleads-refactor.preview.emergentagent.com/api/sso/verify" \
+curl -X POST "https://marketing-hub-162.preview.emergentagent.com/api/sso/verify" \
   -H "X-API-Key: sendloop_live_key_yalmQ6YGLT2PYPTAfvkHMuHbqJkw98Z1NFFYeWleuC8" \
   -H "Content-Type: application/json" \
   -d "{\"sso_token\":\"$SSO_TOKEN\"}" | python3 -m json.tool
@@ -164,18 +164,18 @@ curl -X POST "https://proleads-refactor.preview.emergentagent.com/api/sso/verify
 
 | Endpoint | Method | URL |
 |----------|--------|-----|
-| SSO Initiate | POST | `https://proleads-refactor.preview.emergentagent.com/api/sso/initiate` |
-| SSO Verify | POST | `https://proleads-refactor.preview.emergentagent.com/api/sso/verify` |
-| SSO User Info | GET | `https://proleads-refactor.preview.emergentagent.com/api/sso/user-info` |
-| CSV Export | POST | `https://proleads-refactor.preview.emergentagent.com/api/integrations/csv-export` |
-| CSV List | GET | `https://proleads-refactor.preview.emergentagent.com/api/integrations/csv-files` |
+| SSO Initiate | POST | `https://marketing-hub-162.preview.emergentagent.com/api/sso/initiate` |
+| SSO Verify | POST | `https://marketing-hub-162.preview.emergentagent.com/api/sso/verify` |
+| SSO User Info | GET | `https://marketing-hub-162.preview.emergentagent.com/api/sso/user-info` |
+| CSV Export | POST | `https://marketing-hub-162.preview.emergentagent.com/api/integrations/csv-export` |
+| CSV List | GET | `https://marketing-hub-162.preview.emergentagent.com/api/integrations/csv-files` |
 
 ---
 
 ## Deployment Notes
 
 ### For Preview/Testing:
-- Use: `https://proleads-refactor.preview.emergentagent.com`
+- Use: `https://marketing-hub-162.preview.emergentagent.com`
 - API Key: `sendloop_live_key_yalmQ6YGLT2PYPTAfvkHMuHbqJkw98Z1NFFYeWleuC8`
 
 ### For Production (Future):
@@ -195,7 +195,7 @@ curl -X POST "https://proleads-refactor.preview.emergentagent.com/api/sso/verify
 
 ## Quick Fix Checklist for Sendloop
 
-- [ ] Update `PROLEADS_API_URL` to `https://proleads-refactor.preview.emergentagent.com`
+- [ ] Update `PROLEADS_API_URL` to `https://marketing-hub-162.preview.emergentagent.com`
 - [ ] Update `PROLEADS_API_KEY` to `sendloop_live_key_yalmQ6YGLT2PYPTAfvkHMuHbqJkw98Z1NFFYeWleuC8`
 - [ ] Restart Sendloop backend
 - [ ] Test `/api/sso/verify` endpoint (should return 200, not 404)

@@ -322,7 +322,7 @@ async def send_subscription_reminder_email(db, email, username, tier, days_remai
                 </ul>
                 
                 <div style="text-align: center; margin: 30px 0;">
-                    <a href="https://proleads-refactor.preview.emergentagent.com/payment" 
+                    <a href="https://marketing-hub-162.preview.emergentagent.com/payment" 
                        style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
                               color: white; 
                               padding: 15px 40px; 

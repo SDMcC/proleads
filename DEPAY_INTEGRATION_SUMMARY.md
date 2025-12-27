@@ -115,8 +115,8 @@ Escrow: Captures any failed payouts for admin review
 #### In DePay Dashboard (https://app.depay.com):
 - **Integration ID**: `f2bfd96b-2ce7-4d74-93d6-6ec805750417`
 - **Dynamic Configuration**: Enabled
-- **Configuration Endpoint**: `https://proleads-refactor.preview.emergentagent.com/api/payments/depay/configuration`
-- **Callback Endpoint**: `https://proleads-refactor.preview.emergentagent.com/api/payments/depay/callback`
+- **Configuration Endpoint**: `https://marketing-hub-162.preview.emergentagent.com/api/payments/depay/configuration`
+- **Callback Endpoint**: `https://marketing-hub-162.preview.emergentagent.com/api/payments/depay/callback`
 - **Public Key**: Provided by DePay (stored in backend .env)
 
 #### Payment Configuration:

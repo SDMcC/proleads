@@ -15,7 +15,7 @@ PROLEADS_API_URL=https://proleads.network  # ❌ This doesn't exist
 
 ### Required Sendloop Configuration (CORRECT):
 ```bash
-PROLEADS_API_URL=https://proleads-refactor.preview.emergentagent.com  # ✅ Correct URL
+PROLEADS_API_URL=https://marketing-hub-162.preview.emergentagent.com  # ✅ Correct URL
 PROLEADS_API_KEY=sendloop_live_key_yalmQ6YGLT2PYPTAfvkHMuHbqJkw98Z1NFFYeWleuC8
 ```
 
@@ -29,7 +29,7 @@ When a user clicks "Open Sendloop" or "Export" in Proleads:
 2. **User is redirected to Sendloop** with token ✅ (This works)
 3. **Sendloop tries to verify token** with Proleads API ❌ (This fails)
    - Sendloop calls: `https://proleads.network/api/sso/verify`
-   - But should call: `https://proleads-refactor.preview.emergentagent.com/api/sso/verify`
+   - But should call: `https://marketing-hub-162.preview.emergentagent.com/api/sso/verify`
 
 **Result:** Sendloop gets 404 error and shows "Invalid SSO token" to user.
 
@@ -43,7 +43,7 @@ In your Sendloop `.env` file or environment configuration:
 
 ```bash
 # Update this line:
-PROLEADS_API_URL=https://proleads-refactor.preview.emergentagent.com
+PROLEADS_API_URL=https://marketing-hub-162.preview.emergentagent.com
 
 # Ensure API key is correct:
 PROLEADS_API_KEY=sendloop_live_key_yalmQ6YGLT2PYPTAfvkHMuHbqJkw98Z1NFFYeWleuC8
@@ -64,7 +64,7 @@ systemctl restart sendloop-backend
 Test that Sendloop can now reach Proleads API:
 
 ```bash
-curl -X POST "https://proleads-refactor.preview.emergentagent.com/api/sso/verify" \
+curl -X POST "https://marketing-hub-162.preview.emergentagent.com/api/sso/verify" \
   -H "X-API-Key: sendloop_live_key_yalmQ6YGLT2PYPTAfvkHMuHbqJkw98Z1NFFYeWleuC8" \
   -H "Content-Type: application/json" \
   -d '{"sso_token":"test_token"}'
@@ -96,7 +96,7 @@ Run this in your Sendloop backend terminal/server:
 const axios = require('axios');
 
 axios.post(
-  'https://proleads-refactor.preview.emergentagent.com/api/sso/verify',
+  'https://marketing-hub-162.preview.emergentagent.com/api/sso/verify',
   { sso_token: 'test' },
   {
     headers: {
@@ -118,7 +118,7 @@ axios.post(
 import requests
 
 response = requests.post(
-    'https://proleads-refactor.preview.emergentagent.com/api/sso/verify',
+    'https://marketing-hub-162.preview.emergentagent.com/api/sso/verify',
     headers={
         'X-API-Key': 'sendloop_live_key_yalmQ6YGLT2PYPTAfvkHMuHbqJkw98Z1NFFYeWleuC8',
         'Content-Type': 'application/json'
@@ -142,25 +142,25 @@ else:
 
 | Endpoint | Full URL |
 |----------|----------|
-| SSO Initiate | `https://proleads-refactor.preview.emergentagent.com/api/sso/initiate` |
-| SSO Verify | `https://proleads-refactor.preview.emergentagent.com/api/sso/verify` |
-| SSO User Info | `https://proleads-refactor.preview.emergentagent.com/api/sso/user-info` |
-| CSV Export | `https://proleads-refactor.preview.emergentagent.com/api/integrations/csv-export` |
-| CSV List | `https://proleads-refactor.preview.emergentagent.com/api/integrations/csv-files` |
+| SSO Initiate | `https://marketing-hub-162.preview.emergentagent.com/api/sso/initiate` |
+| SSO Verify | `https://marketing-hub-162.preview.emergentagent.com/api/sso/verify` |
+| SSO User Info | `https://marketing-hub-162.preview.emergentagent.com/api/sso/user-info` |
+| CSV Export | `https://marketing-hub-162.preview.emergentagent.com/api/integrations/csv-export` |
+| CSV List | `https://marketing-hub-162.preview.emergentagent.com/api/integrations/csv-files` |
 
 ### Sendloop Redirect URLs (Proleads uses these)
 
 | Purpose | Full URL |
 |---------|----------|
-| Dashboard Login | `https://proleads-refactor.preview.emergentagent.com/dashboard` |
-| CSV Import | `https://proleads-refactor.preview.emergentagent.com/import` |
+| Dashboard Login | `https://marketing-hub-162.preview.emergentagent.com/dashboard` |
+| CSV Import | `https://marketing-hub-162.preview.emergentagent.com/import` |
 
 ---
 
 ## Summary
 
 **Problem:** Sendloop is calling wrong Proleads API URL  
-**Solution:** Update `PROLEADS_API_URL` to `https://proleads-refactor.preview.emergentagent.com`  
+**Solution:** Update `PROLEADS_API_URL` to `https://marketing-hub-162.preview.emergentagent.com`  
 **Time to Fix:** 2 minutes (update .env + restart)  
 **Expected Result:** SSO login and CSV import will work immediately
 

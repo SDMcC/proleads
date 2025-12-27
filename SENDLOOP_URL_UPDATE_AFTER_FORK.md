@@ -29,7 +29,7 @@ In your Sendloop `.env` file or environment configuration:
 PROLEADS_API_URL=https://proleads.network
 
 # ✅ NEW URL (current forked instance):
-PROLEADS_API_URL=https://proleads-refactor.preview.emergentagent.com
+PROLEADS_API_URL=https://marketing-hub-162.preview.emergentagent.com
 
 # API Key (unchanged):
 PROLEADS_API_KEY=sendloop_live_key_yalmQ6YGLT2PYPTAfvkHMuHbqJkw98Z1NFFYeWleuC8
@@ -55,7 +55,7 @@ supervisorctl restart all
 Test that Sendloop can now reach the Proleads API:
 
 ```bash
-curl -X POST "https://proleads-refactor.preview.emergentagent.com/api/sso/verify" \
+curl -X POST "https://marketing-hub-162.preview.emergentagent.com/api/sso/verify" \
   -H "X-API-Key: sendloop_live_key_yalmQ6YGLT2PYPTAfvkHMuHbqJkw98Z1NFFYeWleuC8" \
   -H "Content-Type: application/json" \
   -d '{"sso_token":"test_token"}'
@@ -80,11 +80,11 @@ All Proleads API endpoints now use the new base URL:
 
 | Endpoint | Full URL |
 |----------|----------|
-| SSO Initiate | `https://proleads-refactor.preview.emergentagent.com/api/sso/initiate` |
-| **SSO Verify** | `https://proleads-refactor.preview.emergentagent.com/api/sso/verify` |
-| SSO User Info | `https://proleads-refactor.preview.emergentagent.com/api/sso/user-info` |
-| CSV Export | `https://proleads-refactor.preview.emergentagent.com/api/integrations/csv-export` |
-| CSV List | `https://proleads-refactor.preview.emergentagent.com/api/integrations/csv-files` |
+| SSO Initiate | `https://marketing-hub-162.preview.emergentagent.com/api/sso/initiate` |
+| **SSO Verify** | `https://marketing-hub-162.preview.emergentagent.com/api/sso/verify` |
+| SSO User Info | `https://marketing-hub-162.preview.emergentagent.com/api/sso/user-info` |
+| CSV Export | `https://marketing-hub-162.preview.emergentagent.com/api/integrations/csv-export` |
+| CSV List | `https://marketing-hub-162.preview.emergentagent.com/api/integrations/csv-files` |
 
 ---
 
@@ -93,13 +93,13 @@ All Proleads API endpoints now use the new base URL:
 ### From Proleads (Already Working):
 1. User clicks "Open Sendloop"
 2. Proleads generates SSO token
-3. User is redirected to: `https://proleads-refactor.preview.emergentagent.com/dashboard?sso_token=eyJ...`
+3. User is redirected to: `https://marketing-hub-162.preview.emergentagent.com/dashboard?sso_token=eyJ...`
 
 ### From Sendloop (Needs Update):
 1. Extract `sso_token` from URL query parameter
 2. **Call the NEW Proleads API URL** to verify the token:
    ```
-   POST https://proleads-refactor.preview.emergentagent.com/api/sso/verify
+   POST https://marketing-hub-162.preview.emergentagent.com/api/sso/verify
    ```
 3. Create/login user based on the response
 4. Redirect to Sendloop dashboard
@@ -136,7 +136,7 @@ If the error persists after updating:
    ```bash
    # In Sendloop backend terminal
    echo $PROLEADS_API_URL
-   # Should output: https://proleads-refactor.preview.emergentagent.com
+   # Should output: https://marketing-hub-162.preview.emergentagent.com
    ```
 
 2. **Check for hardcoded URLs in code:**
@@ -147,7 +147,7 @@ If the error persists after updating:
 
 3. **Verify API key is correct:**
    ```bash
-   curl -X POST "https://proleads-refactor.preview.emergentagent.com/api/sso/verify" \
+   curl -X POST "https://marketing-hub-162.preview.emergentagent.com/api/sso/verify" \
      -H "X-API-Key: YOUR_API_KEY" \
      -H "Content-Type: application/json" \
      -d '{"sso_token":"test"}'
@@ -165,5 +165,5 @@ If you continue experiencing issues after applying these changes, please contact
 ---
 
 **Last Updated:** December 15, 2024  
-**Proleads Current URL:** https://proleads-refactor.preview.emergentagent.com  
+**Proleads Current URL:** https://marketing-hub-162.preview.emergentagent.com  
 **Status:** 🔴 Action Required by Sendloop Team

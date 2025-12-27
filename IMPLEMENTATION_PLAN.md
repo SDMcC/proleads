@@ -46,12 +46,12 @@
 ### 🔧 Required Webhook URL Configuration:
 **URL to configure in Nowpayments Dashboard:**
 ```
-https://proleads-refactor.preview.emergentagent.com/api/payments/callback
+https://marketing-hub-162.preview.emergentagent.com/api/payments/callback
 ```
 
 **For commission payouts:**
 ```
-https://proleads-refactor.preview.emergentagent.com/api/payout-callback
+https://marketing-hub-162.preview.emergentagent.com/api/payout-callback
 ```
 
 ### ⚠️ Pre-Testing Checklist:
@@ -66,7 +66,7 @@ https://proleads-refactor.preview.emergentagent.com/api/payout-callback
 **What to verify:**
 1. Log into Nowpayments dashboard
 2. Go to Settings → IPN/Webhooks
-3. Ensure the callback URL is set to: `https://proleads-refactor.preview.emergentagent.com/api/payments/callback`
+3. Ensure the callback URL is set to: `https://marketing-hub-162.preview.emergentagent.com/api/payments/callback`
 4. Verify IPN Secret matches: `79kXvk7JRdLflmF5ElPH7m4rS01qUX9P`
 
 ### Phase 2: Test Payment Flow

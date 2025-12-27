@@ -10,7 +10,7 @@ User `testuser1` tried to make a DePay payment and encountered JavaScript error:
 ```
 ERROR
 Script error.
-    at handleError (https://proleads-refactor.preview.emergentagent.com/static/js/bundle.js:119453:58)
+    at handleError (https://marketing-hub-162.preview.emergentagent.com/static/js/bundle.js:119453:58)
 ```
 
 ---
@@ -61,7 +61,7 @@ DEPAY_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMI
 
 ### Configuration Endpoint Test ✅
 ```bash
-$ curl -X POST https://proleads-refactor.preview.emergentagent.com/api/payments/depay/configuration \
+$ curl -X POST https://marketing-hub-162.preview.emergentagent.com/api/payments/depay/configuration \
   -H "Content-Type: application/json" \
   -d '{"payment_id": "TEST-NEW", "tier": "bronze", "user_address": "0x1234567890123456789012345678901234567890"}'
 
@@ -158,7 +158,7 @@ paytest_1765314860: test tier ✅ UPGRADED
 tail -f /var/log/supervisor/backend.err.log | grep -E "\[DePay"
 
 # Check frontend for errors
-# (open browser console at: https://proleads-refactor.preview.emergentagent.com)
+# (open browser console at: https://marketing-hub-162.preview.emergentagent.com)
 
 # Check payment status
 python3 << 'EOF'

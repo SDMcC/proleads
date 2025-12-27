@@ -104,7 +104,7 @@ function LeadsTab() {
                   `${API_URL}/sso/initiate`,
                   {
                     target_app: 'sendloop',
-                    redirect_url: 'https://sendloop-bugs.preview.emergentagent.com/dashboard'
+                    redirect_url: 'https://marketing-hub-162.preview.emergentagent.com/dashboard'
                   },
                   { headers: { 'Authorization': `Bearer ${token}` } }
                 );
@@ -224,7 +224,7 @@ function LeadsTab() {
                                 });
                                 // Initiate SSO with file information in redirect URL
                                 // The backend will append sso_token automatically
-                                const redirectUrl = `https://sendloop-bugs.preview.emergentagent.com/import?file_id=${file.file_id}`;
+                                const redirectUrl = `https://marketing-hub-162.preview.emergentagent.com/import?file_id=${file.file_id}`;
                                 
                                 const response = await axios.post(
                                   `${API_URL}/sso/initiate`,
