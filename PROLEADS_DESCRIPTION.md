@@ -1,153 +1,86 @@
-# Proleads Network - Complete Platform Description
+# Proleads Network - Platform Description
 
 ## Executive Summary
 
-Proleads Network is a revolutionary affiliate marketing platform that empowers individuals and businesses to build sustainable income streams through a sophisticated multi-level referral system. By combining cutting-edge technology with user-friendly design, Proleads creates a comprehensive ecosystem where users can earn commissions, access high-quality leads, and grow their business networks—all while maintaining complete transparency and control over their earnings.
+Proleads Network is a comprehensive affiliate marketing platform that empowers individuals and businesses to build sustainable income through a multi-level referral system. The platform combines advanced technology with user-friendly design, creating an ecosystem where members can earn commissions, access quality leads, and grow their business networks with complete transparency.
 
 ---
 
-## Platform Overview
+## What is Proleads Network?
 
-### What is Proleads Network?
+Proleads Network is a complete business growth solution connecting marketers, entrepreneurs, and businesses in a mutually beneficial ecosystem. The platform provides unlimited earning potential through a multi-tier commission structure, premium lead access, professional marketing tools, secure payment processing, and dedicated support.
 
-Proleads Network is more than just an affiliate marketing platform—it's a complete business growth solution. The platform connects marketers, entrepreneurs, and businesses in a mutually beneficial ecosystem where success is shared and amplified through a proven multi-tier commission structure.
+### Key Differentiators
 
-At its core, Proleads provides:
-- **Unlimited Earning Potential**: Multi-level commission structure that rewards you for building and nurturing your network
-- **Premium Lead Access**: High-quality, verified lead databases to fuel your business growth
-- **Professional Tools**: Integrated email marketing, CRM capabilities, and analytics
-- **Secure Payments**: Crypto-enabled payment processing for fast, global transactions
-- **Community Support**: Dedicated support team and ticketing system
-
-### The Proleads Difference
-
-**Traditional Affiliate Programs:**
-- Single-tier commissions
-- Limited earning potential
-- No lead access
-- Manual tracking
-- Delayed payments
-
-**Proleads Network:**
-- Multi-level commission structure (up to 7 tiers deep)
-- Unlimited earning potential
-- Premium lead databases included
-- Automated tracking and analytics
-- Instant crypto payments via DePay
-- Integrated email marketing tools
-- Professional support system
+**vs. Traditional Affiliate Programs:**
+- Multi-level commission structure (up to 7 tiers) vs. single-tier
+- Premium lead databases included vs. no lead access
+- Automated tracking and analytics vs. manual tracking
+- Instant crypto payments vs. delayed payments
+- Integrated email marketing tools vs. external tools required
+- Professional support system vs. limited support
 
 ---
 
-## Core Features & Benefits
+## Membership Tiers
 
-### 1. Multi-Tier Membership System
+### Affiliate (Free)
+- Free to join
+- Access to platform and basic referral tracking
+- Community access
+- Learn the system risk-free
 
-Proleads offers flexible membership tiers designed to match your business goals and investment level:
+### Bronze - $49/month
+- 5-level commission structure (10%, 5%, 3%, 2%, 1%)
+- Access to lead databases
+- Email marketing integration
+- Priority support
+- Monthly webinar access
 
-#### **Affiliate (Free Tier)**
-- **Cost**: Free to join
-- **Benefits**:
-  - Access to the platform
-  - Basic referral tracking
-  - Community access
-  - Learn the system risk-free
-- **Ideal For**: Beginners testing the waters
+### Silver - $149/month
+- 6-level commission structure (15%, 10%, 5%, 3%, 2%, 1%)
+- Everything in Bronze
+- Premium lead access
+- Advanced analytics dashboard
+- Unlimited email campaigns
+- Dedicated account manager
 
-#### **Bronze Membership - $49**
-- **Commission Structure**: 5 levels deep
-  - Level 1: 10%
-  - Level 2: 5%
-  - Level 3: 3%
-  - Level 4: 2%
-  - Level 5: 1%
-- **Benefits**:
-  - Access to lead databases
-  - Email marketing integration
-  - Priority support
-  - Monthly webinar access
-- **Earning Potential**: $500-$2,000/month
-- **Ideal For**: Part-time marketers and side hustlers
+### Gold - $499/month
+- 7-level commission structure (20%, 15%, 10%, 5%, 3%, 2%, 1%)
+- Everything in Silver
+- Exclusive high-tier leads
+- White-label options
+- Personal branding tools
+- VIP mastermind group access
+- Custom training and coaching
 
-#### **Silver Membership - $149**
-- **Commission Structure**: 6 levels deep
-  - Level 1: 15%
-  - Level 2: 10%
-  - Level 3: 5%
-  - Level 4: 3%
-  - Level 5: 2%
-  - Level 6: 1%
-- **Benefits**:
-  - Everything in Bronze
-  - Premium lead access
-  - Advanced analytics dashboard
-  - Unlimited email campaigns
-  - Dedicated account manager
-- **Earning Potential**: $2,000-$10,000/month
-- **Ideal For**: Serious marketers building full-time income
-
-#### **Gold Membership - $499**
-- **Commission Structure**: 7 levels deep
-  - Level 1: 20%
-  - Level 2: 15%
-  - Level 3: 10%
-  - Level 4: 5%
-  - Level 5: 3%
-  - Level 6: 2%
-  - Level 7: 1%
-- **Benefits**:
-  - Everything in Silver
-  - Exclusive high-tier leads
-  - White-label options
-  - Personal branding tools
-  - VIP mastermind group access
-  - Custom training and coaching
-- **Earning Potential**: $10,000-$50,000+/month
-- **Ideal For**: Power users and team builders
-
-#### **VIP Affiliate & Test Tiers**
-- Special custom arrangements for partners, affiliates, and testers
+### VIP Affiliate & Test Tiers
+- Special custom arrangements for partners and affiliates
 - Negotiated commission structures
-- Exclusive benefits and features
+- Exclusive benefits
 
-### 2. Intelligent Referral System
+---
 
-#### How It Works:
-1. **Share Your Unique Link**: Every member gets a personalized referral code
-2. **Track Everything**: Real-time dashboard shows clicks, signups, and conversions
-3. **Earn Automatically**: Commissions are calculated and credited instantly
-4. **Build Depth**: Earn from multiple levels of your network
+## Core Features
 
-#### Real-World Example:
-**Sarah, Silver Member ($149/month):**
-- Refers 10 people (Level 1) who become Bronze members
-- Each refers 5 people (Level 2)
-- Those refer 3 people each (Level 3)
-- And so on...
+### 1. Intelligent Referral System
+- Personalized referral code for every member
+- Real-time dashboard tracking clicks, signups, and conversions
+- Automated commission calculations
+- Multi-level network earning (earn from your network's activity)
+- Visual network tree showing entire downline
 
-**Monthly Earnings:**
-- Level 1: 10 × $49 × 15% = $73.50
-- Level 2: 50 × $49 × 10% = $245.00
-- Level 3: 150 × $49 × 5% = $367.50
-- Level 4: 450 × $49 × 3% = $661.50
-- Level 5: 1,350 × $49 × 2% = $1,323.00
-- Level 6: 4,050 × $49 × 1% = $1,984.50
+### 2. Premium Lead Database
+**Access & Quality:**
+- Verified contact lists across multiple industries
+- Fresh leads added weekly
+- Advanced filtering by industry, location, company size
+- CSV export for CRM integration
+- Lead quality scoring
+- <5% bounce rate guarantee
+- GDPR and CAN-SPAM compliant
 
-**Total Monthly Income: $4,655.00**
-**Annual Income: $55,860**
-
-*This compounds as your network grows and members upgrade tiers!*
-
-### 3. Premium Lead Database Access
-
-#### What You Get:
-- **Verified Contact Lists**: Pre-qualified leads across multiple industries
-- **Regular Updates**: Fresh leads added weekly
-- **Advanced Filtering**: Target by industry, location, company size, and more
-- **Export Capabilities**: Download in CSV format for your CRM
-- **Lead Scoring**: Quality ratings on every lead
-
-#### Industries Covered:
+**Industries Covered:**
 - Real Estate
 - Financial Services
 - Insurance
@@ -157,463 +90,297 @@ Proleads offers flexible membership tiers designed to match your business goals 
 - Technology
 - Professional Services
 
-#### Quality Guarantee:
-- All leads verified within 90 days
-- Bounce rate <5%
-- Opt-in compliant
-- GDPR and CAN-SPAM compliant
+### 3. Integrated Email Marketing (Sendloop)
+**Seamless Workflow:**
+- One-click lead export via SSO integration
+- Professional email templates
+- Drip campaigns and autoresponders
+- Built-in compliance tools
+- Detailed performance analytics
+- No manual data entry required
 
-### 4. Integrated Email Marketing (Sendloop Integration)
+### 4. Comprehensive Dashboard
+**Real-Time Analytics:**
+- Earnings overview (total, pending, paid)
+- Network statistics with depth visualization
+- Conversion tracking and rates
+- Complete payment history
+- Goal tracking and monitoring
 
-#### Seamless Workflow:
-1. **Access Leads**: Browse and select leads from Proleads database
-2. **Export to Sendloop**: One-click export via SSO integration
-3. **Create Campaigns**: Use Sendloop's powerful email builder
-4. **Track Results**: Monitor opens, clicks, and conversions
-5. **Optimize**: Refine your campaigns based on analytics
-
-#### Benefits:
-- **No Data Entry**: Automatic lead transfer
-- **Professional Templates**: Pre-designed email templates
-- **Automation**: Set up drip campaigns and autoresponders
-- **Compliance**: Built-in unsubscribe and compliance tools
-- **Analytics**: Detailed performance metrics
-
-### 5. Comprehensive User Dashboard
-
-#### Real-Time Analytics:
-- **Earnings Overview**: Total earnings, pending, and paid out
-- **Network Statistics**: Total referrals, active members, depth visualization
-- **Conversion Tracking**: Click-through rates, signup rates, upgrade rates
-- **Payment History**: Complete transaction log with filters
-- **Goal Tracking**: Set and monitor income goals
-
-#### Quick Actions:
-- Generate referral links
-- Share on social media
+**Quick Actions:**
+- Generate and share referral links
+- Social media integration
 - Download marketing materials
 - Access training resources
 - Contact support
 
-### 6. KYC Verification System
+### 5. KYC Verification System
+**The Process:**
+- Submit government-issued ID and selfie
+- AI-powered instant verification
+- Manual admin review when needed
+- Verification badge upon approval
+- Full platform access unlocked
 
-#### Why KYC?
-To ensure platform integrity and comply with financial regulations, Proleads implements a streamlined KYC process.
+**Benefits:**
+- Increased trust and credibility
+- Access to higher commission tiers
+- Payment priority
+- Reduced fraud and enhanced security
 
-#### The Process:
-1. **Document Upload**: Submit government-issued ID and selfie
-2. **Instant Processing**: AI-powered verification for quick approval
-3. **Admin Review**: Manual verification for edge cases
-4. **Verification Badge**: Trusted member status
-5. **Full Access**: Unlock all platform features
+### 6. Professional Support System
+**Multi-Channel Support:**
+- Ticket system with file attachments
+- Real-time status tracking
+- Email notifications
+- Priority support for paid members (Bronze: <24hr, Silver: <12hr, Gold: <6hr)
 
-#### Benefits:
-- **Increased Trust**: Verified badge builds credibility
-- **Higher Commissions**: Some tiers require verification
-- **Payment Priority**: Verified users get faster payouts
-- **Community Safety**: Reduces fraud and fake accounts
-
-### 7. Professional Support System
-
-#### Multi-Channel Support:
-
-**Ticket System:**
-- Create detailed support requests
-- Attach screenshots and files
-- Track ticket status in real-time
-- Receive email notifications on updates
-
-**Knowledge Base:**
-- Video tutorials
-- Step-by-step guides
-- FAQ section
+**Resources:**
+- Video tutorials and guides
+- Comprehensive FAQ section
 - Best practices library
-
-**Live Support:**
-- Priority support for paid members
-- Response time: <24 hours (Bronze), <12 hours (Silver), <6 hours (Gold)
-- Email and ticket-based support
-
-**Community:**
 - Member forums
-- Success stories
 - Strategy discussions
 - Networking opportunities
 
-### 8. Milestone Rewards Program
-
-#### Achievement System:
-As you grow your network and hit milestones, unlock special rewards and recognition.
-
-**Milestone Examples:**
-- **First Referral**: Welcome bonus
-- **10 Direct Referrals**: Bronze Ambassador badge + $50 bonus
-- **$1,000 in Earnings**: Silver Ambassador badge + $100 bonus
-- **50 Direct Referrals**: Gold Ambassador badge + $250 bonus
-- **$10,000 in Earnings**: Platinum status + $1,000 bonus
-- **100+ Network Members**: Diamond status + Exclusive benefits
-
-#### Benefits:
-- Bonus cash rewards
-- Public recognition
-- Special badges on profile
+### 7. Milestone Rewards Program
+**Achievement System:**
+- Progress-based rewards and recognition
+- Bonus cash incentives
+- Public recognition and badges
 - Exclusive training access
 - Conference invitations
 - Mentorship opportunities
 
-### 9. Secure Payment Processing
-
-#### DePay Integration:
-Proleads uses DePay for secure, fast, and global payment processing.
-
-**Payment Options:**
-- **Crypto Payments**: USDC, USDT, ETH, BTC
-- **Instant Settlement**: Payments processed in real-time
-- **Low Fees**: Minimal transaction costs
-- **Global Access**: Accept payments from anywhere
-- **Secure**: Bank-level encryption and security
+### 8. Secure Payment Processing
+**DePay Integration:**
+- Crypto payments (USDC, USDT, ETH, BTC)
+- Instant settlement
+- Low transaction fees
+- Global accessibility
+- Bank-level encryption
 
 **Payment Schedule:**
-- Commissions calculated instantly
-- Minimum payout: $50
-- Payment frequency: Weekly or on-demand
-- Payment history: Complete transaction log
+- Instant commission calculation
+- $50 minimum payout
+- Weekly or on-demand payments
+- Complete transaction history
 
-#### Traditional Payments (Coming Soon):
-- Credit/Debit cards
-- PayPal
-- Bank transfers
-- Local payment methods
-
-### 10. Advanced Analytics & Reporting
-
-#### Track Everything:
-
-**Network Analytics:**
-- Visual network tree showing your entire downline
+### 9. Advanced Analytics
+**Track Everything:**
+- Visual network tree
 - Growth charts and trends
-- Member activity levels
-- Upgrade tracking
-
-**Financial Analytics:**
+- Member activity tracking
 - Income by tier level
-- Commission breakdown
-- Payment projections
-- ROI calculator
-
-**Marketing Analytics:**
+- Commission breakdowns
 - Link performance
-- Traffic sources
-- Conversion funnels
-- A/B testing results
-
-**Export Options:**
-- CSV downloads
-- PDF reports
-- Email scheduled reports
-- API access for integrations
+- Traffic sources and conversion funnels
+- Export options (CSV, PDF)
 
 ---
 
-## User Benefits Breakdown
+## Benefits by User Type
 
-### For Individual Marketers:
+### For Individual Marketers
+**Financial:**
+- Multiple income streams from network levels
+- Passive income from network activity
+- Scalable earnings with no caps
+- Fast crypto payouts
+- Low startup costs ($0-$499)
 
-#### Financial Benefits:
-✅ **Multiple Income Streams**: Earn from multiple levels of your network
-✅ **Passive Income**: Continue earning from your network's activity
-✅ **Scalable Earnings**: No caps on how much you can earn
-✅ **Fast Payouts**: Weekly payments via crypto
-✅ **Low Startup Cost**: Entry options from $0 to $499
+**Business:**
+- Premium verified leads
+- Integrated marketing tools
+- Professional analytics
+- Comprehensive training
+- Dedicated support
 
-#### Business Benefits:
-✅ **Premium Leads**: Access to verified, high-quality contact lists
-✅ **Marketing Tools**: Integrated email marketing platform
-✅ **Analytics**: Professional-grade tracking and reporting
-✅ **Training**: Comprehensive educational resources
-✅ **Support**: Dedicated support team
+**Lifestyle:**
+- Work from anywhere
+- Flexible schedule
+- Active community
+- Recognition system
+- Continuous learning
 
-#### Lifestyle Benefits:
-✅ **Work from Anywhere**: 100% online, no physical requirements
-✅ **Flexible Schedule**: Work at your own pace
-✅ **Community**: Connect with like-minded entrepreneurs
-✅ **Recognition**: Achievement badges and milestone rewards
-✅ **Growth**: Continuous learning and development opportunities
+### For Business Owners
+**Lead Generation:**
+- Instant access to thousands of verified leads
+- Targeted lists by industry and location
+- Weekly fresh data updates
+- Export to any CRM
+- Unlimited access with membership
 
-### For Business Owners:
+**Team Building:**
+- Build affiliate network
+- Track team performance
+- Incentivize with commission structure
+- Provide training resources
+- Communication tools
 
-#### Lead Generation:
-✅ **Instant Access**: Thousands of verified leads at your fingertips
-✅ **Targeted Lists**: Filter by industry, location, size
-✅ **Fresh Data**: Weekly updates with new leads
-✅ **Export Options**: Download for use in any CRM
-✅ **Cost Effective**: Unlimited access with membership
+**Revenue:**
+- Additional income stream
+- Recurring monthly commissions
+- Scalable growth model
+- Low overhead (no inventory/shipping)
+- Global reach
 
-#### Team Building:
-✅ **Recruit Partners**: Build a network of affiliates
-✅ **Track Performance**: Monitor team member activities
-✅ **Provide Incentives**: Commission structure rewards team growth
-✅ **Training Resources**: Onboard new members easily
-✅ **Communication Tools**: Stay connected with your network
+### For Marketing Agencies
+**Client Acquisition:**
+- Prospect database
+- Platform credibility
+- Revenue share opportunities
+- White-label options (Gold tier)
+- Volume benefits
 
-#### Revenue Diversification:
-✅ **Additional Income**: Add affiliate revenue to existing business
-✅ **Recurring Commissions**: Monthly passive income
-✅ **Scalable Model**: Grow earnings without proportional effort increase
-✅ **Low Overhead**: No inventory, shipping, or fulfillment
-✅ **Global Reach**: Earn from members worldwide
-
-### For Marketing Agencies:
-
-#### Client Acquisition:
-✅ **Lead Database**: Prospect database for new clients
-✅ **Credibility**: Verified platform adds trust
-✅ **Revenue Share**: Earn commissions from client referrals
-✅ **White Label Options**: Brand the experience (Gold tier)
-✅ **Volume Discounts**: Special rates for agencies
-
-#### Service Enhancement:
-✅ **Email Marketing**: Offer Sendloop integration to clients
-✅ **Lead Generation**: Provide fresh leads to clients
-✅ **Analytics**: Share performance data with clients
-✅ **Automation**: Set up passive income for clients
-✅ **Support**: Leverage Proleads support for your clients
+**Service Enhancement:**
+- Offer Sendloop integration
+- Provide fresh leads
+- Share analytics
+- Set up automation
+- Leverage platform support
 
 ---
 
-## Success Stories & Use Cases
-
-### Case Study 1: The Part-Time Marketer
-
-**Profile:** Jennifer, Marketing Manager
-- **Tier:** Bronze ($49/month)
-- **Time Investment:** 5-10 hours/week
-- **Strategy:** Focused on quality over quantity, referred colleagues and networking contacts
-
-**Results After 6 Months:**
-- 25 direct referrals
-- 87 total network members (3 levels deep)
-- Average monthly income: $1,200
-- ROI: 2,400%
-
-**Key Success Factors:**
-- Targeted professionals in her industry
-- Used LinkedIn for outreach
-- Provided value through education
-- Consistent follow-up
-
-### Case Study 2: The Network Builder
-
-**Profile:** Michael, Entrepreneur
-- **Tier:** Silver ($149/month)
-- **Time Investment:** 20-30 hours/week
-- **Strategy:** Built a team of active recruiters, provided training and support
-
-**Results After 12 Months:**
-- 78 direct referrals
-- 342 total network members (6 levels deep)
-- Average monthly income: $8,500
-- ROI: 5,704%
-- Upgraded 15 members to higher tiers
-
-**Key Success Factors:**
-- Created training materials for team
-- Hosted weekly coaching calls
-- Focused on helping others succeed
-- Built a supportive community
-
-### Case Study 3: The Agency Owner
-
-**Profile:** Sarah, Digital Marketing Agency
-- **Tier:** Gold ($499/month)
-- **Time Investment:** Full-time focus
-- **Strategy:** Integrated Proleads into agency offerings, white-labeled the platform
-
-**Results After 18 Months:**
-- 156 direct referrals (mostly clients)
-- 1,247 total network members (7 levels deep)
-- Average monthly income: $42,000
-- ROI: 8,418%
-- Created 3 additional full-time positions
-
-**Key Success Factors:**
-- Positioned as a business opportunity for clients
-- Provided done-for-you setup service
-- Leveraged existing client relationships
-- Built a scalable system
-
----
-
-## Getting Started Guide
+## Getting Started
 
 ### Step 1: Choose Your Tier
-- Assess your goals and budget
-- Start with Bronze if you're new to affiliate marketing
-- Upgrade as you grow and see results
+Assess your goals and budget. Start with Bronze if new to affiliate marketing, upgrade as you grow.
 
 ### Step 2: Complete Your Profile
-- Add professional photo
-- Write compelling bio
-- Complete KYC verification (recommended)
-- Set up payment preferences
+Add professional photo, write bio, complete KYC verification, set up payment preferences.
 
 ### Step 3: Learn the Platform
-- Watch onboarding videos
-- Read success guides
-- Join community forums
-- Attend welcome webinar
+Watch onboarding videos, read guides, join forums, attend welcome webinar.
 
 ### Step 4: Get Your First Referral
-- Share your unique link
-- Use provided marketing materials
-- Post on social media
-- Reach out to your network
+Share your unique link, use marketing materials, post on social media, reach out to your network.
 
 ### Step 5: Build Your Network
-- Help your referrals succeed
-- Provide training and support
-- Stay active and engaged
-- Monitor your analytics
+Help referrals succeed, provide training and support, stay active, monitor analytics.
 
 ### Step 6: Scale Your Income
-- Test different marketing channels
-- Create content (blog, videos, social)
-- Automate your follow-up
-- Consider upgrading your tier
+Test marketing channels, create content, automate follow-up, consider upgrading tier.
 
 ---
 
-## Why Choose Proleads Network?
+## Why Choose Proleads?
 
-### Proven Business Model
-✅ Multi-level marketing has created more millionaires than any other business model
-✅ Affiliate marketing is a $12 billion industry
-✅ Recurring commission structures provide stable income
-✅ Low barrier to entry with high earning potential
+### Proven Model
+- Multi-level marketing has created significant wealth for many participants
+- Affiliate marketing is a $12+ billion industry
+- Recurring commissions provide stable income
+- Low barrier to entry with growth potential
 
-### Technology Edge
-✅ Modern, user-friendly platform
-✅ Real-time tracking and analytics
-✅ Secure payment processing
-✅ Mobile-responsive design
-✅ Regular updates and improvements
+### Technology
+- Modern, intuitive platform
+- Real-time tracking and analytics
+- Secure payment processing
+- Mobile-responsive design
+- Regular updates
 
-### Community & Support
-✅ Active member community
-✅ Professional support team
-✅ Comprehensive training library
-✅ Regular webinars and events
-✅ Success coaching available
+### Community
+- Active member network
+- Professional support team
+- Comprehensive training
+- Regular webinars
+- Success coaching
 
-### Transparency & Trust
-✅ Clear commission structures
-✅ Real-time earnings tracking
-✅ Verified member system (KYC)
-✅ Secure data handling
-✅ Responsive support team
+### Transparency
+- Clear commission structures
+- Real-time earnings tracking
+- KYC verification system
+- Secure data handling
+- Responsive support
 
-### Growth Potential
-✅ Unlimited earning ceiling
-✅ Multiple revenue streams
-✅ Global market access
-✅ Recurring monthly commissions
-✅ Compound growth effects
+### Growth
+- Unlimited earning potential
+- Multiple revenue streams
+- Global market access
+- Recurring commissions
+- Compound network effects
 
 ---
 
 ## Frequently Asked Questions
 
-### About Membership
+### Membership
+**Q: Is there a free option?**
+A: Yes, the Affiliate tier is completely free to join and explore.
 
-**Q: Is there a free trial?**
-A: The Affiliate tier is completely free to join. You can explore the platform and start referring before committing to a paid tier.
-
-**Q: Can I upgrade or downgrade my membership?**
-A: Yes, you can change your tier at any time. Upgrades are instant, downgrades take effect at your next billing cycle.
+**Q: Can I change my membership tier?**
+A: Yes, upgrade anytime (instant) or downgrade at next billing cycle.
 
 **Q: What happens to my network if I downgrade?**
-A: You keep your network, but commission levels adjust to your new tier structure.
+A: You keep your network, but commission levels adjust to your new tier.
 
-### About Earnings
+### Earnings
+**Q: When do I receive payments?**
+A: Commissions are credited instantly. Payouts process weekly with $50 minimum.
 
-**Q: When do I get paid?**
-A: Commissions are credited instantly. Payouts are processed weekly with a $50 minimum.
+**Q: Is there an earning limit?**
+A: No, your earnings scale with your network size and activity.
 
-**Q: Is there a limit to how much I can earn?**
-A: No. Your earnings are limited only by the size and activity of your network.
+**Q: How long do commissions last?**
+A: As long as referred members remain active and you maintain membership.
 
-**Q: How long do I earn commissions?**
-A: As long as your referred members remain active and you maintain an active membership.
-
-### About Leads
-
+### Leads
 **Q: How often are leads updated?**
-A: Fresh leads are added weekly. The database is continuously verified and updated.
+A: Fresh leads added weekly with continuous verification.
 
-**Q: Can I use the leads for any purpose?**
-A: Leads are for business prospecting purposes. Please review and comply with all applicable laws (CAN-SPAM, GDPR, etc.).
+**Q: What can I use the leads for?**
+A: Business prospecting purposes in compliance with applicable laws (CAN-SPAM, GDPR).
 
-**Q: What's the quality of the leads?**
-A: All leads are verified within 90 days and scored for quality. Bounce rates are kept below 5%.
+**Q: What's the lead quality?**
+A: All leads verified within 90 days, quality scored, <5% bounce rate.
 
-### About Support
+### Support
+**Q: How do I get help?**
+A: Create support tickets through dashboard. Response time based on tier.
 
-**Q: What if I need help?**
-A: Create a support ticket through the dashboard. Response times vary by tier (Bronze: 24hr, Silver: 12hr, Gold: 6hr).
+**Q: Is training available?**
+A: Yes - training library, video tutorials, webinars, community forums.
 
-**Q: Is there training available?**
-A: Yes! Comprehensive training library, video tutorials, webinars, and community forums.
-
-**Q: Can I get one-on-one coaching?**
-A: Gold members receive dedicated account management. Coaching packages are available for all tiers.
+**Q: Can I get personal coaching?**
+A: Gold members receive dedicated account management. Coaching packages available for all tiers.
 
 ---
 
-## Ready to Get Started?
+## Technology Stack
 
-### Your Path to Success Starts Today
+### Frontend
+- React 18 with React Router
+- Tailwind CSS for responsive design
+- Axios for API communication
+- Lucide React icons
+- Recharts for data visualization
 
-Proleads Network isn't just a platform—it's your partner in building a sustainable, scalable online business. Whether you're looking for extra income, a full-time opportunity, or a way to grow your existing business, Proleads provides the tools, training, and community to help you succeed.
+### Backend
+- FastAPI (Python) for high performance
+- Motor async MongoDB driver
+- JWT authentication
+- Bcrypt password security
+- Multi-part file handling
 
-### Take Action Now:
-
-1. **Choose Your Tier**: Select the membership level that matches your goals
-2. **Create Your Account**: Quick signup process (less than 2 minutes)
-3. **Complete Your Profile**: Add your details and verify your account
-4. **Get Your Link**: Generate your unique referral code
-5. **Start Earning**: Share your link and watch your network grow
-
-### Investment vs. Return
-
-**Bronze Investment:** $49/month = $588/year
-**Conservative Earnings:** $1,000/month = $12,000/year
-**ROI:** 2,000%+ in first year
-
-**Silver Investment:** $149/month = $1,788/year
-**Conservative Earnings:** $5,000/month = $60,000/year
-**ROI:** 3,300%+ in first year
-
-**Gold Investment:** $499/month = $5,988/year
-**Conservative Earnings:** $20,000/month = $240,000/year
-**ROI:** 4,000%+ in first year
-
-*Results vary based on effort, strategy, and network growth. Past performance doesn't guarantee future results.*
+### Integrations
+- DePay for crypto payments
+- FTP storage for documents
+- Sendloop for email marketing
+- SMTP for notifications
 
 ---
 
 ## Contact & Support
 
-### Need More Information?
-
 **Platform Support:**
-- Create a ticket through your dashboard
+- Create ticket through dashboard
 - Email: support@proleads.network
-- Response time: Based on your membership tier
+- Response time: Based on membership tier
 
 **Sales Inquiries:**
 - Email: sales@proleads.network
-- Learn about custom enterprise solutions
-- Agency partnership opportunities
+- Enterprise solutions available
+- Agency partnerships
 
 **Follow Us:**
 - LinkedIn: /proleadsnetwork
@@ -623,7 +390,7 @@ Proleads Network isn't just a platform—it's your partner in building a sustain
 
 ---
 
-**Disclaimer:** Earnings and income representations are aspirational statements of your earning potential. Success with Proleads Network requires effort, strategy, and time. Individual results will vary. The company does not guarantee any level of success or income from use of this platform or our ideas and techniques. Your level of success in attaining results depends on several factors including your skill, knowledge, ability, dedication, business savvy, network, and financial situation. Since these factors differ for each individual, we cannot guarantee success or income level. Nor are we responsible for any of your actions.
+**Disclaimer:** Success with Proleads Network requires effort, strategy, and time. Individual results vary based on multiple factors including skill, dedication, network, and business acumen. The company does not guarantee any specific level of success or income. Your results depend on your actions and circumstances.
 
 **Last Updated:** December 2025  
 **Version:** 2.0
